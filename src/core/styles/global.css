@@ -1,1 +1,469 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.75rem;
+  
+  /* Beige, Pink & White Palette - Government Professional Theme */
+  --background: #FEFCF8;                    /* Warm off-white */
+  --foreground: #2D2A26;                    /* Dark charcoal */
+  --card: #FFFFFF;                          /* Pure white for cards */
+  --card-foreground: #2D2A26;              /* Dark text on cards */
+  --popover: #FFFFFF;                       /* Clean white popover */
+  --popover-foreground: #2D2A26;           /* Dark popover text */
+  --primary: #D4A574;                       /* Warm beige primary */
+  --primary-foreground: #FFFFFF;           /* White text on primary */
+  --secondary: #F5E6D8;                     /* Light beige secondary */
+  --secondary-foreground: #8B6F47;         /* Darker beige text */
+  --muted: #F8F4F0;                        /* Very light beige muted */
+  --muted-foreground: #706B66;             /* Medium gray text */
+  --accent: #E8B4CB;                       /* Soft pink accent */
+  --accent-foreground: #4A2C3A;            /* Dark text on pink */
+  --destructive: #DC2626;                  /* Strong red for errors */
+  --destructive-foreground: #FFFFFF;       /* White text on red */
+  --success: #059669;                      /* Professional green */
+  --success-foreground: #FFFFFF;          /* White text on green */
+  --warning: #D97706;                      /* Warm orange */
+  --warning-foreground: #FFFFFF;          /* White text on orange */
+  --border: #E5D4C1;                       /* Soft beige border */
+  --input: #FFFFFF;                        /* White input background */
+  --ring: #D4A574;                         /* Primary beige ring */
+  
+  /* Chart Colors */
+  --chart-1: #D4A574;                      /* Primary beige */
+  --chart-2: #E8B4CB;                      /* Soft pink */
+  --chart-3: #A69080;                      /* Medium beige */
+  --chart-4: #8B6F47;                      /* Dark beige */
+  --chart-5: #C19A6B;                      /* Light brown */
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;                      /* White sidebar */
+  --sidebar-foreground: #2D2A26;          /* Dark sidebar text */
+  --sidebar-primary: #D4A574;             /* Beige primary */
+  --sidebar-primary-foreground: #FFFFFF;   /* White on beige */
+  --sidebar-accent: #F8F4F0;              /* Light beige accent */
+  --sidebar-accent-foreground: #2D2A26;    /* Dark text */
+  --sidebar-border: #E5D4C1;              /* Soft beige border */
+  --sidebar-ring: #D4A574;                /* Primary beige ring */
+}
+
+.dark {
+  /* Dark Theme - Elegant Professional */
+  --background: #1A1715;                   /* Very dark brown */
+  --foreground: #F8F4F0;                   /* Light cream text */
+  --card: #2A2520;                        /* Dark card background */
+  --card-foreground: #F8F4F0;             /* Light card text */
+  --popover: #2A2520;                     /* Dark popover */
+  --popover-foreground: #F8F4F0;          /* Light popover text */
+  --primary: #E8B4CB;                     /* Pink primary in dark */
+  --primary-foreground: #1A1715;          /* Dark text on pink */
+  --secondary: #3D342E;                   /* Dark beige secondary */
+  --secondary-foreground: #D4A574;        /* Beige text */
+  --muted: #2A2520;                       /* Dark muted */
+  --muted-foreground: #A69080;            /* Medium beige text */
+  --accent: #D4A574;                      /* Beige accent in dark */
+  --accent-foreground: #1A1715;           /* Dark text on beige */
+  --destructive: #EF4444;                 /* Bright red */
+  --destructive-foreground: #FFFFFF;      /* White text */
+  --success: #10B981;                     /* Bright green */
+  --success-foreground: #FFFFFF;         /* White text */
+  --warning: #F59E0B;                     /* Bright orange */
+  --warning-foreground: #FFFFFF;         /* White text */
+  --border: #3D342E;                      /* Dark beige border */
+  --input: #2A2520;                       /* Dark input */
+  --ring: #E8B4CB;                        /* Pink ring */
+  
+  /* Dark Chart Colors */
+  --chart-1: #E8B4CB;                     /* Pink */
+  --chart-2: #D4A574;                     /* Beige */
+  --chart-3: #A69080;                     /* Medium beige */
+  --chart-4: #F8F4F0;                     /* Light cream */
+  --chart-5: #C19A6B;                     /* Light brown */
+  
+  /* Dark Sidebar */
+  --sidebar: #2A2520;                     /* Dark sidebar */
+  --sidebar-foreground: #F8F4F0;          /* Light text */
+  --sidebar-primary: #E8B4CB;             /* Pink primary */
+  --sidebar-primary-foreground: #1A1715;  /* Dark on pink */
+  --sidebar-accent: #3D342E;              /* Dark accent */
+  --sidebar-accent-foreground: #F8F4F0;   /* Light text */
+  --sidebar-border: #3D342E;              /* Dark border */
+  --sidebar-ring: #E8B4CB;                /* Pink ring */
+}
+
+@layer base {
+  /* Global CSS Variables */
+  :root {
+    --header-height: 4rem;
+    --sidebar-width: 17rem;
+    --content-max-width: 85rem;
+    --content-padding: 1.5rem;
+    --nav-height: 3.5rem;
+    
+    /* Barangay Brand Colors */
+    --barangay-beige: #D4A574;             /* Primary beige */
+    --barangay-pink: #E8B4CB;              /* Accent pink */
+    --barangay-cream: #F8F4F0;             /* Light background */
+    --barangay-white: #FFFFFF;             /* Pure white */
+    --barangay-dark: #2D2A26;              /* Text color */
+    --barangay-warm: #FEFCF8;              /* Warm background */
+    
+    /* Extended Beige Palette */
+    --beige-50: #FEFCF8;                   /* Lightest beige */
+    --beige-100: #F8F4F0;                  /* Very light beige */
+    --beige-200: #F5E6D8;                  /* Light beige */
+    --beige-300: #E5D4C1;                  /* Medium light beige */
+    --beige-400: #D4A574;                  /* Primary beige */
+    --beige-500: #C19A6B;                  /* Medium beige */
+    --beige-600: #A69080;                  /* Medium dark beige */
+    --beige-700: #8B6F47;                  /* Dark beige */
+    --beige-800: #706B66;                  /* Very dark beige */
+    --beige-900: #2D2A26;                  /* Darkest beige */
+    
+    /* Extended Pink Palette */
+    --pink-50: #FDF2F8;                    /* Lightest pink */
+    --pink-100: #FCE7F3;                   /* Very light pink */
+    --pink-200: #FBCFE8;                   /* Light pink */
+    --pink-300: #F9A8D4;                   /* Medium light pink */
+    --pink-400: #E8B4CB;                   /* Primary pink */
+    --pink-500: #EC4899;                   /* Medium pink */
+    --pink-600: #DB2777;                   /* Medium dark pink */
+    --pink-700: #BE185D;                   /* Dark pink */
+    --pink-800: #9D174D;                   /* Very dark pink */
+    --pink-900: #4A2C3A;                   /* Darkest pink */
+    
+    /* Status Colors */
+    --success: #059669;                    /* Professional green */
+    --warning: #D97706;                    /* Warm orange */
+    --error: #DC2626;                      /* Strong red */
+    --info: #2563EB;                       /* Professional blue */
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    line-height: 1.6;
+  }
+
+  /* Typography Enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-corner {
+    @apply bg-transparent;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+  }
+}
+
+/* Enhanced Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateX(-16px); 
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-8px);
+  }
+  70% {
+    transform: translateY(-4px);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Animation Classes */
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite;
+}
+
+/* Glass Effect Utilities */
+.glass-effect {
+  @apply bg-white/80 backdrop-blur-md border border-white/20;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-effect {
+  @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/20;
+}
+
+.glass-card {
+  @apply bg-white/60 backdrop-blur-sm border border-beige-300/30;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .glass-card {
+  @apply bg-gray-900/60 backdrop-blur-sm border border-gray-700/30;
+}
+
+/* Gradient Utilities */
+.gradient-beige {
+  background: linear-gradient(135deg, var(--beige-50), var(--beige-100));
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, var(--pink-50), var(--pink-100));
+}
+
+.gradient-warm {
+  background: linear-gradient(135deg, #FEFCF8, #F8F4F0);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--barangay-beige), var(--barangay-pink));
+}
+
+/* Focus Utilities */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+}
+
+.focus-ring-inset {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset;
+}
+
+/* Button Variants */
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-ring;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-ring;
+}
+
+.btn-accent {
+  @apply bg-accent text-accent-foreground hover:bg-accent/90 focus-ring;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-foreground hover:bg-muted hover:text-muted-foreground focus-ring;
+}
+
+/* Card Variants */
+.card-elevated {
+  @apply bg-card border border-border shadow-lg;
+}
+
+.card-flat {
+  @apply bg-card border border-border;
+}
+
+.card-glass {
+  @apply glass-card shadow-md;
+}
+
+/* Text Utilities */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  :root {
+    --content-padding: 1rem;
+    --sidebar-width: 100%;
+  }
+}
+
+/* Offline Mode */
+body.offline-mode {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .glass-effect,
+  .glass-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --ring: #000000;
+  }
+  
+  .dark {
+    --border: #FFFFFF;
+    --ring: #FFFFFF;
+  }
+}
