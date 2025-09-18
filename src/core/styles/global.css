@@ -119,7 +119,8 @@
   --warning-foreground: #FFFFFF;         /* White text */
   --border: #3D342E;                      /* Dark beige border */
   --input: #2A2520;                       /* Dark input */
-  --ring: #E8B4CB;                        /* Pink ring */
+  --ring: #E8B4CB;
+  --big: #89b5c2;                        /* Pink ring */
   
   /* Dark Chart Colors */
   --chart-1: #E8B4CB;                     /* Pink */
@@ -336,12 +337,6 @@
   @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/20;
 }
 
-.glass-card {
-  @apply bg-white/60 backdrop-blur-sm border border-beige-300/30;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
 .dark .glass-card {
   @apply bg-gray-900/60 backdrop-blur-sm border border-gray-700/30;
 }
@@ -363,53 +358,19 @@
   background: linear-gradient(135deg, var(--barangay-beige), var(--barangay-pink));
 }
 
-/* Focus Utilities */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-.focus-ring-inset {
-  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset;
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
 }
 
-/* Button Variants */
-.btn-primary {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-ring;
-}
-
-.btn-secondary {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-ring;
-}
-
-.btn-accent {
-  @apply bg-accent text-accent-foreground hover:bg-accent/90 focus-ring;
-}
-
-.btn-ghost {
-  @apply bg-transparent text-foreground hover:bg-muted hover:text-muted-foreground focus-ring;
-}
-
-/* Card Variants */
-.card-elevated {
-  @apply bg-card border border-border shadow-lg;
-}
-
-.card-flat {
-  @apply bg-card border border-border;
-}
-
-.card-glass {
-  @apply glass-card shadow-md;
-}
-
-/* Text Utilities */
-.text-balance {
-  text-wrap: balance;
-}
-
-.text-pretty {
-  text-wrap: pretty;
-}
 
 /* Responsive Utilities */
 @media (max-width: 640px) {

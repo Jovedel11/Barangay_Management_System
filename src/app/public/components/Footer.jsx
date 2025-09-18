@@ -170,35 +170,6 @@ const Footer = () => {
                 solutions. Serving our community with efficiency and
                 transparency.
               </p>
-
-              {/* Certification Badge */}
-              <div className="bg-success/10 backdrop-blur-sm rounded-xl p-4 border border-success/20">
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="text-white"
-                    >
-                      <path
-                        d="M9 12L11 14L15 10"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-success font-semibold text-sm">
-                    Government Certified
-                  </span>
-                </div>
-                <p className="text-xs text-background/60">
-                  Compliant with Data Privacy Act and security standards
-                </p>
-              </div>
             </div>
 
             {/* Quick Links */}

@@ -101,7 +101,7 @@ const FAQSection = () => {
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Frequently Asked
-            <span className="block mt-2 gradient-primary bg-clip-text text-transparent">
+            <span className="block mt-2 bg-clip-text text-primary">
               Questions
             </span>
           </h2>
@@ -189,8 +189,8 @@ const FAQSection = () => {
         </div>
 
         {/* Contact Support */}
-        <div className="mt-16 text-center animate-fadeIn">
-          <div className="glass-card rounded-3xl p-8 md:p-12 shadow-xl max-w-2xl mx-auto">
+        <div className="mt-12 text-center animate-fadeIn">
+          <div className="glass-card rounded-3xl p-8 md:p-12 shadow-xl max-w-1xl mx-auto">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
               style={{
@@ -226,7 +226,7 @@ const FAQSection = () => {
               </svg>
             </div>
 
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
               Still Need Help?
             </h3>
 

@@ -120,7 +120,7 @@ const AboutMission = () => {
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Mission, Vision &
-            <span className="block mt-2 gradient-primary bg-clip-text text-transparent">
+            <span className="block mt-2 bg-clip-text text-primary">
               Core Values
             </span>
           </h2>

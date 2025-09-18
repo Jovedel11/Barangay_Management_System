@@ -1,6 +1,21 @@
-import React from "react";
+import Skeleton from "@/core/components/ui/Sketon";
+import React, { useEffect, useState } from "react";
 
 const AboutHero = () => {
+  const [loading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // Simulate a 1 second loading time
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Skeleton width="100%" height="400px" />;
+  }
+
   return (
     <section className="pt-20 pb-16 md:pt-24 md:pb-20 bg-primary-foreground relative overflow-hidden">
       {/* Simplified Background Pattern */}
@@ -20,7 +35,7 @@ const AboutHero = () => {
           <div className="animate-fadeIn">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               About Our
-              <span className="block mt-2 gradient-primary bg-clip-text text-accent">
+              <span className="block mt-2 bg-clip-text text-accent">
                 Digital Government Service
               </span>
             </h1>

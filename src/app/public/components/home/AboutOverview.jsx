@@ -2,7 +2,7 @@ import React from "react";
 
 const AboutOverview = () => {
   return (
-    <section className="py-20 md:py-32 bg-background relative overflow-hidden">
+    <section className="py-15 md:py-32 bg-background relative overflow-hidden">
       {/* Simplified Background Elements */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -44,8 +44,7 @@ const AboutOverview = () => {
                 The Barangay Document Management System represents a significant
                 leap forward in local government service delivery. By digitizing
                 the entire document request and processing workflow, we
-                eliminate long queues, reduce processing time, and provide
-                residents with 24/7 access to essential government services.
+                eliminate long queues, reduce processing time.
               </p>
 
               <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
@@ -64,9 +63,9 @@ const AboutOverview = () => {
                       "Simplified document requests with real-time status tracking",
                   },
                   {
-                    title: "Enhanced Security",
+                    title: "Borrow Scheduling",
                     description:
-                      "Military-grade encryption protecting sensitive citizen data",
+                      "Easily schedule and manage borrowing of barangay resources",
                   },
                   {
                     title: "Time Efficiency",

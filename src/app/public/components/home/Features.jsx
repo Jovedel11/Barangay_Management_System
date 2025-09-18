@@ -17,7 +17,7 @@ const Features = () => {
       ),
       title: "Personal Account Management",
       description:
-        "Create and manage your secure personal profile with complete control over your information and document history.",
+        "Create and manage your secure personal profile with complete control over your information.",
       color: "primary",
     },
     {
@@ -75,7 +75,7 @@ const Features = () => {
       ),
       title: "Smart Notifications",
       description:
-        "Receive timely notifications and updates about your requests through multiple channels including in-app alerts and email notifications.",
+        "Receive timely notifications and updates about your requests through email notifications.",
       color: "warning",
     },
     {
@@ -101,7 +101,7 @@ const Features = () => {
       ),
       title: "Secure Data Protection",
       description:
-        "Your personal information is protected with bank-level security encryption and strict privacy controls compliant with government standards.",
+        "Your personal information is protected by strict privacy controls.",
       color: "primary",
     },
     {
@@ -119,27 +119,6 @@ const Features = () => {
       title: "Fast Processing",
       description:
         "Experience lightning-fast document processing with automated workflows that reduce traditional waiting times from days to hours.",
-      color: "accent",
-    },
-  ];
-
-  const documentTypes = [
-    { name: "Barangay Clearance", processing: "2-3 hours", color: "primary" },
-    {
-      name: "Certificate of Residency",
-      processing: "1-2 hours",
-      color: "accent",
-    },
-    {
-      name: "Indigency Certificate",
-      processing: "2-4 hours",
-      color: "success",
-    },
-    { name: "Business Permit", processing: "1-2 days", color: "warning" },
-    { name: "Construction Permit", processing: "3-5 days", color: "primary" },
-    {
-      name: "Certificate of Employment",
-      processing: "2-3 hours",
       color: "accent",
     },
   ];
@@ -200,60 +179,6 @@ const Features = () => {
               </p>
             </div>
           ))}
-        </div>
-
-        {/* Document Types Section */}
-        <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-12 md:p-16 shadow-2xl border border-border animate-fadeIn">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Available Document Services
-            </h3>
-            <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
-              Request any of these official barangay documents through our
-              streamlined online process
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {documentTypes.map((doc, index) => (
-              <div
-                key={index}
-                className="bg-background/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-border hover:shadow-xl transition-all duration-500 group hover:scale-105"
-              >
-                <div className="flex items-start space-x-6">
-                  <div
-                    className={`w-16 h-16 bg-${doc.color}/10 rounded-2xl flex items-center justify-center text-${doc.color} group-hover:bg-${doc.color}/20 transition-all duration-300 flex-shrink-0`}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h4
-                      className={`font-bold text-foreground mb-3 text-lg group-hover:text-${doc.color} transition-colors duration-300`}
-                    >
-                      {doc.name}
-                    </h4>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-                      <span className="text-muted-foreground">
-                        Processing:{" "}
-                        <span className="font-semibold text-success">
-                          {doc.processing}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* CTA Section */}

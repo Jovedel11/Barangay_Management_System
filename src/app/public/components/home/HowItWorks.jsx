@@ -9,7 +9,7 @@ const HowItWorks = () => {
       number: "01",
       title: "Create Your Account",
       description:
-        "Register with your valid government ID and personal information. Verify your email to activate your account.",
+        "Sign up with your personal details to create a secure account in our system.",
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path
@@ -233,9 +233,8 @@ const HowItWorks = () => {
         "We accept cash payments at the barangay office, GCash, PayMaya, and bank transfers.",
     },
     {
-      question: "Is the system available 24/7?",
-      answer:
-        "Yes, you can submit requests 24/7. Processing happens during office hours (8 AM - 5 PM, Monday-Friday).",
+      question: "Is online borrowing available?",
+      answer: "Yes, you can schedule online borrowing of barangay resources.",
     },
   ];
 

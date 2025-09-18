@@ -14,23 +14,25 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Custom marker icon using your color scheme
+// Enhanced custom marker with professional government styling
 const customIcon = new L.Icon({
   iconUrl:
     "data:image/svg+xml;base64," +
     btoa(`
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 2C11.0295 2 7 6.0295 7 11C7 16.5 16 30 16 30C16 30 25 16.5 25 11C25 6.0295 20.9705 2 16 2Z" fill="#D4A574" stroke="#8B6F47" stroke-width="2"/>
-      <circle cx="16" cy="11" r="4" fill="#FFFFFF"/>
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 3C14.477 3 10 7.477 10 13C10 19.5 20 37 20 37C20 37 30 19.5 30 13C30 7.477 25.523 3 20 3Z" fill="#C19A6B" stroke="#8B6F47" stroke-width="3"/>
+      <circle cx="20" cy="13" r="5" fill="#FFFFFF" stroke="#6B5B47" stroke-width="2"/>
+      <circle cx="20" cy="13" r="2" fill="#D4A574"/>
     </svg>
   `),
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40],
 });
 
 const ContactMap = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Barangay coordinates
   const position = [14.821869263386215, 121.06262502359284];
@@ -40,29 +42,57 @@ const ContactMap = () => {
   }, []);
 
   const mapInfo = {
-    address: "Barangay Hall, Main Street, Quezon City, Metro Manila",
+    address: "Kaypian Barangay Hall, R3C7+M2Q, SJDM, 3023 Bulacan",
     hours: "Monday - Friday: 8:00 AM - 5:00 PM",
-    weekend: "Saturday: 9:00 AM - 3:00 PM",
+    weekend: "Saturday: 8:00 AM - 12NN",
     phone: "+63 (02) 8123-4567",
     emergency: "911 or 117",
   };
 
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(mapInfo.address);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy address");
+    }
+  };
+
   return (
-    <div className="space-y-6" id="office-location">
-      {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-foreground mb-3">
+    <div className="space-y-8" id="office-location">
+      {/* Enhanced Header */}
+      <div className="text-center lg:text-left">
+        <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-full px-6 py-2 mb-4">
+          <svg
+            className="w-4 h-4 text-primary"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+          </svg>
+          <span className="text-sm font-semibold text-primary">
+            Official Location
+          </span>
+        </div>
+        <h2 className="text-4xl font-bold text-foreground mb-4">
           Visit Our Office
         </h2>
-        <p className="text-muted-foreground text-lg">
-          Find us on the map and plan your visit
+        <p className="text-beige-700 text-lg font-medium">
+          Find us on the map and plan your visit to our government facility
         </p>
       </div>
 
-      {/* Map Container */}
-      <div className="card-glass rounded-2xl overflow-hidden">
+      {/* Enhanced Map Container */}
+      <div className="bg-white/90 backdrop-blur-sm border-2 border-beige-400/40 rounded-3xl overflow-hidden shadow-2xl">
         {/* Map */}
-        <div className="h-80 bg-muted/20 relative">
+        <div className="h-96 bg-beige-100/50 relative">
           {isLoaded ? (
             <MapContainer
               center={position}
@@ -77,23 +107,41 @@ const ContactMap = () => {
               />
               <Marker position={position} icon={customIcon}>
                 <Popup className="custom-popup">
-                  <div className="p-2">
-                    <h3 className="font-semibold text-foreground mb-2">
-                      Barangay Hall
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-3 h-3 bg-primary rounded-full" />
+                      <h3 className="font-bold text-lg text-foreground">
+                        Kaypian Barangay Hall
+                      </h3>
+                    </div>
+                    <p className="text-beige-700 font-medium mb-3">
                       {mapInfo.address}
                     </p>
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <strong>Hours:</strong> {mapInfo.hours}
-                      </p>
-                      <p>
-                        <strong>Weekend:</strong> {mapInfo.weekend}
-                      </p>
-                      <p>
-                        <strong>Phone:</strong> {mapInfo.phone}
-                      </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-beige-600">
+                          Hours:
+                        </span>
+                        <span className="text-foreground font-semibold">
+                          {mapInfo.hours}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-beige-600">
+                          Weekend:
+                        </span>
+                        <span className="text-foreground font-semibold">
+                          {mapInfo.weekend}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-beige-600">
+                          Phone:
+                        </span>
+                        <span className="text-foreground font-semibold">
+                          {mapInfo.phone}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Popup>
@@ -102,50 +150,58 @@ const ContactMap = () => {
           ) : (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading map...</p>
+                <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-beige-700 font-medium text-lg">
+                  Loading interactive map...
+                </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Map Info Panel */}
-        <div className="p-6 bg-white/50 backdrop-blur-sm border-t border-beige-300/30">
-          <div className="grid md:grid-cols-2 gap-6">
+        {/* Enhanced Map Info Panel */}
+        <div className="p-8 bg-gradient-to-br from-beige-50 to-white border-t-2 border-beige-300">
+          <div className="grid lg:grid-cols-2 gap-8">
             {/* Address & Directions */}
             <div>
-              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Address & Directions
-              </h4>
-              <p className="text-muted-foreground mb-3">{mapInfo.address}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-primary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-xl text-foreground">
+                  Address & Navigation
+                </h4>
+              </div>
+              <p className="text-beige-800 font-medium text-lg mb-6">
+                {mapInfo.address}
+              </p>
+              <div className="flex flex-wrap gap-3">
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${position[0]},${position[1]}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors"
+                  className="group inline-flex items-center gap-3 px-6 py-3 bg-primary hover:bg-beige-600 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-5 h-5 group-hover:rotate-12 transition-transform"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -160,13 +216,46 @@ const ContactMap = () => {
                   Get Directions
                 </a>
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(mapInfo.address);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+                  onClick={handleCopyAddress}
+                  className="group inline-flex items-center gap-3 px-6 py-3 bg-white hover:bg-beige-100 border-2 border-beige-400 hover:border-beige-500 text-beige-800 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className={`w-5 h-5 transition-transform ${
+                      copySuccess
+                        ? "text-success scale-110"
+                        : "group-hover:scale-110"
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {copySuccess ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    ) : (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    )}
+                  </svg>
+                  {copySuccess ? "Copied!" : "Copy Address"}
+                </button>
+              </div>
+            </div>
+
+            {/* Enhanced Quick Info */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-pink-400/20 rounded-xl flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-pink-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -175,54 +264,36 @@ const ContactMap = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  Copy Address
-                </button>
+                </div>
+                <h4 className="font-bold text-xl text-foreground">
+                  Visitor Information
+                </h4>
               </div>
-            </div>
-
-            {/* Quick Info */}
-            <div>
-              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Visitor Information
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Office Hours:</span>
-                  <span className="text-foreground font-medium">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg border border-beige-300">
+                  <span className="text-beige-700 font-medium">
+                    Office Hours:
+                  </span>
+                  <span className="text-foreground font-bold">
                     Mon-Fri 8AM-5PM
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Weekend:</span>
-                  <span className="text-foreground font-medium">
-                    Sat 9AM-3PM
-                  </span>
+                <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg border border-beige-300">
+                  <span className="text-beige-700 font-medium">Weekend:</span>
+                  <span className="text-foreground font-bold">Sat 9AM-3PM</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phone:</span>
-                  <span className="text-foreground font-medium">
+                <div className="flex justify-between items-center p-3 bg-white/80 rounded-lg border border-beige-300">
+                  <span className="text-beige-700 font-medium">Phone:</span>
+                  <span className="text-foreground font-bold">
                     {mapInfo.phone}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Emergency:</span>
-                  <span className="text-destructive font-medium">
+                <div className="flex justify-between items-center p-3 bg-error/10 rounded-lg border border-error/30">
+                  <span className="text-error font-medium">Emergency:</span>
+                  <span className="text-error font-bold">
                     {mapInfo.emergency}
                   </span>
                 </div>
@@ -232,13 +303,13 @@ const ContactMap = () => {
         </div>
       </div>
 
-      {/* Transportation Info */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+      {/* Enhanced Transportation Info using global.css colors */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30 p-6 rounded-2xl hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
               <svg
-                className="w-4 h-4 text-white"
+                className="w-6 h-6 text-primary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -251,18 +322,21 @@ const ContactMap = () => {
                 />
               </svg>
             </div>
-            <h5 className="font-semibold text-blue-900">Public Transport</h5>
+            <h5 className="font-bold text-lg text-foreground">
+              Public Transport
+            </h5>
           </div>
-          <p className="text-sm text-blue-700">
-            Accessible via jeepney, bus, and MRT stations nearby
+          <p className="text-beige-700 font-medium">
+            Accessible via jeepney routes, city buses, and nearby MRT stations
+            with covered walkways
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+        <div className="bg-gradient-to-br from-success/10 to-success/5 border-2 border-success/30 p-6 rounded-2xl hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center">
               <svg
-                className="w-4 h-4 text-white"
+                className="w-6 h-6 text-success"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -275,34 +349,11 @@ const ContactMap = () => {
                 />
               </svg>
             </div>
-            <h5 className="font-semibold text-green-900">Parking Available</h5>
+            <h5 className="font-bold text-lg text-foreground">Free Parking</h5>
           </div>
-          <p className="text-sm text-green-700">
-            Free parking spaces available for visitors
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
-            <h5 className="font-semibold text-orange-900">Security</h5>
-          </div>
-          <p className="text-sm text-orange-700">
-            24/7 security and visitor registration required
+          <p className="text-beige-700 font-medium">
+            Dedicated parking spaces available for government service visitors -
+            no fees required
           </p>
         </div>
       </div>

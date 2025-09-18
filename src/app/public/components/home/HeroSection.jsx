@@ -1,7 +1,22 @@
-import React from "react";
+import Skeleton from "@/core/components/ui/Sketon";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => {
+  const [loading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // Simulate a 1 second loading time
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Skeleton width="100%" height="400px" />;
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -13,13 +28,13 @@ const HeroSection = () => {
       />
 
       {/* Professional Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/60 to-muted/50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/50 to-muted/40" />
 
       {/* Subtle Pattern Overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-secondary/30 rounded-full blur-2xl animate-pulse-slow" />
+      <div className="absolute inset-0 opacity-15">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/15 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-secondary/20 rounded-full blur-2xl animate-pulse-slow" />
       </div>
 
       {/* Content Container */}
@@ -29,14 +44,14 @@ const HeroSection = () => {
           <div className="inline-flex items-center px-6 py-3 mb-8 bg-card/80 backdrop-blur-sm border border-border rounded-full shadow-lg animate-fadeIn">
             <div className="w-2 h-2 bg-success rounded-full mr-3 animate-pulse" />
             <span className="text-sm font-semibold text-foreground">
-              Official Barangay Document Management System
+              Barangay Document Management System
             </span>
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 leading-tight animate-fadeIn">
+          <h1 className="text-5xl md:text-6xl lg:text-5xl font-bold text-foreground mb-8 leading-tight animate-fadeIn">
             <span className="block mb-3">Modern & Efficient</span>
-            <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-big">
               Document Management
             </span>
           </h1>
@@ -52,7 +67,7 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16 animate-scaleIn">
             <Link
               to="/signup"
-              className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 focus-ring"
+              className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1"
             >
               Get Started Today
               <svg
@@ -73,7 +88,7 @@ const HeroSection = () => {
             </Link>
             <Link
               to="/about"
-              className="w-full sm:w-auto px-10 py-4 bg-card/80 backdrop-blur-sm border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-2xl font-bold text-lg transition-all duration-500 focus-ring shadow-lg hover:shadow-xl"
+              className="w-full sm:w-auto px-10 py-4 bg-card/80 backdrop-blur-sm border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground rounded-2xl font-bold text-lg transition-all duration-500 shadow-lg hover:shadow-xl"
             >
               Learn More
             </Link>

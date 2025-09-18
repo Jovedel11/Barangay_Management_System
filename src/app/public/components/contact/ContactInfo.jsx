@@ -1,168 +1,148 @@
 import React from "react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  AlertTriangle,
+  MessageCircle,
+  ArrowRight,
+  ShieldAlert,
+} from "lucide-react";
+
+const contactMethods = [
+  {
+    icon: Phone,
+    title: "Official Phone Lines",
+    primary: "+63 (02) 8123-4567",
+    secondary: "Mobile: +63 917-123-4567",
+    description: "Business Hours: Mon-Fri 8AM-5PM",
+    bgColor: "bg-primary/10",
+    iconColor: "text-primary",
+    accentColor: "group-hover:bg-primary",
+  },
+  {
+    icon: Mail,
+    title: "Email Communications",
+    primary: "info@barangay.gov.ph",
+    secondary: "captain@barangay.gov.ph",
+    description: "Official response within 24 hours",
+    bgColor: "bg-accent/10",
+    iconColor: "text-accent",
+    accentColor: "group-hover:bg-accent",
+  },
+  {
+    icon: MapPin,
+    title: "Physical Address",
+    primary: "Barangay Government Hall",
+    secondary: "123 Main Street, Quezon City, Metro Manila",
+    description: "Public access: 7AM-7PM Daily",
+    bgColor: "bg-secondary/20",
+    iconColor: "text-secondary-foreground",
+    accentColor: "group-hover:bg-secondary-foreground",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Emergency Hotlines",
+    primary: "🚨 Emergency: 911 or 117",
+    secondary: "Barangay Hotline: 8-HELP (84357)",
+    description: "24/7 Emergency Response Available",
+    bgColor: "bg-destructive/10",
+    iconColor: "text-destructive",
+    accentColor: "group-hover:bg-destructive",
+  },
+];
+
+const ContactCard = ({ method }) => {
+  const Icon = method.icon;
+  return (
+    <div className="group relative bg-card/90 backdrop-blur-sm border-2 border-border hover:border-primary p-8 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+      <div className="flex items-start gap-6">
+        {/* Icon */}
+        <div
+          className={`flex-shrink-0 w-16 h-16 ${method.bgColor} rounded-2xl flex items-center justify-center ${method.iconColor} ${method.accentColor} group-hover:text-white transition-all duration-300 shadow-lg group-hover:scale-110`}
+        >
+          <Icon className="w-7 h-7" strokeWidth={2.5} />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-foreground text-xl mb-3 group-hover:text-primary transition-colors">
+            {method.title}
+          </h3>
+          <p className="text-foreground font-bold text-lg mb-2">
+            {method.primary}
+          </p>
+          <p className="text-muted-foreground font-medium text-base mb-3">
+            {method.secondary}
+          </p>
+          <div className="inline-block bg-gradient-to-r from-muted to-muted/80 border border-border rounded-full px-4 py-2">
+            <p className="text-sm font-bold text-foreground/80">
+              {method.description}
+            </p>
+          </div>
+        </div>
+
+        {/* Hover Arrow */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <ArrowRight className="w-6 h-6 text-primary" />
+        </div>
+      </div>
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-muted/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+    </div>
+  );
+};
 
 const ContactInfo = () => {
-  const contactMethods = [
-    {
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-          />
-        </svg>
-      ),
-      title: "Phone",
-      primary: "+63 (02) 8123-4567",
-      secondary: "+63 917-123-4567",
-      description: "Mon-Fri 8AM-5PM",
-    },
-    {
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-          />
-        </svg>
-      ),
-      title: "Email",
-      primary: "info@barangay.gov.ph",
-      secondary: "captain@barangay.gov.ph",
-      description: "Response within 24 hours",
-    },
-    {
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-      ),
-      title: "Address",
-      primary: "Barangay Hall, Main Street",
-      secondary: "Quezon City, Metro Manila",
-      description: "Open daily 7AM-7PM",
-    },
-    {
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
-      title: "Emergency",
-      primary: "911 or 117",
-      secondary: "Barangay Hotline: 8-HELP",
-      description: "24/7 Emergency Response",
-    },
-  ];
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-8" id="office-location">
       {/* Header */}
       <div className="text-center lg:text-left">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          Get in Touch
+        <div className="inline-flex items-center gap-2 bg-secondary border border-border rounded-full px-6 py-2 mb-4">
+          <MessageCircle className="w-4 h-4 text-secondary-foreground" />
+          <span className="text-sm font-semibold text-secondary-foreground">
+            Multiple Contact Options
+          </span>
+        </div>
+        <h2 className="text-4xl font-bold text-foreground mb-4">
+          Connect With Us
         </h2>
-        <p className="text-muted-foreground text-lg">
-          Multiple ways to reach us for your convenience
+        <p className="text-muted-foreground text-lg font-medium">
+          Multiple channels for your convenience and urgent needs
         </p>
       </div>
 
-      {/* Contact Methods Grid */}
-      <div className="grid gap-4">
-        {contactMethods.map((method, index) => (
-          <div
-            key={index}
-            className="card-glass p-6 rounded-xl hover:shadow-lg transition-all duration-300 group"
-          >
-            <div className="flex items-start gap-4">
-              {/* Icon */}
-              <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                {method.icon}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground text-lg mb-1">
-                  {method.title}
-                </h3>
-                <p className="text-foreground font-medium mb-1">
-                  {method.primary}
-                </p>
-                <p className="text-muted-foreground text-sm mb-2">
-                  {method.secondary}
-                </p>
-                <p className="text-xs text-muted-foreground bg-muted/50 rounded-full px-3 py-1 inline-block">
-                  {method.description}
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Contact Grid */}
+      <div className="grid gap-6">
+        {contactMethods.map((method, i) => (
+          <ContactCard key={i} method={method} />
         ))}
       </div>
 
       {/* Emergency Notice */}
-      <div className="bg-gradient-to-r from-error/10 to-warning/10 border border-error/20 rounded-xl p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-error/20 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-error"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
+      <div className="relative bg-gradient-to-r from-destructive/10 via-warning/10 to-destructive/10 border-2 border-destructive/30 rounded-2xl p-8 shadow-xl">
+        <div className="absolute top-4 right-4">
+          <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
+        </div>
+
+        <div className="flex items-start gap-6">
+          <div className="w-16 h-16 bg-destructive/20 rounded-2xl flex items-center justify-center shadow-lg">
+            <ShieldAlert
+              className="w-8 h-8 text-destructive"
+              strokeWidth={2.5}
+            />
           </div>
-          <div>
-            <h4 className="font-semibold text-foreground">
-              Emergency Services
+          <div className="flex-1">
+            <h4 className="font-bold text-xl text-foreground mb-3">
+              🚨 Emergency Response Protocol
             </h4>
-            <p className="text-sm text-muted-foreground">
-              For life-threatening emergencies, call 911 immediately
+            <p className="text-destructive font-black text-lg mb-2">
+              For immediate life-threatening emergencies: Call 911
+            </p>
+            <p className="text-muted-foreground font-medium">
+              For barangay-level emergencies and urgent community concerns,
+              contact our 24/7 hotline.
             </p>
           </div>
         </div>

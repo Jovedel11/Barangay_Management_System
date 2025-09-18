@@ -181,7 +181,7 @@ const AboutValues = () => {
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             What We
-            <span className="block mt-2 gradient-primary bg-clip-text text-accent">
+            <span className="block mt-2 bg-clip-text text-accent">
               Stand For
             </span>
           </h2>
@@ -259,127 +259,6 @@ const AboutValues = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Values in Action */}
-        <div className="glass-card rounded-3xl p-8 md:p-12 shadow-xl animate-fadeIn">
-          <div className="text-center mb-10">
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Values in Action
-            </h3>
-            <p
-              className="max-w-2xl mx-auto"
-              style={{ color: "rgba(45, 42, 38, 0.7)" }}
-            >
-              See how our core values translate into real benefits for our
-              community
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: "check",
-                title: "Zero Corruption",
-                desc: "Digital processes eliminate opportunities for corruption and ensure fair treatment for all",
-                color: "var(--success)",
-              },
-              {
-                icon: "clock",
-                title: "24/7 Service",
-                desc: "Round-the-clock availability means government services work around your schedule",
-                color: "var(--primary)",
-              },
-              {
-                icon: "eye",
-                title: "Full Transparency",
-                desc: "Real-time tracking and clear processes keep you informed at every step",
-                color: "var(--accent)",
-              },
-            ].map((item, index) => (
-              <div key={index} className="text-center group">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300"
-                  style={{
-                    backgroundColor: `${item.color}15`,
-                    color: item.color,
-                  }}
-                >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    {item.icon === "check" && (
-                      <>
-                        <path
-                          d="M9 12L11 14L15 10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                      </>
-                    )}
-                    {item.icon === "clock" && (
-                      <>
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                        <path
-                          d="M12 6V12L16 14"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </>
-                    )}
-                    {item.icon === "eye" && (
-                      <>
-                        <path
-                          d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="3"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                      </>
-                    )}
-                  </svg>
-                </div>
-                <h4
-                  className="text-xl font-bold text-foreground mb-2 transition-colors duration-300"
-                  style={{
-                    color:
-                      index === 0
-                        ? "var(--foreground)"
-                        : index === 1
-                        ? "var(--foreground)"
-                        : "var(--foreground)",
-                  }}
-                >
-                  {item.title}
-                </h4>
-                <p
-                  className="text-sm"
-                  style={{ color: "rgba(45, 42, 38, 0.6)" }}
-                >
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>

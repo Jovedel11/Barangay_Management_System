@@ -3,8 +3,6 @@ import ContactHero from "../components/contact/ContactHero";
 import ContactInfo from "../components/contact/ContactInfo";
 import ContactForm from "../components/contact/ContactForm";
 import ContactMap from "../components/contact/ContactMap";
-import ContactOfficeHours from "../components/contact/ContactOfficeHours";
-import ContactFAQ from "../components/contact/ContactFAQ";
 
 const Contact = () => {
   return (
@@ -26,19 +24,15 @@ const Contact = () => {
               {/* Right Column - Contact Info & Map */}
               <div className="space-y-8">
                 <ContactInfo />
-                <ContactMap />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Office Hours & FAQ */}
-        <section className="py-16 bg-muted/30">
+        {/* Map Section - Full Width */}
+        <section className="py-12 bg-muted/10">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12">
-              <ContactOfficeHours />
-              <ContactFAQ />
-            </div>
+            <ContactMap />
           </div>
         </section>
       </main>

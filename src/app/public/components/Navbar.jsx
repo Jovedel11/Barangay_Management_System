@@ -70,13 +70,13 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-4">
             <Link
               to="/login"
-              className="px-6 py-2.5 text-foreground hover:text-primary border border-border hover:border-primary rounded-xl transition-all duration-300 font-medium focus-ring hover:bg-muted/50"
+              className="px-6 py-2.5 text-foreground hover:text-primary border border-border hover:border-primary rounded-xl transition-all duration-300 font-medium hover:bg-muted/50"
             >
               Login
             </Link>
             <Link
               to="/signup"
-              className="px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus-ring"
+              className="px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               Sign Up
             </Link>
@@ -85,7 +85,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-2.5 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300 focus-ring"
+            className="lg:hidden p-2.5 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300"
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
           >

@@ -229,7 +229,7 @@ const AboutStats = () => {
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Our System
-            <span className="block mt-2 gradient-primary bg-clip-text text-accent">
+            <span className="block mt-2 bg-clip-text text-primary">
               By the Numbers
             </span>
           </h2>
@@ -300,102 +300,6 @@ const AboutStats = () => {
                   }}
                 />
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Additional Metrics */}
-        <div className="mt-16 grid md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-fadeIn">
-          {[
-            {
-              icon: "clock",
-              value: "24/7",
-              label: "System Availability",
-              color: "var(--info)",
-            },
-            {
-              icon: "shield",
-              value: "100%",
-              label: "Data Security",
-              color: "var(--success)",
-            },
-            {
-              icon: "leaf",
-              value: "Zero",
-              label: "Paper Waste",
-              color: "var(--primary)",
-            },
-          ].map((metric, index) => (
-            <div key={index} className="text-center p-6 glass-card rounded-xl">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{
-                  backgroundColor: `${metric.color}15`,
-                  color: metric.color,
-                }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  {metric.icon === "clock" && (
-                    <>
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M12 6V12L16 14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </>
-                  )}
-                  {metric.icon === "shield" && (
-                    <>
-                      <rect
-                        x="3"
-                        y="11"
-                        width="18"
-                        height="11"
-                        rx="2"
-                        ry="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <circle
-                        cx="12"
-                        cy="16"
-                        r="1"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                    </>
-                  )}
-                  {metric.icon === "leaf" && (
-                    <path
-                      d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-2">
-                {metric.value}
-              </h4>
-              <p className="text-sm" style={{ color: "rgba(45, 42, 38, 0.6)" }}>
-                {metric.label}
-              </p>
             </div>
           ))}
         </div>
