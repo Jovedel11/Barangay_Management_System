@@ -1,10 +1,11 @@
 import { RouterProvider } from "react-router-dom";
 import "./core/styles/global.css";
 import { router } from "./router";
+import { AuthProvider } from "./auth/context/AuthProvider";
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <RouterProvider
         router={router}
         fallbackElement={
@@ -16,7 +17,7 @@ function App() {
           </div>
         }
       />
-    </>
+    </AuthProvider>
   );
 }
 
