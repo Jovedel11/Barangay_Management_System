@@ -11,6 +11,7 @@ import {
 import { Button } from "@/core/components/ui/button";
 import { Separator } from "@/core/components/ui/separator";
 import { useSidebar } from "@/core/components/ui/sidebar";
+import NotificationBell from "./notifcation-bell";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
@@ -53,6 +54,7 @@ export function SiteHeader() {
         {/* Right Side Actions */}
         <div className="ml-auto flex items-center gap-2">
           <SearchForm className="hidden sm:flex" />
+          <NotificationBell />
         </div>
       </div>
     </header>
