@@ -1,26 +1,19 @@
 import React from "react";
+import { Badge } from "@/core/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/core/components/ui/card";
+import { Avatar, AvatarFallback } from "@/core/components/ui/avatar";
+import { Clock, Heart, CheckCircle, X, Star } from "lucide-react";
 
 const Benefits = () => {
   const primaryBenefits = [
     {
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <polyline
-            points="12,6 12,12 16,14"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
+      icon: Clock,
       title: "Save Time & Effort",
       description:
         "Skip the long queues and office visits. Submit your document requests from anywhere, anytime.",
@@ -28,17 +21,7 @@ const Benefits = () => {
       color: "success",
     },
     {
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 22S2 16 2 9C2 7.14348 2.73751 5.36301 4.05025 4.05025C5.36301 2.73751 7.14348 2 9 2C10.25 2 11.5 2.5 12 3.5C12.5 2.5 13.75 2 15 2C16.8565 2 18.637 2.73751 19.9497 4.05025C21.2625 5.36301 22 7.14348 22 9C22 16 12 22 12 22Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
+      icon: Heart,
       title: "Convenience & Accessibility",
       description:
         "Access government services 24/7 from your home, office, or mobile device with internet connection.",
@@ -46,22 +29,7 @@ const Benefits = () => {
       color: "primary",
     },
     {
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M9 12L11 14L15 10"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-        </svg>
-      ),
+      icon: CheckCircle,
       title: "Transparency & Tracking",
       description:
         "Track your request status in real-time and receive updates at every step of the processing workflow.",
@@ -128,10 +96,13 @@ const Benefits = () => {
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-20">
-          <div className="inline-flex items-center px-6 py-3 mb-8 bg-card/80 backdrop-blur-sm border border-border rounded-full text-primary shadow-lg animate-fadeIn">
+          <Badge
+            variant="secondary"
+            className="mb-8 px-6 py-3 bg-card/80 backdrop-blur-sm border border-border text-primary shadow-lg animate-fadeIn"
+          >
             <div className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></div>
-            <span className="font-semibold">System Benefits</span>
-          </div>
+            System Benefits
+          </Badge>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-8 animate-fadeIn">
             Why Choose Our
@@ -150,58 +121,61 @@ const Benefits = () => {
         {/* Primary Benefits Grid */}
         <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-10 mb-24">
           {primaryBenefits.map((benefit, index) => (
-            <div
+            <Card
               key={index}
-              className="bg-card/90 backdrop-blur-sm rounded-3xl p-10 shadow-xl border border-border hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-slideIn group"
+              className="bg-card/90 backdrop-blur-sm shadow-xl border border-border hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-slideIn group"
               style={{ animationDelay: `${index * 0.15}s` }}
             >
-              <div
-                className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 transition-all duration-300 group-hover:scale-110 ${
-                  benefit.color === "success"
-                    ? "bg-success/10 text-success group-hover:bg-success/20"
-                    : benefit.color === "primary"
-                    ? "bg-primary/10 text-primary group-hover:bg-primary/20"
-                    : benefit.color === "accent"
-                    ? "bg-accent/10 text-accent-foreground group-hover:bg-accent/20"
-                    : "bg-warning/10 text-warning-foreground group-hover:bg-warning/20"
-                }`}
-              >
-                {benefit.icon}
-              </div>
-
-              <h3 className="text-2xl font-bold text-foreground mb-6 group-hover:text-primary transition-colors duration-300">
-                {benefit.title}
-              </h3>
-
-              <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
-                {benefit.description}
-              </p>
-
-              <div
-                className={`inline-flex items-center px-4 py-2 rounded-xl font-semibold ${
-                  benefit.color === "success"
-                    ? "bg-success/10 text-success"
-                    : benefit.color === "primary"
-                    ? "bg-primary/10 text-primary"
-                    : benefit.color === "accent"
-                    ? "bg-accent/10 text-accent-foreground"
-                    : "bg-warning/10 text-warning-foreground"
-                }`}
-              >
+              <CardHeader>
                 <div
-                  className={`w-2 h-2 rounded-full mr-3 animate-pulse ${
+                  className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 ${
                     benefit.color === "success"
-                      ? "bg-success"
+                      ? "bg-success/10 text-success group-hover:bg-success/20"
                       : benefit.color === "primary"
-                      ? "bg-primary"
+                      ? "bg-primary/10 text-primary group-hover:bg-primary/20"
                       : benefit.color === "accent"
-                      ? "bg-accent"
-                      : "bg-warning"
+                      ? "bg-accent/10 text-accent group-hover:bg-accent/20"
+                      : "bg-warning/10 text-warning group-hover:bg-warning/20"
                   }`}
-                ></div>
-                {benefit.metrics}
-              </div>
-            </div>
+                >
+                  <benefit.icon className="h-8 w-8" />
+                </div>
+                <CardTitle className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                  {benefit.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-muted-foreground mb-6 text-lg leading-relaxed">
+                  {benefit.description}
+                </CardDescription>
+
+                <Badge
+                  variant={benefit.color}
+                  className={`inline-flex items-center px-4 py-2 rounded-xl font-semibold ${
+                    benefit.color === "success"
+                      ? "bg-success/10 text-success"
+                      : benefit.color === "primary"
+                      ? "bg-primary/10 text-primary"
+                      : benefit.color === "accent"
+                      ? "bg-accent/10 text-accent"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full mr-3 animate-pulse ${
+                      benefit.color === "success"
+                        ? "bg-success"
+                        : benefit.color === "primary"
+                        ? "bg-primary"
+                        : benefit.color === "accent"
+                        ? "bg-accent"
+                        : "bg-warning"
+                    }`}
+                  ></div>
+                  {benefit.metrics}
+                </Badge>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -219,111 +193,69 @@ const Benefits = () => {
 
           <div className="grid lg:grid-cols-2 gap-10 max-w-6xl mx-auto">
             {comparisonData.map((section, sectionIndex) => (
-              <div
+              <Card
                 key={sectionIndex}
-                className={`bg-card/90 backdrop-blur-sm rounded-3xl p-10 shadow-xl border transition-all duration-500 relative ${
+                className={`bg-card/90 backdrop-blur-sm shadow-xl border transition-all duration-500 relative ${
                   section.category === "Digital System"
                     ? "border-success/30 hover:shadow-2xl"
                     : "border-destructive/30"
                 }`}
               >
                 {section.category === "Digital System" && (
-                  <div className="absolute -top-4 -right-4 bg-success text-white px-6 py-2 rounded-full font-bold shadow-xl">
+                  <Badge
+                    variant="success"
+                    className="absolute -top-4 -right-4 bg-success text-white px-6 py-2 rounded-full font-bold shadow-xl"
+                  >
                     Recommended
-                  </div>
+                  </Badge>
                 )}
 
-                <div className="flex items-center mb-8">
-                  <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center mr-6 ${
-                      section.category === "Digital System"
-                        ? "bg-success/10"
-                        : "bg-destructive/10"
-                    }`}
-                  >
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className={
+                <CardHeader>
+                  <div className="flex items-center">
+                    <div
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center mr-6 ${
                         section.category === "Digital System"
-                          ? "text-success"
-                          : "text-destructive"
-                      }
+                          ? "bg-success/10"
+                          : "bg-destructive/10"
+                      }`}
                     >
                       {section.category === "Digital System" ? (
-                        <path
-                          d="M9 12L11 14L15 10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                        <CheckCircle className={`h-8 w-8 text-success`} />
                       ) : (
-                        <path
-                          d="M18 6L6 18M6 6L18 18"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                        <X className={`h-8 w-8 text-destructive`} />
                       )}
-                      <path
-                        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                    </svg>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-foreground">
+                      {section.category}
+                    </CardTitle>
                   </div>
-                  <h4 className="text-2xl font-bold text-foreground">
-                    {section.category}
-                  </h4>
-                </div>
+                </CardHeader>
 
-                <div className="space-y-6">
-                  {section.items.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-4">
-                      <div
-                        className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          item.negative ? "bg-destructive/10" : "bg-success/10"
-                        }`}
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          className={
-                            item.negative ? "text-destructive" : "text-success"
-                          }
+                <CardContent>
+                  <div className="space-y-6">
+                    {section.items.map((item, index) => (
+                      <div key={index} className="flex items-center space-x-4">
+                        <div
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                            item.negative
+                              ? "bg-destructive/10"
+                              : "bg-success/10"
+                          }`}
                         >
                           {item.negative ? (
-                            <path
-                              d="M18 6L6 18M6 6L18 18"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
+                            <X className="h-4 w-4 text-destructive" />
                           ) : (
-                            <path
-                              d="M20 6L9 17L4 12"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
+                            <CheckCircle className="h-4 w-4 text-success" />
                           )}
-                        </svg>
+                        </div>
+                        <span className="text-muted-foreground text-lg flex-1">
+                          {item.text}
+                        </span>
                       </div>
-                      <span className="text-muted-foreground text-lg flex-1">
-                        {item.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -342,46 +274,43 @@ const Benefits = () => {
 
           <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <div
+              <Card
                 key={index}
-                className="bg-card/90 backdrop-blur-sm rounded-3xl p-10 shadow-xl border border-border hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 group"
+                className="bg-card/90 backdrop-blur-sm shadow-xl border border-border hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 group"
               >
-                <div className="flex items-center mb-6">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="text-warning mr-1"
-                    >
-                      <path
-                        d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"
-                        fill="currentColor"
+                <CardHeader>
+                  <div className="flex items-center mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-5 w-5 text-warning mr-1 fill-current"
                       />
-                    </svg>
-                  ))}
-                </div>
-
-                <p className="text-muted-foreground mb-8 text-lg leading-relaxed italic">
-                  "{testimonial.message}"
-                </p>
-
-                <div className="flex items-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mr-6 text-primary font-bold text-lg">
-                    {testimonial.avatar}
+                    ))}
                   </div>
-                  <div>
-                    <div className="font-bold text-foreground text-lg group-hover:text-primary transition-colors duration-300">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-muted-foreground">
-                      {testimonial.role}
+                </CardHeader>
+
+                <CardContent>
+                  <CardDescription className="text-muted-foreground mb-8 text-lg leading-relaxed italic">
+                    "{testimonial.message}"
+                  </CardDescription>
+
+                  <div className="flex items-center">
+                    <Avatar className="w-16 h-16 mr-6">
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                        {testimonial.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle className="font-bold text-foreground text-lg group-hover:text-primary transition-colors duration-300">
+                        {testimonial.name}
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {testimonial.role}
+                      </CardDescription>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

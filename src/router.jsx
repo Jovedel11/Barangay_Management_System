@@ -5,8 +5,8 @@ import About from "./app/public/page/About";
 import Contact from "./app/public/page/Contact";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
-import UserManagement from "./app/admin/pages/UserManagement";
-import Dashboard from "./app/private/pages/Dashboard";
+// import Dashboard from "./app/private/pages/Dashboard";
+// import AdminLayout from "./app/admin/layout/AdminLayout";
 
 export const router = createBrowserRouter([
   {
@@ -34,12 +34,12 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  {
-    path: "/dashboard",
-    element: <Dashboard />,
-  },
-  {
-    path: "/user-management",
-    element: <UserManagement />,
-  },
+  // {
+  //   path: "/dashboard",
+  //   element: <Dashboard />,
+  // },
+  // {
+  //   path: "/admin-dashboard",
+  //   element: <AdminLayout />,
+  // },
 ]);
