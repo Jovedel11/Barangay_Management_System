@@ -53,7 +53,7 @@ const Login = () => {
   };
 
   // State for 2FA dialog
-  const [show2FADialog, setShow2FADialog] = useState(false);
+  const [show2FADialog, setShow2FADialog] = useState(true);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
@@ -138,6 +138,7 @@ const Login = () => {
         setTwoFactorError(result.message || "Invalid verification code");
       }
     } catch (error) {
+      console.log(error)
       setTwoFactorError("Verification failed. Please try again.");
     } finally {
       setTwoFactorLoading(false);
