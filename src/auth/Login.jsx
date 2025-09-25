@@ -37,6 +37,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import accLogin from "@/services/accLogin";
 
 const Login = () => {
   // mock context
@@ -46,14 +47,14 @@ const Login = () => {
     verifyTwoFactor,
     loading: globalLoading,
   } = {
-    login: () => Promise.resolve({ success: true }),
+    login: (email, password) => accLogin(email, password),
     resendEmailConfirmation: () => Promise.resolve({ success: true }),
     verifyTwoFactor: () => Promise.resolve({ success: true }),
     loading: false,
   };
 
   // State for 2FA dialog
-  const [show2FADialog, setShow2FADialog] = useState(true);
+  const [show2FADialog, setShow2FADialog] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
@@ -78,7 +79,9 @@ const Login = () => {
     const result = await login(email, password);
 
     // Check if user is admin and needs 2FA
-    if (result.success && result.user_type === "admin" && result.requires_2fa) {
+
+    // I changed the result.user_type to result.role
+    if (result.success && result.role === "admin" && result.requires_2fa) {
       setPendingLoginData({ email, sessionToken: result.session_token });
       setShow2FADialog(true);
       return {
@@ -138,7 +141,7 @@ const Login = () => {
         setTwoFactorError(result.message || "Invalid verification code");
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setTwoFactorError("Verification failed. Please try again.");
     } finally {
       setTwoFactorLoading(false);

@@ -2,10 +2,10 @@ import { Schema, model, type Document } from "mongoose";
 import bcrypt from "bcrypt";
 
 //user types to avoid errors
-interface IUser extends Document {
-  firstName: string;
-  lastName: string;
-  phone: string;
+interface IAccount extends Document {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
   status: "pending" | "approved" | "rejected";
   role: "resident" | "admin";
   email: string;
@@ -16,28 +16,29 @@ interface IUser extends Document {
 }
 
 //User schema
-const userSchema = new Schema<IUser>(
+const accountSchema = new Schema<IAccount>(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    email: { type: String, default: "No email provided", unique: true },
+    first_name: { type: String, required: true },
+    last_name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: {
       type: String,
       enum: ["resident", "admin"],
+      default: "resident",
     },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
-    phone: { type: String, default: "Phone is not provided" },
+    phone_number: { type: String, default: "Phone is not provided", unique: true },
   },
   { timestamps: true }
 );
 
 //Custom Method
-userSchema.methods.validatePassword = async function <T extends string>(
+accountSchema.methods.validatePassword = async function <T extends string>(
   plainPassword: T,
   email: T
 ): Promise<boolean> {
@@ -45,7 +46,7 @@ userSchema.methods.validatePassword = async function <T extends string>(
   return result && email === this.email;
 };
 
-userSchema.pre("save", async function (next) {
+accountSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     //isModified is a mongoose method to check if the field is modified since the last save
     const salt = await bcrypt.genSalt(10);
@@ -54,6 +55,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-const UserModel = model<IUser>("User", userSchema);
+const AccountModel = model<IAccount>("Account", accountSchema);
 
-export { UserModel, userSchema };
+export { AccountModel, accountSchema };

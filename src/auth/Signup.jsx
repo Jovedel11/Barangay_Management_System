@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
+import signUp  from "@/services/signUp";
 import {
   Card,
   CardContent,
@@ -16,7 +17,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/core/components/ui/alert";
-import { Badge } from "@/core/components/ui/badge";
 import { Separator } from "@/core/components/ui/separator";
 import {
   UserPlus,
@@ -35,21 +35,6 @@ import {
 const Signup = () => {
   const [showPasswords, setShowPasswords] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // Mock signup function - you'll replace this with your actual auth service
-  const signUp = async (userData) => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message:
-            "Account created successfully! Please wait for admin approval.",
-          next_step: "admin_approval",
-        });
-      }, 2000);
-    });
-  };
 
   // Signup action for useActionState
   async function signupAction(prevState, formData) {

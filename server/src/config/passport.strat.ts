@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { UserModel } from "@/models/user.model";
+import { AccountModel } from "@/models/user.model";
 
 type Done = (error: any, user?: Express.User | false, info?: any) => void;
 
@@ -12,7 +12,7 @@ passport.use(
     },
     async (email: string, password: string, done: Done) => {
       try {
-        const user = await UserModel.findOne({ email });
+        const user = await AccountModel.findOne({ email });
         if (!user) throw new Error();
         const isCorrect = await user.validatePassword(password, email);
         console.log(isCorrect);
@@ -34,11 +34,11 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id: Express.User, done) => {
   try {
-    const user = await UserModel.findById(id, {
+    const user = await AccountModel.findById(id, {
       email: 1,
-      firstName: 1,
-      lastName: 1,
-      phone: 1,
+      first_name: 1,
+      last_name: 1,
+      phone_number: 1,
       role: 1,
       createdAt: 1,
     });
