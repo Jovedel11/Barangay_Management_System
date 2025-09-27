@@ -55,7 +55,7 @@ const Login = () => {
   };
 
   // State for 2FA dialog
-  const [show2FADialog, setShow2FADialog] = useState(true);
+  const [show2FADialog, setShow2FADialog] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
