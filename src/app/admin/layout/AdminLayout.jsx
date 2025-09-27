@@ -1,16 +1,16 @@
-import React from "react";
+import { ThemeProvider } from "@/core/contexts/ThemeProvider";
+import ADashboardLayout from "../components/layout/admin-dashboard-layout";
 import { Outlet } from "react-router-dom";
-import { AdminDashboardLayout } from "../components/layout/admin-dashboard-layout";
 
 const AdminLayout = () => {
   return (
-    <>
+    <ThemeProvider defaultTheme="system" storageKey="admin-ui-theme">
       <div className="min-h-screen bg-[#F1FAEE]">
-        <AdminDashboardLayout>
+        <ADashboardLayout>
           <Outlet />
-        </AdminDashboardLayout>
+        </ADashboardLayout>
       </div>
-    </>
+    </ThemeProvider>
   );
 };
 
