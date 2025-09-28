@@ -38,6 +38,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import accLogin from "@/services/accLogin";
+import sendOtp from "@/services/sendOtp";
 
 const Login = () => {
   // mock context
@@ -49,7 +50,7 @@ const Login = () => {
   } = {
     login: (email, password) => accLogin(email, password),
     resendEmailConfirmation: () => Promise.resolve({ success: true }),
-    verifyTwoFactor: () => Promise.resolve({ success: true }),
+    verifyTwoFactor: (code) => sendOtp(code),
     loading: false,
   };
 
@@ -59,7 +60,6 @@ const Login = () => {
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [pendingLoginData, setPendingLoginData] = useState(null);
 
   // Login action for useActionState
   async function loginAction(prevState, formData) {
@@ -81,8 +81,7 @@ const Login = () => {
     // Check if user is admin and needs 2FA
 
     // I changed the result.user_type to result.role
-    if (result.success && result.role === "admin" && result.requires_2fa) {
-      setPendingLoginData({ email, sessionToken: result.session_token });
+    if (result.success && result.role === "admin") {
       setShow2FADialog(true);
       return {
         success: false, // Don't complete login yet
@@ -128,15 +127,14 @@ const Login = () => {
     try {
       // This would be your API call to verify 2FA
       const result = await verifyTwoFactor({
-        sessionToken: pendingLoginData.sessionToken,
         code: twoFactorCode,
       });
 
       if (result.success) {
         setShow2FADialog(false);
         setTwoFactorCode("");
-        setPendingLoginData(null);
         // Login will be completed by the auth context
+        window.alert("Admin is succesfully login")
       } else {
         setTwoFactorError(result.message || "Invalid verification code");
       }
@@ -419,7 +417,6 @@ const Login = () => {
                   setShow2FADialog(false);
                   setTwoFactorCode("");
                   setTwoFactorError("");
-                  setPendingLoginData(null);
                 }}
                 disabled={twoFactorLoading}
                 className="flex-1"

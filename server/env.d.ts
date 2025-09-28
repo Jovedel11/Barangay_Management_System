@@ -3,5 +3,6 @@ declare namespace NodeJS {
     PORT: string;
     SECRET: string;
     NODE_ENV?: "development" | "production";
+    RESEND_API_KEY: string;
   }
 }

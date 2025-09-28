@@ -10,6 +10,8 @@ import passport from "passport";
 import "@/config/passport.strat"; // Ensure passport strategies are configured
 import errorHandler from "@/middleware/error.middleware";
 import authRouter from "@/routers/auth.router";
+import docsRouter from "@/routers/docs.router";
+import borrowItemsRouter from "@/routers/borrow.items.router";
 const app = express();
 
 app.use(express.json());
@@ -40,6 +42,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api/auth", authRouter);
+app.use("/borrow-item", borrowItemsRouter);
+app.use("/brgy-docs", docsRouter);
 
 app.use(errorHandler);
 

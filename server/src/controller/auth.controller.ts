@@ -3,6 +3,8 @@ import { AccountModel } from "@/models/user.model";
 import { validationResult, matchedData } from "express-validator";
 import dotenv from "dotenv";
 import passport from "passport";
+import SendOtp from "@/middleware/email.otp";
+import { Otp } from "@/models/otp.model";
 dotenv.config();
 
 type RegisterInfo = {
@@ -43,19 +45,24 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 const login = (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate(
     "local",
-    (err: Error, user: any | false, _next: NextFunction) => {
+    async (err: Error, user: any | false, _next: NextFunction) => {
       if (err) return res.status(500).json({ message: "Server error" });
 
       if (!user) {
         return res.status(401).json({ success: false, role: null });
       }
 
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) return res.status(500).json({ success: false, role: null });
         if (user && !user.role) {
           return res.status(403).json({ success: false, role: null });
         }
-        return res.status(200).json({ success: true, role: user.role });
+        if (user.role !== "admin") {
+          return res.status(200).json({ success: true, role: user.role });
+        }
+        const result = await SendOtp(user as Record<string, string>);
+        if (result.success) return res.status(200).json({ success: true, role: user.role });
+        next(result.error);
       });
     }
   )(req, res, next);
@@ -80,4 +87,26 @@ const authSender = (req: Request, res: Response) => {
   return res.status(200).json({ user: null });
 };
 
-export { register, login, authSender, logout };
+const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) throw new Error("User is not login");
+    const { code } = req.body;
+    const user = (req as any).user;
+
+    const record = await Otp.findOne({ email: user.email, code });
+    if (!record) {
+      return res.sendStatus(400);
+    }
+
+    if (record.expiresAt < new Date()) {
+      return res.sendStatus(400);
+    }
+    await Otp.deleteOne({ email: user.email });
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export { register, login, authSender, logout, verifyOtp };

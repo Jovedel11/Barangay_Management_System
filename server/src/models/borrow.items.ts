@@ -2,6 +2,7 @@ import { BaseTypes } from "@/models/documents.model";
 import { Schema, model } from "mongoose";
 
 type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
+  user: Schema.Types.ObjectId;
   borrowDate: T;
   returnDate: T;
   eventLocation: T;
@@ -14,6 +15,7 @@ type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
 };
 
 type IBorrowableItem<T extends string> = {
+  user: Schema.Types.ObjectId;
   name: T;
   category: T;
   description: T;
@@ -28,6 +30,7 @@ type IBorrowableItem<T extends string> = {
 };
 
 const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
+  user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   quantity: { type: Number, required: true },
   borrowDate: { type: String, required: true },
   returnDate: { type: String, required: true },
@@ -43,6 +46,7 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
+  user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   name: { type: String, required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
