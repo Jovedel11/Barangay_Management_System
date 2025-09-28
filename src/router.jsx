@@ -11,6 +11,7 @@ import ManageBorrowItems from "./app/private/pages/ManageBorrowItems";
 import BarangayDocuments from "./app/private/pages/BarangayDocuments";
 import BarangayEvents from "./app/private/pages/BarangayEvents";
 import BarangayServices from "./app/private/pages/BarangayServices";
+import AdminLayout from "./app/admin/layout/AdminLayout";
 // import AdminLayout from "./app/admin/layout/AdminLayout";
 
 export const router = createBrowserRouter([
@@ -69,8 +70,14 @@ export const router = createBrowserRouter([
       // },
     ],
   },
-  // {
-  //   path: "/admin-dashboard",
-  //   element: <AdminLayout />,
-  // },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+    ],
+  },
 ]);
