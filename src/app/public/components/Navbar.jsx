@@ -1,108 +1,126 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+  const handleScroll = useCallback(() => {
+    const scrolled = window.scrollY > 20;
+    setIsScrolled(scrolled);
   }, []);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  // Check if on auth pages
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/signup";
+
+  // Different styling for auth pages vs home page
+  const getNavStyles = () => {
+    if (isAuthPage) {
+      return {
+        nav: "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm",
+        logo: "text-slate-800 hover:text-primary",
+        logoSubtext: "text-slate-500",
+        mobileButton: "text-slate-700 hover:text-primary hover:bg-slate-100",
+      };
+    }
+
+    return {
+      nav: isScrolled
+        ? "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm"
+        : "bg-transparent",
+      logo: isScrolled
+        ? "text-slate-800 hover:text-primary"
+        : "text-white hover:text-slate-200",
+      logoSubtext: isScrolled ? "text-slate-500" : "text-white/80",
+      mobileButton: isScrolled
+        ? "text-slate-700 hover:text-primary hover:bg-slate-100"
+        : "text-white hover:text-slate-200 hover:bg-white/10",
+    };
   };
 
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
-  ];
+  const styles = getNavStyles();
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
-        isScrolled
-          ? "bg-background/95 backdrop-blur-xl border-b border-border shadow-lg"
-          : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${styles.nav}`}
     >
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-18">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-3 text-foreground hover:text-primary transition-colors duration-300 group"
+            className={`flex items-center space-x-3 transition-colors duration-200 group ${styles.logo}`}
           >
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200">
               <img
-                src="favicon-96x96.png"
-                alt="Barangay Kaypian Logo"
+                src="/favicon-96x96.png"
+                alt="Barangay Kaypian"
                 className="w-6 h-6 object-contain"
+                loading="eager"
               />
             </div>
-            <span className="font-bold text-xl text-foreground">
-              Barangay Kaypian
-            </span>
+            <div className="hidden sm:block">
+              <div className={`text-lg font-semibold ${styles.logo}`}>
+                Barangay Kaypian
+              </div>
+              <div className={`text-xs ${styles.logoSubtext}`}>
+                Resident Portal
+              </div>
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className="text-foreground hover:text-primary transition-all duration-300 font-medium relative group py-2"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Desktop CTA Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-3">
             <Link
               to="/login"
-              className="px-6 py-2.5 text-foreground hover:text-primary border border-border hover:border-primary rounded-xl transition-all duration-300 font-medium hover:bg-muted/50"
+              className="px-5 py-2.5 bg-accent text-white hover:bg-accent/90 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
               Login
             </Link>
             <Link
               to="/signup"
-              className="px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              className="px-5 py-2.5 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              Sign Up
+              Register
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMobileMenu}
-            className="lg:hidden p-2.5 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 transition-all duration-300"
-            aria-label="Toggle mobile menu"
+            className={`md:hidden p-2 rounded-xl transition-colors duration-200 ${styles.mobileButton}`}
+            aria-label="Toggle menu"
             aria-expanded={isMobileMenuOpen}
           >
-            <div className="w-6 h-6 relative">
+            <div className="w-5 h-5 relative">
               <span
-                className={`absolute block w-full h-0.5 bg-current transition-all duration-300 ${
-                  isMobileMenuOpen ? "rotate-45 top-2.5" : "top-1"
+                className={`absolute block w-full h-0.5 bg-current transition-all duration-200 ${
+                  isMobileMenuOpen ? "rotate-45 top-2" : "top-1"
                 }`}
               />
               <span
-                className={`absolute block w-full h-0.5 bg-current transition-all duration-300 top-2.5 ${
+                className={`absolute block w-full h-0.5 bg-current transition-all duration-200 top-2 ${
                   isMobileMenuOpen ? "opacity-0" : "opacity-100"
                 }`}
               />
               <span
-                className={`absolute block w-full h-0.5 bg-current transition-all duration-300 ${
-                  isMobileMenuOpen ? "-rotate-45 top-2.5" : "top-4"
+                className={`absolute block w-full h-0.5 bg-current transition-all duration-200 ${
+                  isMobileMenuOpen ? "-rotate-45 top-2" : "top-3"
                 }`}
               />
             </div>
@@ -111,35 +129,25 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-            isMobileMenuOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
+          className={`md:hidden overflow-hidden transition-all duration-300 ${
+            isMobileMenuOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="py-6 space-y-4 border-t border-border bg-background/95 backdrop-blur-xl rounded-b-2xl mt-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className="block px-6 py-3 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl transition-all duration-300 font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <div className="px-6 pt-4 border-t border-border space-y-3">
+          <div className="py-4 space-y-3 border-t border-slate-200 bg-white/95 backdrop-blur-md rounded-b-xl mt-2">
+            <div className="px-4 space-y-2">
               <Link
                 to="/login"
-                className="block w-full text-center px-6 py-3 text-foreground hover:text-accent border border-border hover:border-primary rounded-xl transition-all duration-300 font-medium"
-                onClick={() => setIsMobileMenuOpen(false)}
+                className="block w-full text-center px-4 py-2.5 text-slate-700 hover:text-primary border border-slate-300 hover:border-primary rounded-xl transition-all duration-200 font-medium"
+                onClick={closeMobileMenu}
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="block w-full text-center px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium transition-all duration-300 shadow-md"
-                onClick={() => setIsMobileMenuOpen(false)}
+                className="block w-full text-center px-4 py-2.5 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-all duration-200"
+                onClick={closeMobileMenu}
               >
-                Sign Up
+                Register
               </Link>
             </div>
           </div>

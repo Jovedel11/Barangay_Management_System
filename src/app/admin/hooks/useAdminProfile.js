@@ -27,7 +27,7 @@ const useAdminProfile = () => {
   });
 
   // State management
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);

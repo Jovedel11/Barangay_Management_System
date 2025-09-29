@@ -36,12 +36,13 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  Home,
 } from "lucide-react";
 import accLogin from "@/services/accLogin";
 import sendOtp from "@/services/sendOtp";
+import BarangayIllustration from "@/core/components/barangay-illustration";
 
 const Login = () => {
-  // mock context
   const {
     login,
     resendEmailConfirmation,
@@ -54,14 +55,13 @@ const Login = () => {
     loading: false,
   };
 
-  // State for 2FA dialog
   const [show2FADialog, setShow2FADialog] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Login action for useActionState
+  // Login action
   async function loginAction(prevState, formData) {
     const email = formData.get("email");
     const password = formData.get("password");
@@ -78,13 +78,10 @@ const Login = () => {
 
     const result = await login(email, password);
 
-    // Check if user is admin and needs 2FA
-
-    // I changed the result.user_type to result.role
     if (result.success && result.role === "admin") {
       setShow2FADialog(true);
       return {
-        success: false, // Don't complete login yet
+        success: false,
         error: null,
         message: "Two-factor authentication required",
         canResendEmail: false,
@@ -114,7 +111,7 @@ const Login = () => {
     }
   );
 
-  // Handle 2FA verification
+  // 2FA verification
   const handle2FAVerification = async () => {
     if (!twoFactorCode || twoFactorCode.length !== 6) {
       setTwoFactorError("Please enter a valid 6-digit code");
@@ -125,7 +122,6 @@ const Login = () => {
     setTwoFactorError("");
 
     try {
-      // This would be your API call to verify 2FA
       const result = await verifyTwoFactor({
         code: twoFactorCode,
       });
@@ -133,8 +129,7 @@ const Login = () => {
       if (result.success) {
         setShow2FADialog(false);
         setTwoFactorCode("");
-        // Login will be completed by the auth context
-        window.alert("Admin is succesfully login")
+        window.alert("Admin is successfully login");
       } else {
         setTwoFactorError(result.message || "Invalid verification code");
       }
@@ -156,6 +151,7 @@ const Login = () => {
     }
   }
 
+  // Error messages
   const getErrorMessage = (error) => {
     switch (error) {
       case "INVALID_CREDENTIALS":
@@ -193,199 +189,226 @@ const Login = () => {
   const isLoading = isLoginPending || globalLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background flex items-center justify-center p-4">
-      {/* Background Elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-primary rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-accent rounded-full blur-3xl animate-pulse-slow"></div>
-      </div>
-
-      <Card className="w-full max-w-md glass-effect shadow-2xl border-border relative z-10">
-        <CardHeader className="text-center pb-6">
-          <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-            <LogIn className="w-8 h-8 text-primary" />
-          </div>
-
-          <CardTitle className="text-3xl font-bold text-foreground mb-2">
-            Welcome Back
-          </CardTitle>
-          <CardDescription className="text-muted-foreground text-base">
-            Sign in to access your Barangay Portal
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Error Alert */}
-          {loginState.error && (
-            <Alert variant="destructive" className="animate-fadeIn">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Sign In Failed</AlertTitle>
-              <AlertDescription className="space-y-2">
-                <p>{getErrorMessage(loginState.error)}</p>
-
-                {/* Next step guidance */}
-                {loginState.nextStep && !loginState.requires2FA && (
-                  <p className="text-sm text-primary font-medium">
-                    {getNextStepMessage(loginState.nextStep)}
-                  </p>
-                )}
-
-                {/* Resend email option */}
-                {loginState.canResendEmail && (
-                  <Button
-                    variant="link"
-                    onClick={resendEmailAction}
-                    disabled={isLoading}
-                    className="p-0 h-auto text-primary hover:text-primary/80"
-                  >
-                    Resend verification email
-                  </Button>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Success Alert */}
-          {loginState.success && (
-            <Alert variant="success" className="animate-fadeIn">
-              <CheckCircle className="h-4 w-4" />
-              <AlertTitle>Success!</AlertTitle>
-              <AlertDescription>
-                Login successful! Redirecting to your dashboard...
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Login Form */}
-          <form action={loginFormAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-semibold text-foreground"
-              >
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="Enter your email address"
-                  className="pl-10 h-12"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-semibold text-foreground"
-              >
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  className="pl-10 pr-10 h-12"
-                  required
-                  disabled={isLoading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                  onClick={() => setShowPassword(!showPassword)}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen flex">
+        {/* left Side - Illustration */}
+        <div className="hidden lg:flex flex-1 items-center justify-center p-4 bg-gradient-to-br from-primary/5 to-accent/5">
+          <BarangayIllustration />
+        </div>
+        {/* right Side - Login Form */}
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-12">
+          <div className="w-full max-w-md">
+            <Card className="bg-white/80 backdrop-blur-sm shadow-xl border border-white/50">
+              <CardHeader className="text-center pb-8">
+                {/* Header Badge */}
+                <Badge
+                  variant="secondary"
+                  className="mb-6 mx-auto px-4 py-2 bg-primary/10 text-primary border-primary/20"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
+                  <Home className="w-4 h-4 mr-2" />
+                  Barangay Portal Access
+                </Badge>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Signing in...</span>
+                <div className="mx-auto mb-6 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <LogIn className="w-8 h-8 text-primary" />
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <LogIn className="w-4 h-4" />
-                  <span>Sign In</span>
+
+                <CardTitle className="text-3xl font-bold text-slate-800 mb-3">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription className="text-slate-600 text-base leading-relaxed">
+                  Sign in to access your Barangay Portal and manage your
+                  services
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {/* Error Alert */}
+                {loginState.error && (
+                  <Alert
+                    variant="destructive"
+                    className="animate-fadeIn border-red-200 bg-red-50"
+                  >
+                    <AlertCircle className="h-5 w-5" />
+                    <AlertTitle className="text-base font-semibold">
+                      Sign In Failed
+                    </AlertTitle>
+                    <AlertDescription className="space-y-3 mt-2">
+                      <p className="text-sm leading-relaxed">
+                        {getErrorMessage(loginState.error)}
+                      </p>
+
+                      {loginState.nextStep && !loginState.requires2FA && (
+                        <p className="text-sm text-primary font-medium">
+                          {getNextStepMessage(loginState.nextStep)}
+                        </p>
+                      )}
+
+                      {loginState.canResendEmail && (
+                        <Button
+                          variant="link"
+                          onClick={resendEmailAction}
+                          disabled={isLoading}
+                          className="p-0 h-auto text-primary hover:text-primary/80 text-sm"
+                        >
+                          Resend verification email
+                        </Button>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Success Alert */}
+                {loginState.success && (
+                  <Alert
+                    variant="success"
+                    className="animate-fadeIn border-green-200 bg-green-50"
+                  >
+                    <CheckCircle className="h-5 w-5" />
+                    <AlertTitle className="text-base font-semibold">
+                      Success!
+                    </AlertTitle>
+                    <AlertDescription className="text-sm mt-2">
+                      Login successful! Redirecting to your dashboard...
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Login Form */}
+                <form action={loginFormAction} className="space-y-6">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-semibold text-slate-700"
+                    >
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <Input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email address"
+                        className="pl-11 h-12 text-base border-slate-300 focus:border-primary focus:ring-primary/20"
+                        required
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="password"
+                      className="text-sm font-semibold text-slate-700"
+                    >
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        className="pl-11 pr-11 h-12 text-base border-slate-300 focus:border-primary focus:ring-primary/20"
+                        required
+                        disabled={isLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4 text-slate-500" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-slate-500" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-3">
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        <span>Signing in...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <LogIn className="w-5 h-5" />
+                        <span>Sign In</span>
+                      </div>
+                    )}
+                  </Button>
+                </form>
+
+                <Separator className="my-6" />
+
+                {/* Footer Links */}
+                <div className="space-y-4 text-center">
+                  <Link
+                    to="/forgot-password"
+                    className="block text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                  >
+                    Forgot your password?
+                  </Link>
+
+                  <p className="text-sm text-slate-600">
+                    Don't have an account?{" "}
+                    <Link
+                      to="/signup"
+                      className="text-primary hover:text-primary/80 font-semibold transition-colors"
+                    >
+                      Sign up here
+                    </Link>
+                  </p>
                 </div>
-              )}
-            </Button>
-          </form>
-
-          <Separator />
-
-          {/* Footer Links */}
-          <div className="space-y-4 text-center">
-            <Link
-              to="/forgot-password"
-              className="block text-primary hover:text-primary/80 text-sm font-medium transition-colors"
-            >
-              Forgot your password?
-            </Link>
-
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                to="/signup"
-                className="text-primary hover:text-primary/80 font-semibold transition-colors"
-              >
-                Sign up here
-              </Link>
-            </p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* 2FA Dialog */}
       <Dialog open={show2FADialog} onOpenChange={setShow2FADialog}>
-        <DialogContent className="sm:max-w-md glass-effect">
+        <DialogContent className="sm:max-w-md bg-white/90 backdrop-blur-sm border border-white/50">
           <DialogHeader className="text-center">
             <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
               <KeyRound className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-foreground">
+            <DialogTitle className="text-2xl font-bold text-slate-800">
               Two-Factor Authentication
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-slate-600 leading-relaxed">
               As an admin user, please enter your 6-digit authentication code to
               complete sign in.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             {/* 2FA Error */}
             {twoFactorError && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{twoFactorError}</AlertDescription>
+                <AlertDescription className="text-sm">
+                  {twoFactorError}
+                </AlertDescription>
               </Alert>
             )}
 
             {/* 2FA Input */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label
                 htmlFor="twoFactorCode"
-                className="text-sm font-semibold text-foreground"
+                className="text-sm font-semibold text-slate-700"
               >
                 Authentication Code
               </Label>
@@ -399,12 +422,12 @@ const Login = () => {
                   setTwoFactorCode(value);
                   setTwoFactorError("");
                 }}
-                className="text-center text-lg font-mono tracking-widest h-12"
+                className="text-center text-lg font-mono tracking-widest h-12 border-slate-300 focus:border-primary focus:ring-primary/20"
                 maxLength={6}
                 disabled={twoFactorLoading}
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-slate-500 text-center">
                 Enter the code from your authenticator app
               </p>
             </div>
@@ -419,7 +442,7 @@ const Login = () => {
                   setTwoFactorError("");
                 }}
                 disabled={twoFactorLoading}
-                className="flex-1"
+                className="flex-1 border-slate-300 hover:bg-slate-50"
               >
                 Cancel
               </Button>
