@@ -47,12 +47,12 @@ const useManageDocument = () => {
     processingTime: "",
     requirements: [],
     purposes: [],
-    deliveryAvailable: true,
+    deliveryAvailable: false,
     urgent: false,
     urgentFee: "",
     urgentTime: "",
     specialNote: "",
-    isActive: true,
+    isActive: false,
   });
 
   // Custom hooks
@@ -468,7 +468,7 @@ const useManageDocument = () => {
     stats,
     tabs,
     requestFilters,
-    documentTypeFormFields,
+    documentTypeFormFields, //Available docs
     pageHeaderActions,
 
     // Event handlers

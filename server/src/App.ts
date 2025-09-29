@@ -42,8 +42,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api/auth", authRouter);
-app.use("/borrow-item", borrowItemsRouter);
-app.use("/brgy-docs", docsRouter);
+app.use("/api/borrow-item", borrowItemsRouter);
+app.use("/api/brgy-docs", docsRouter);
 
 app.use(errorHandler);
 

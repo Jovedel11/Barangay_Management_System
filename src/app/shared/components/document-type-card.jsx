@@ -17,16 +17,55 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import AddDocument from "@/components/custom/AddDocument";
+import { useCallback, useState } from "react";
+import { CustomToast } from "@/components/custom/CustomToast";
+import customRequest from "@/services/customRequest";
 
 const DocumentTypeCard = ({
   documentType,
-  onEdit,
   onView,
-  onToggleStatus,
-  onDelete,
-  onSettings,
   className = "",
+  refetch,
 }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = useCallback(() => {
+    setOpen((prevState) => !prevState);
+  }, []);
+
+  const handleDocsDeletion = async () => {
+    try {
+      if (!documentType._id) throw new Error();
+      const result = await customRequest({
+        path: "/api/brgy-docs/delete",
+        attributes: {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ docs_id: documentType._id }),
+        },
+      });
+      if (!result?.success) {
+        return CustomToast({
+          description: "Failed to delete the document",
+          status: "error",
+        });
+      }
+      refetch();
+      CustomToast({
+        description: "Document has been deleted successfully",
+        status: "success",
+      });
+    } catch (error) {
+      console.log(error);
+      CustomToast({
+        description: "Internal server error",
+        status: "error",
+      });
+    }
+  };
   return (
     <Card
       className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
@@ -35,49 +74,51 @@ const DocumentTypeCard = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <documentType.icon className="h-5 w-5 text-primary" />
+              {/*<documentType.icon className="h-5 w-5 text-primary" />*/}
             </div>
             <div>
               <h4 className="font-medium text-foreground">
-                {documentType.name}
+                {documentType?.name}
               </h4>
               <p className="text-sm text-muted-foreground capitalize">
-                {documentType.category}
+                {documentType?.category}
               </p>
             </div>
           </div>
           <Badge
             className={
-              documentType.isActive
+              documentType?.isActive
                 ? "bg-success/10 text-success border-success/30"
                 : "bg-destructive/10 text-destructive border-destructive/30"
             }
           >
-            {documentType.isActive ? "Active" : "Inactive"}
+            {documentType?.isActive ? "Active" : "Inactive"}
           </Badge>
         </div>
 
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Fee:</span>
-            <span className="font-medium text-primary">{documentType.fee}</span>
+            <span className="font-medium text-primary">
+              {documentType?.fee}
+            </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Processing:</span>
             <span className="font-medium text-foreground">
-              {documentType.processingTime}
+              {documentType?.processingTime}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Total Requests:</span>
             <span className="font-medium text-foreground">
-              {documentType.totalRequests}
+              {documentType?.totalRequests}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Pending:</span>
             <span className="font-medium text-warning">
-              {documentType.pendingRequests}
+              {documentType?.pendingRequests}
             </span>
           </div>
         </div>
@@ -100,25 +141,26 @@ const DocumentTypeCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onEdit(documentType)}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Document Type
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSettings(documentType)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(documentType.id)}>
-                <Archive className="h-4 w-4 mr-2" />
-                {documentType.isActive ? "Deactivate" : "Activate"}
+                <AddDocument
+                  open={open}
+                  handleOpenChange={handleOpenChange}
+                  isEdit={true}
+                  data={documentType}
+                >
+                  <Button variant="ghost" className="p-0 h-0">
+                    Edit Document
+                  </Button>
+                </AddDocument>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => onDelete(documentType.id)}
+                onClick={handleDocsDeletion}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Document Type
+                Delete Document
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

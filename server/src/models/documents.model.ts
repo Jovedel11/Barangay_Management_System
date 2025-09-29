@@ -39,12 +39,14 @@ interface IAvailableDoc {
   description: string;
   fee: string;
   processingTime: string;
-  requirements: Pick<IDocumentItem, "requirement">[];
-  purposes: Pick<IDocumentItem, "purpose">[];
+  requirements: Pick<IDocumentItem, "requirement">;
+  purposes: Pick<IDocumentItem, "purpose">;
   deliveryAvailable: boolean;
   urgent: boolean;
   urgentFee: string;
   urgentTime: string;
+  isActive: boolean;
+  specialNote: string;
 }
 
 const AvailableDocsSchema = new Schema<IAvailableDoc>({
@@ -53,20 +55,14 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   description: { type: String, required: true },
   fee: { type: String, required: true },
   processingTime: { type: String, required: true },
-  requirements: [
-    {
-      requirement: { type: String, required: true },
-    },
-  ],
-  purposes: [
-    {
-      purpose: { type: String, required: true },
-    },
-  ],
+  requirements: { type: String, required: true },
+  purposes: { type: String, required: true },
   deliveryAvailable: { type: Boolean, required: true },
   urgent: { type: Boolean, required: true },
   urgentFee: { type: String, required: true },
   urgentTime: { type: String, required: true },
+  isActive: { type: Boolean, required: true },
+  specialNote: { type: String, required: true },
 });
 
 const AvailableDocs = model<IAvailableDoc>(
