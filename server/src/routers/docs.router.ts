@@ -30,13 +30,15 @@ const searchData = createSearchController(BorrowableItemsModel, [
   "urgent",
   "urgentFee",
   "urgentTime",
+  "isActive",
+  "specialNote",
 ]);
 
-router.get("/retrieve", retrieveAllDocs); // Retrieve all docs created by the admin (resident)
+router.get("/retrieve-all", retrieveAllDocs); // Retrieve all docs created by the admin (resident)
 router.get("/search", searchItemValidation, searchData); // Search available docs
-router.put("/update", updateDocs, updateDocsValidation); // Update request docs (reusable)
+router.put("/update", updateDocsValidation, updateDocs); // Update request docs (reusable)
 router.delete("/delete", deleteDocsValidation, deleteDocs); // Delete docs in admin or req docs  (reusable)
 router.post("/request", requestDocsValidation, requestDocs); // Insert a form for docs request
-router.post("/availabe/insert", availableDocsValidation, createDocs); // Insert available docs (admin)
+router.post("/available/insert", availableDocsValidation, createDocs); // Insert available docs (admin)
 
 export default router;

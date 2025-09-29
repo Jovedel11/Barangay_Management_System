@@ -95,7 +95,7 @@ export default function BarangayDocuments() {
       processingTime: "1-2 days",
       requirements: ["Valid ID", "Proof of Residency", "2x2 ID Photo"],
       purposes: [
-        "Employment",
+        "Employment", 
         "Business Permit",
         "Travel",
         "School Enrollment",

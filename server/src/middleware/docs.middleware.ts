@@ -16,12 +16,13 @@ const requiredBoolean = (field: string, message?: string) =>
     .withMessage(`${field} must be true or false.`)
     .toBoolean();
 
+/*
 const requiredArray = (field: string, message?: string) =>
   body(field)
     .exists()
     .withMessage(message || `${field} is required.`)
     .isArray()
-    .withMessage(`${field} must be an array.`);
+    .withMessage(`${field} must be an array.`);*/
 
 const requestDocsValidation = [
   body("user")
@@ -68,30 +69,113 @@ const availableDocsValidation = [
   requiredString("description", "Description is required."),
   requiredString("fee", "Fee is required."),
   requiredString("processingTime", "Processing time is required."),
-
-  requiredArray("requirements", "Requirements list is required."),
-  requiredString("requirements.*.requirement", "Each requirement is required."),
-
-  requiredArray("purposes", "Purposes list is required."),
-  requiredString("purposes.*.purpose", "Each purpose is required."),
-
+  requiredString("requirements", "Requirements list is required."),
+  requiredString("purposes", "Purposes list is required."),
   requiredBoolean("deliveryAvailable", "Delivery availability is required."),
   requiredBoolean("urgent", "Urgent status is required."),
   requiredString("urgentFee", "Urgent fee is required."),
   requiredString("urgentTime", "Urgent time is required."),
+  requiredBoolean("isActive", "IsActive status is required."),
+  requiredString("specialNote", "SpecialNote status is required."),
 ];
 
 const updateDocsValidation = [
   body("docs_id")
     .exists({ checkFalsy: true })
-    .withMessage("docs_id is required.")
+    .withMessage("docs_id is required")
     .isMongoId()
-    .withMessage("Invalid docs_id format."),
+    .withMessage("Invalid docs_id format"),
 
-  body().custom((_value, { req }) => {
-    const { docs_id, ...updateFields } = req.body;
+  // Optional fields that can be updated
+  body("name")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Name cannot be empty"),
+  body("category")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Category cannot be empty"),
+  body("description")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Description cannot be empty"),
+  body("fee")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Fee cannot be empty"),
+  body("processingTime")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Processing time cannot be empty"),
+  body("requirements")
+    .optional()
+    .isString()
+    .withMessage("Requirements must be an array"),
+  body("purposes")
+    .optional()
+    .isString()
+    .withMessage("Purposes must be an array"),
+  body("deliveryAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Delivery available must be boolean"),
+  body("urgent").optional().isBoolean().withMessage("Urgent must be boolean"),
+  body("urgentFee")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Urgent fee cannot be empty"),
+  body("urgentTime")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Urgent time cannot be empty"),
+  body("specialNote")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Special note cannot be empty"),
+  body("isActive")
+    .optional()
+    .isBoolean()
+    .withMessage("isActive must be boolean"),
 
-    if (Object.keys(updateFields).length === 0) {
+  // Ensure at least one updateable field is provided
+  body().custom((value) => {
+    const updateableFields = [
+      "name",
+      "category",
+      "description",
+      "fee",
+      "processingTime",
+      "requirements",
+      "purposes",
+      "deliveryAvailable",
+      "urgent",
+      "urgentFee",
+      "urgentTime",
+      "specialNote",
+      "isActive",
+    ];
+
+    const hasUpdateField = updateableFields.some(
+      (field) => value[field] !== undefined
+    );
+
+    if (!hasUpdateField) {
       throw new Error("At least one field must be provided to update");
     }
     return true;

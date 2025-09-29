@@ -113,9 +113,8 @@ const ModalForm = ({
               id={field.name}
               checked={value}
               onCheckedChange={(checked) =>
-                handleInputChange(field.name, checked)
+                handleInputChange(field.name, !checked)
               }
-              disabled={field.disabled}
             />
             <Label htmlFor={field.name} className="text-sm">
               {field.checkboxLabel}

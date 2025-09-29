@@ -41,18 +41,18 @@ const ItemCard = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <item.icon className="h-5 w-5 text-primary" />
+              {item?.icon ? <item.icon className="h-5 w-5 text-primary" /> : ""}
             </div>
             <div>
-              <h4 className="font-medium text-foreground">{item.name}</h4>
+              <h4 className="font-medium text-foreground">{item?.name}</h4>
               <p className="text-sm text-muted-foreground capitalize">
-                {item.category}
+                {item?.category}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {getConditionBadge(item.condition)}
-            {!item.isActive && (
+            {getConditionBadge(item?.condition)}
+            {!item?.isActive && (
               <Badge className="bg-muted/10 text-muted-foreground border-muted/30">
                 Inactive
               </Badge>
@@ -64,30 +64,30 @@ const ItemCard = ({
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Available:</span>
             <span className="font-medium text-success">
-              {item.available}/{item.total}
+              {item?.available}/{item?.total}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Borrowed:</span>
-            <span className="font-medium text-accent">{item.borrowed}</span>
+            <span className="font-medium text-accent">{item?.borrowed}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Fee:</span>
             <span className="font-medium text-primary">
-              {item.borrowingFee}
+              {item?.borrowingFee}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Active Bookings:</span>
             <span className="font-medium text-warning">
-              {item.activeBookings}
+              {item?.activeBookings}
             </span>
           </div>
-          {item.overdueBookings > 0 && (
+          {item?.overdueBookings > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Overdue:</span>
               <span className="font-medium text-destructive">
-                {item.overdueBookings}
+                {item?.overdueBookings}
               </span>
             </div>
           )}
@@ -115,14 +115,14 @@ const ItemCard = ({
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(item.id)}>
+              <DropdownMenuItem onClick={() => onToggleStatus(item?._id)}>
                 <Archive className="h-4 w-4 mr-2" />
-                {item.isActive ? "Deactivate" : "Activate"}
+                {item?.isActive ? "Deactivate" : "Activate"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => onDelete(item.id)}
+                onClick={() => onDelete(item?._id)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete Item
