@@ -5,6 +5,7 @@ import {
   Settings,
   Archive,
   Trash2,
+  ClipboardIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Button } from "@/core/components/ui/button";
@@ -21,6 +22,7 @@ import AddDocument from "@/components/custom/AddDocument";
 import { useCallback, useState } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
+import ViewModal from "@/components/custom/ViewModal";
 
 const DocumentTypeCard = ({
   documentType,
@@ -29,6 +31,7 @@ const DocumentTypeCard = ({
   refetch,
 }) => {
   const [open, setOpen] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
 
   const handleOpenChange = useCallback(() => {
     setOpen((prevState) => !prevState);
@@ -66,6 +69,10 @@ const DocumentTypeCard = ({
       });
     }
   };
+
+  const handleViewModal = () => {
+    setOpenViewModal((prevState) => !prevState);
+  };
   return (
     <Card
       className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
@@ -74,7 +81,7 @@ const DocumentTypeCard = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              {/*<documentType.icon className="h-5 w-5 text-primary" />*/}
+              <ClipboardIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h4 className="font-medium text-foreground">
@@ -122,13 +129,23 @@ const DocumentTypeCard = ({
             </span>
           </div>
         </div>
-
+        <AddDocument
+          open={open}
+          handleOpenChange={handleOpenChange}
+          isEdit={true}
+          data={documentType}
+        />
+        <ViewModal
+          open={openViewModal}
+          handleOpenChange={handleViewModal}
+          data={documentType}
+        />
         <div className="flex gap-2">
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
-            onClick={() => onView(documentType)}
+            className="flex-1 border-primary/30 text-primary cursor-pointer hover:text-slate-400"
+            onClick={() => setOpenViewModal(true)}
           >
             <Eye className="h-3 w-3 mr-1" />
             View Details
@@ -141,18 +158,9 @@ const DocumentTypeCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem onSelect={() => setOpen(true)}>
                 <Edit className="h-4 w-4 mr-2" />
-                <AddDocument
-                  open={open}
-                  handleOpenChange={handleOpenChange}
-                  isEdit={true}
-                  data={documentType}
-                >
-                  <Button variant="ghost" className="p-0 h-0">
-                    Edit Document
-                  </Button>
-                </AddDocument>
+                Edit Document
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

@@ -13,12 +13,12 @@ import {
 } from "@/controller/brgy.docs.controller";
 import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
-import { BorrowableItemsModel } from "@/models/borrow.items";
+import { AvailableDocs } from "@/models/documents.model";
 import searchItemValidation from "@/middleware/search.middleware";
 const router = Router();
 
 // Search controller for searching specific data (reusable)
-const searchData = createSearchController(BorrowableItemsModel, [
+const searchData = createSearchController(AvailableDocs, [
   "name",
   "category",
   "description",
@@ -26,11 +26,8 @@ const searchData = createSearchController(BorrowableItemsModel, [
   "processingTime",
   "requirements",
   "purposes",
-  "deliveryAvailable",
-  "urgent",
   "urgentFee",
   "urgentTime",
-  "isActive",
   "specialNote",
 ]);
 

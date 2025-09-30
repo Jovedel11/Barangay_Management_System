@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/components/ui/select";
-import { Switch } from "@/core/components/ui/switch";
+//import { Switch } from "@/core/components/ui/switch";
 import { Separator } from "@/core/components/ui/separator";
 import {
   Tabs,
@@ -432,13 +432,13 @@ const ResidentSettings = () => {
                           Updates about barangay services and appointments
                         </p>
                       </div>
-                      <Switch
+                      {/*<Switch
                         checked={notificationPreferences.serviceUpdates}
                         onCheckedChange={(checked) =>
                           handleNotificationChange("serviceUpdates", checked)
                         }
                         disabled={!notificationPreferences.emailNotifications}
-                      />
+                      />*/}
                     </div>
                   </div>
                 </div>
