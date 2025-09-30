@@ -17,6 +17,9 @@ import ManageEvents from "./app/admin/pages/ManageEvents";
 import ManageUsers from "./app/admin/pages/ManageUsers";
 import AdminDashboard from "./app/admin/pages/AdminDashboard";
 import AdminProfile from "./app/admin/pages/AdminProfile";
+import ResidentProfile from "./app/private/pages/ResidentProfile";
+import ResidentSettings from "./app/private/pages/ResidentSettings";
+import ResidentGetHelp from "./app/private/pages/ResidentGetHelp";
 // import AdminLayout from "./app/admin/layout/AdminLayout";
 
 export const router = createBrowserRouter([
@@ -61,10 +64,18 @@ export const router = createBrowserRouter([
         path: "barangay-services",
         element: <BarangayServices />,
       },
-      // {
-      //   path: "profile",
-      //   element: <Profile />,
-      // },
+      {
+        path: "profile",
+        element: <ResidentProfile />,
+      },
+      {
+        path: "settings",
+        element: <ResidentSettings />,
+      },
+      {
+        path: "help",
+        element: <ResidentGetHelp />,
+      },
     ],
   },
   {

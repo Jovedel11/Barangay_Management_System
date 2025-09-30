@@ -28,11 +28,13 @@ const Navbar = () => {
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
 
-  // Different styling for auth pages vs home page
+  // Different styling for auth pages / home page
   const getNavStyles = () => {
     if (isAuthPage) {
       return {
-        nav: "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm",
+        nav:
+          isScrolled &&
+          "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm",
         logo: "text-slate-800 hover:text-primary",
         logoSubtext: "text-slate-500",
         mobileButton: "text-slate-700 hover:text-primary hover:bg-slate-100",
@@ -41,7 +43,7 @@ const Navbar = () => {
 
     return {
       nav: isScrolled
-        ? "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm"
+        ? "bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm"
         : "bg-transparent",
       logo: isScrolled
         ? "text-slate-800 hover:text-primary"

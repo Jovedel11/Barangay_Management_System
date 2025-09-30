@@ -1,37 +1,24 @@
-import { useState } from "react";
 import {
   Search,
   Calendar,
-  Clock,
   MapPin,
   Users,
   Trophy,
   Star,
-  Heart,
-  Music,
   User,
   Eye,
   Bell,
-  Filter,
   ChevronRight,
   Phone,
-  Mail,
+  Plus,
 } from "lucide-react";
-import {
-  IconBallBasketball,
-  IconPlayFootball,
-  IconMicrophone,
-  IconCrown,
-  IconGift,
-  IconChefHat,
-  IconMusic,
-  IconHeart,
-  IconRun,
-  IconSwimming,
-  IconTrophy,
-  IconCalendarEvent,
-} from "@tabler/icons-react";
+import { IconCalendarEvent } from "@tabler/icons-react";
 
+// Shared Components
+import PageHeader from "@/app/shared/components/page-header";
+import StatsGrid from "@/app/shared/components/stats-grid";
+
+// UI Components
 import {
   Card,
   CardContent,
@@ -59,384 +46,71 @@ import {
 } from "@/core/components/ui/dialog";
 import { Label } from "@/core/components/ui/label";
 import { Separator } from "@/core/components/ui/separator";
+import { Textarea } from "@/core/components/ui/textarea";
+
+// Custom Hook
+import useResidentEvents from "../hooks/useResidentEvents";
 
 export default function BarangayEvents() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterMonth, setFilterMonth] = useState("all");
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const {
+    // State
+    searchTerm,
+    setSearchTerm,
+    filterCategory,
+    setFilterCategory,
+    filterMonth,
+    setFilterMonth,
+    selectedEvent,
+    isDetailsDialogOpen,
+    setIsDetailsDialogOpen,
+    isRegistrationDialogOpen,
+    setIsRegistrationDialogOpen,
+    registrationForm,
+    setRegistrationForm,
 
-  // Mock user profile data
-  const userProfile = {
-    name: "Juan Dela Cruz",
-    age: 35,
-    gender: "male",
-    isSenior: false,
-    address: "123 Main St, Barangay Kaypian",
-  };
+    // Data
+    filteredEvents,
+    featuredEvents,
+    userRegistrations,
+    userProfile,
+    stats,
+    categories,
+    months,
 
-  // Authentic Filipino Barangay Events
-  const barangayEvents = [
+    // Loading states
+    eventsLoading,
+    registrationsLoading,
+
+    // Helper functions
+    getStatusBadge,
+    getCategoryBadge,
+
+    // Event handlers
+    handleViewDetails,
+    handleRegisterForEvent,
+    handleSubmitRegistration,
+    handleContactOrganizer,
+    handleRefresh,
+  } = useResidentEvents();
+
+  // Page header actions
+  const pageHeaderActions = [
     {
-      id: 1,
-      title: "Liga ng mga Barangay Basketball Tournament",
-      category: "sports",
-      description:
-        "Annual inter-barangay basketball championship featuring teams from all sitios",
-      date: "2024-02-15",
-      endDate: "2024-02-25",
-      time: "6:00 PM - 10:00 PM",
-      venue: "Barangay Basketball Court",
-      organizer: "Barangay Sports Committee",
-      contact: "Kagawad Pedro Santos",
-      phone: "09123456789",
-      icon: IconBallBasketball,
-      status: "upcoming",
-      participants: "16 teams",
-      prizes: "₱15,000 Champion, ₱10,000 1st Runner-up, ₱5,000 2nd Runner-up",
-      requirements: "Team registration required",
-      image: "/images/basketball-tournament.jpg",
-      featured: true,
-    },
-    {
-      id: 2,
-      title: "Miss Barangay Kaypian 2024",
-      category: "pageant",
-      description:
-        "Annual beauty pageant showcasing the grace and talent of our barangay ladies",
-      date: "2024-03-08",
-      time: "7:00 PM - 11:00 PM",
-      venue: "Barangay Covered Court",
-      organizer: "Barangay Women's Committee",
-      contact: "Mrs. Maria Garcia",
-      phone: "09987654321",
-      icon: IconCrown,
-      status: "upcoming",
-      participants: "12 contestants",
-      prizes: "Crown, Sash, ₱10,000 cash prize + prizes from sponsors",
-      requirements: "Single, 18-25 years old, Barangay resident",
-      image: "/images/miss-barangay.jpg",
-      featured: true,
-    },
-    {
-      id: 3,
-      title: "Pista ng Barangay 2024",
-      category: "fiesta",
-      description:
-        "Grand celebration of our barangay's founding anniversary with cultural shows, food fair, and community activities",
-      date: "2024-04-12",
-      endDate: "2024-04-14",
-      time: "All Day",
-      venue: "Barangay Plaza & Streets",
-      organizer: "Barangay Council",
-      contact: "Barangay Captain Jose Rizal",
-      phone: "09111222333",
-      icon: IconGift,
-      status: "upcoming",
-      participants: "Whole community",
-      activities: "Cultural shows, Food fair, Games, Fireworks display",
-      requirements: "Open to all residents and visitors",
-      image: "/images/pista-barangay.jpg",
-      featured: true,
-    },
-    {
-      id: 4,
-      title: "Volleyball Liga - Women's Division",
-      category: "sports",
-      description:
-        "Inter-sitio women's volleyball tournament promoting sportsmanship and camaraderie",
-      date: "2024-02-20",
-      endDate: "2024-02-28",
-      time: "5:00 PM - 9:00 PM",
-      venue: "Barangay Volleyball Court",
-      organizer: "SK (Sangguniang Kabataan)",
-      contact: "SK Chairman Mark Lopez",
-      phone: "09444555666",
-      icon: IconPlayFootball,
-      status: "upcoming",
-      participants: "8 teams",
-      prizes: "Trophies and medals for top 3 teams",
-      requirements: "Female players, 16-35 years old",
-      image: "/images/volleyball.jpg",
-    },
-    {
-      id: 5,
-      title: "Karaoke Contest - Battle of Voices",
-      category: "entertainment",
-      description:
-        "Singing competition showcasing the musical talents of barangay residents",
-      date: "2024-03-15",
-      time: "7:00 PM - 11:00 PM",
-      venue: "Barangay Hall Function Room",
-      organizer: "Barangay Cultural Committee",
-      contact: "Mrs. Linda Cruz",
-      phone: "09777888999",
-      icon: IconMicrophone,
-      status: "upcoming",
-      participants: "Solo and Duet categories",
-      prizes:
-        "₱5,000 Grand Champion, ₱3,000 1st Runner-up, ₱2,000 2nd Runner-up",
-      requirements: "Registration fee: ₱100",
-      image: "/images/karaoke-contest.jpg",
-    },
-    {
-      id: 6,
-      title: "Cooking Contest - Lutong Bahay",
-      category: "competition",
-      description:
-        "Traditional Filipino cooking competition featuring authentic home recipes",
-      date: "2024-03-22",
-      time: "8:00 AM - 2:00 PM",
-      venue: "Barangay Covered Court",
-      organizer: "Barangay Nutrition Committee",
-      contact: "Mrs. Rosa Mendoza",
-      phone: "09333444555",
-      icon: IconChefHat,
-      status: "upcoming",
-      participants: "15 contestants",
-      categories: "Main Dish, Dessert, Kakanin",
-      prizes: "Kitchen appliances and cash prizes",
-      requirements: "Must use traditional Filipino recipes",
-      image: "/images/cooking-contest.jpg",
-    },
-    {
-      id: 7,
-      title: "Fun Run for Health",
-      category: "sports",
-      description: "Community fun run promoting health and fitness awareness",
-      date: "2024-04-07",
-      time: "5:00 AM - 8:00 AM",
-      venue: "Barangay Streets (3K and 5K routes)",
-      organizer: "Barangay Health Committee",
-      contact: "Dr. Anna Reyes",
-      phone: "09666777888",
-      icon: IconRun,
-      status: "upcoming",
-      participants: "All ages welcome",
-      categories: "3K Family Run, 5K Competitive Run",
-      prizes: "Medals for all finishers, Special prizes for winners",
-      requirements: "Registration: ₱150 (includes race kit)",
-      image: "/images/fun-run.jpg",
-    },
-    {
-      id: 8,
-      title: "Senior Citizens Day Celebration",
-      category: "community",
-      description:
-        "Special celebration honoring our beloved senior citizens with entertainment and fellowship",
-      date: "2024-04-20",
-      time: "9:00 AM - 4:00 PM",
-      venue: "Barangay Hall",
-      organizer: "Senior Citizens Association",
-      contact: "Mrs. Carmen Torres",
-      phone: "09888999000",
-      icon: IconHeart,
-      status: "upcoming",
-      participants: "All senior citizens (60+ years old)",
-      activities:
-        "Free health check-up, Entertainment, Free lunch, Games with prizes",
-      requirements: "Senior Citizen ID",
-      image: "/images/senior-citizens.jpg",
-    },
-    {
-      id: 9,
-      title: "Youth Dance Competition",
-      category: "entertainment",
-      description: "Hip-hop and traditional dance competition for the youth",
-      date: "2024-05-01",
-      time: "6:00 PM - 10:00 PM",
-      venue: "Barangay Covered Court",
-      organizer: "Sangguniang Kabataan",
-      contact: "SK Chairman Mark Lopez",
-      phone: "09444555666",
-      icon: IconMusic,
-      status: "upcoming",
-      participants: "Ages 13-30",
-      categories: "Hip-hop, Traditional Filipino Dance, Modern Dance",
-      prizes: "₱8,000 Grand Prize per category",
-      requirements: "Group of 5-10 members",
-      image: "/images/dance-competition.jpg",
-    },
-    {
-      id: 10,
-      title: "Barangay Swimming Competition",
-      category: "sports",
-      description: "Swimming competition for different age categories",
-      date: "2024-05-15",
-      time: "7:00 AM - 12:00 PM",
-      venue: "Municipal Swimming Pool",
-      organizer: "Barangay Sports Committee",
-      contact: "Coach Miguel Santos",
-      phone: "09222333444",
-      icon: IconSwimming,
-      status: "upcoming",
-      participants: "Ages 10 and above",
-      categories: "Kids (10-15), Youth (16-25), Adult (26+)",
-      prizes: "Medals and certificates",
-      requirements: "Medical certificate required",
-      image: "/images/swimming.jpg",
+      label: "Refresh",
+      variant: "outline",
+      onClick: handleRefresh,
     },
   ];
-
-  // Statistics
-  const stats = [
-    {
-      title: "Upcoming Events",
-      value: barangayEvents.filter((e) => e.status === "upcoming").length,
-      description: "Events this month",
-      icon: Calendar,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
-      borderColor: "border-primary/20",
-    },
-    {
-      title: "Sports Events",
-      value: barangayEvents.filter((e) => e.category === "sports").length,
-      description: "Athletic competitions",
-      icon: Trophy,
-      color: "text-success",
-      bgColor: "bg-success/10",
-      borderColor: "border-success/20",
-    },
-    {
-      title: "Community Events",
-      value: barangayEvents.filter((e) =>
-        ["community", "fiesta"].includes(e.category)
-      ).length,
-      description: "Community gatherings",
-      icon: Users,
-      color: "text-accent",
-      bgColor: "bg-accent/10",
-      borderColor: "border-accent/20",
-    },
-    {
-      title: "Competitions",
-      value: barangayEvents.filter((e) =>
-        ["pageant", "competition", "entertainment"].includes(e.category)
-      ).length,
-      description: "Contests & shows",
-      icon: Star,
-      color: "text-warning",
-      bgColor: "bg-warning/10",
-      borderColor: "border-warning/20",
-    },
-  ];
-
-  const categories = [
-    { value: "all", label: "All Events" },
-    { value: "sports", label: "Sports & Athletics" },
-    { value: "pageant", label: "Beauty Pageants" },
-    { value: "entertainment", label: "Entertainment" },
-    { value: "competition", label: "Competitions" },
-    { value: "community", label: "Community Events" },
-    { value: "fiesta", label: "Fiesta & Celebrations" },
-  ];
-
-  const months = [
-    { value: "all", label: "All Months" },
-    { value: "2024-02", label: "February 2024" },
-    { value: "2024-03", label: "March 2024" },
-    { value: "2024-04", label: "April 2024" },
-    { value: "2024-05", label: "May 2024" },
-  ];
-
-  const getStatusBadge = (status, date) => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    const daysDiff = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
-
-    if (daysDiff < 0) {
-      return (
-        <Badge className="bg-muted text-muted-foreground border-muted">
-          <Clock className="h-3 w-3 mr-1" />
-          Past Event
-        </Badge>
-      );
-    } else if (daysDiff <= 7) {
-      return (
-        <Badge className="bg-destructive/10 text-destructive border-destructive/30">
-          <Bell className="h-3 w-3 mr-1" />
-          This Week
-        </Badge>
-      );
-    } else if (daysDiff <= 30) {
-      return (
-        <Badge className="bg-warning/10 text-warning border-warning/30">
-          <Calendar className="h-3 w-3 mr-1" />
-          This Month
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge className="bg-primary/10 text-primary border-primary/30">
-          <Calendar className="h-3 w-3 mr-1" />
-          Upcoming
-        </Badge>
-      );
-    }
-  };
-
-  const getCategoryBadge = (category) => {
-    const categoryStyles = {
-      sports: "bg-success/10 text-success border-success/30",
-      pageant: "bg-accent/10 text-accent border-accent/30",
-      entertainment: "bg-primary/10 text-primary border-primary/30",
-      competition: "bg-warning/10 text-warning border-warning/30",
-      community:
-        "bg-secondary/20 text-secondary-foreground border-secondary/30",
-      fiesta: "bg-destructive/10 text-destructive border-destructive/30",
-    };
-
-    const categoryLabels = {
-      sports: "Sports",
-      pageant: "Pageant",
-      entertainment: "Entertainment",
-      competition: "Competition",
-      community: "Community",
-      fiesta: "Fiesta",
-    };
-
-    return (
-      <Badge className={categoryStyles[category] || categoryStyles.community}>
-        {categoryLabels[category] || category}
-      </Badge>
-    );
-  };
-
-  const filteredEvents = barangayEvents.filter((event) => {
-    const matchesSearch =
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || event.category === filterCategory;
-    const matchesMonth =
-      filterMonth === "all" || event.date.startsWith(filterMonth);
-    return matchesSearch && matchesCategory && matchesMonth;
-  });
-
-  const featuredEvents = barangayEvents.filter((event) => event.featured);
-
-  const handleViewDetails = (event) => {
-    setSelectedEvent(event);
-    setIsDetailsDialogOpen(true);
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-8 p-8 pt-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Barangay Events
-            </h1>
-            <p className="text-muted-foreground">
-              Stay updated with community activities, sports tournaments, and
-              celebrations
-            </p>
-          </div>
+        {/* Page Header */}
+        <PageHeader
+          title="Barangay Events"
+          description="Stay updated with community activities, sports tournaments, and celebrations"
+          actions={pageHeaderActions}
+        >
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
@@ -446,36 +120,10 @@ export default function BarangayEvents() {
               {userProfile.name} - Resident
             </Badge>
           </div>
-        </div>
+        </PageHeader>
 
         {/* Statistics */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className={`transition-all duration-200 hover:shadow-lg border ${stat.borderColor} bg-card hover:bg-card/80`}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <div
-                  className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center shadow-sm`}
-                >
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold text-foreground">
-                  {stat.value}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <StatsGrid stats={stats} />
 
         {/* Featured Events */}
         <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
@@ -489,46 +137,54 @@ export default function BarangayEvents() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              {featuredEvents.map((event) => (
-                <Card
-                  key={event.id}
-                  className="border border-border hover:shadow-lg transition-all duration-200 hover:border-primary/50 cursor-pointer"
-                  onClick={() => handleViewDetails(event)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <event.icon className="h-6 w-6 text-primary" />
+            {eventsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-muted-foreground">
+                  Loading featured events...
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-3">
+                {featuredEvents.map((event) => (
+                  <Card
+                    key={event.id}
+                    className="border border-border hover:shadow-lg transition-all duration-200 hover:border-primary/50 cursor-pointer"
+                    onClick={() => handleViewDetails(event)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <event.icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <Badge className="bg-accent/10 text-accent border-accent/30 text-xs">
+                          Featured
+                        </Badge>
                       </div>
-                      <Badge className="bg-accent/10 text-accent border-accent/30 text-xs">
-                        Featured
-                      </Badge>
-                    </div>
-                    <h4 className="font-semibold text-foreground mb-2 line-clamp-2">
-                      {event.title}
-                    </h4>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        {new Date(event.date).toLocaleDateString()}
+                      <h4 className="font-semibold text-foreground mb-2 line-clamp-2">
+                        {event.title}
+                      </h4>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          {new Date(event.date).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-accent" />
+                          {event.venue}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-accent" />
-                        {event.venue}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <Button
+                        size="sm"
+                        className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -587,105 +243,143 @@ export default function BarangayEvents() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {filteredEvents.map((event) => (
-                <Card
-                  key={event.id}
-                  className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 cursor-pointer"
-                  onClick={() => handleViewDetails(event)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-4">
-                        <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                          <event.icon className="h-7 w-7 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-lg font-semibold text-foreground line-clamp-2">
-                              {event.title}
-                            </h3>
-                            <div className="flex gap-2 ml-4">
-                              {getCategoryBadge(event.category)}
-                              {getStatusBadge(event.status, event.date)}
+            {eventsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-muted-foreground">Loading events...</div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredEvents.map((event) => {
+                  const statusBadge = getStatusBadge(event.status, event.date);
+                  const categoryBadge = getCategoryBadge(event.category);
+
+                  return (
+                    <Card
+                      key={event.id}
+                      className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 cursor-pointer"
+                      onClick={() => handleViewDetails(event)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-4">
+                            <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <event.icon className="h-7 w-7 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-foreground line-clamp-2">
+                                  {event.title}
+                                </h3>
+                                <div className="flex gap-2 ml-4">
+                                  <Badge className={categoryBadge.className}>
+                                    {categoryBadge.label}
+                                  </Badge>
+                                  <Badge className={statusBadge.className}>
+                                    {statusBadge.label}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <p className="text-muted-foreground mb-3 line-clamp-2">
+                                {event.description}
+                              </p>
                             </div>
                           </div>
-                          <p className="text-muted-foreground mb-3 line-clamp-2">
-                            {event.description}
-                          </p>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {new Date(event.date).toLocaleDateString()}
-                            {event.endDate &&
-                              ` - ${new Date(
-                                event.endDate
-                              ).toLocaleDateString()}`}
-                          </p>
-                          <p className="text-muted-foreground">{event.time}</p>
+                        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-primary shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {new Date(event.date).toLocaleDateString()}
+                                {event.endDate &&
+                                  ` - ${new Date(
+                                    event.endDate
+                                  ).toLocaleDateString()}`}
+                              </p>
+                              <p className="text-muted-foreground">
+                                {event.time}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-accent shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {event.venue}
+                              </p>
+                              <p className="text-muted-foreground">Venue</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-success shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {event.organizer}
+                              </p>
+                              <p className="text-muted-foreground">Organizer</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Trophy className="h-4 w-4 text-warning shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {event.participants}
+                              </p>
+                              <p className="text-muted-foreground">
+                                Participants
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-accent shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {event.venue}
-                          </p>
-                          <p className="text-muted-foreground">Venue</p>
+                        <Separator className="my-4" />
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-4 w-4" />
+                            <span>Contact: {event.contact}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-primary/30 text-primary hover:bg-primary/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewDetails(event);
+                              }}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View Details
+                              <ChevronRight className="h-3 w-3 ml-1" />
+                            </Button>
+                            {event.status === "upcoming" && (
+                              <Button
+                                size="sm"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRegisterForEvent(event);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Register
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
 
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-success shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {event.organizer}
-                          </p>
-                          <p className="text-muted-foreground">Organizer</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Trophy className="h-4 w-4 text-warning shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {event.participants}
-                          </p>
-                          <p className="text-muted-foreground">Participants</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4" />
-                        <span>Contact: {event.contact}</span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-primary/30 text-primary hover:bg-primary/10"
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        View Details
-                        <ChevronRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredEvents.length === 0 && (
+            {filteredEvents.length === 0 && !eventsLoading && (
               <div className="text-center py-12">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
@@ -713,8 +407,24 @@ export default function BarangayEvents() {
                     {selectedEvent.title}
                   </DialogTitle>
                   <div className="flex gap-2 pt-2">
-                    {getCategoryBadge(selectedEvent.category)}
-                    {getStatusBadge(selectedEvent.status, selectedEvent.date)}
+                    <Badge
+                      className={
+                        getCategoryBadge(selectedEvent.category).className
+                      }
+                    >
+                      {getCategoryBadge(selectedEvent.category).label}
+                    </Badge>
+                    <Badge
+                      className={
+                        getStatusBadge(selectedEvent.status, selectedEvent.date)
+                          .className
+                      }
+                    >
+                      {
+                        getStatusBadge(selectedEvent.status, selectedEvent.date)
+                          .label
+                      }
+                    </Badge>
                     {selectedEvent.featured && (
                       <Badge className="bg-accent/10 text-accent border-accent/30">
                         Featured Event
@@ -897,9 +607,172 @@ export default function BarangayEvents() {
                   >
                     Close
                   </Button>
-                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Contact Organizer
+                  {selectedEvent.status === "upcoming" && (
+                    <Button
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={() => {
+                        setIsDetailsDialogOpen(false);
+                        handleRegisterForEvent(selectedEvent);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Register for Event
+                    </Button>
+                  )}
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Registration Dialog */}
+        <Dialog
+          open={isRegistrationDialogOpen}
+          onOpenChange={setIsRegistrationDialogOpen}
+        >
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            {selectedEvent && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <selectedEvent.icon className="h-5 w-5 text-primary" />
+                    Register for {selectedEvent.title}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Fill out the registration form to participate in this event
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {/* Event Summary */}
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span className="font-medium">
+                          {new Date(selectedEvent.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Venue:</span>
+                        <span className="font-medium">
+                          {selectedEvent.venue}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Registration Fee:
+                        </span>
+                        <span className="font-medium text-primary">
+                          {selectedEvent.registrationFee || "Free"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="teamMembers">
+                      Team Members / Participants
+                    </Label>
+                    <Textarea
+                      id="teamMembers"
+                      placeholder="List team members or describe your participation..."
+                      value={registrationForm.teamMembers}
+                      onChange={(e) =>
+                        setRegistrationForm({
+                          ...registrationForm,
+                          teamMembers: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="specialRequirements">
+                      Special Requirements
+                    </Label>
+                    <Textarea
+                      id="specialRequirements"
+                      placeholder="Any special requirements or accommodations needed..."
+                      value={registrationForm.specialRequirements}
+                      onChange={(e) =>
+                        setRegistrationForm({
+                          ...registrationForm,
+                          specialRequirements: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contactNumber">Contact Number</Label>
+                    <Input
+                      id="contactNumber"
+                      placeholder="09XXXXXXXXX"
+                      value={registrationForm.contactNumber}
+                      onChange={(e) =>
+                        setRegistrationForm({
+                          ...registrationForm,
+                          contactNumber: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Any additional information..."
+                      value={registrationForm.notes}
+                      onChange={(e) =>
+                        setRegistrationForm({
+                          ...registrationForm,
+                          notes: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* Requirements */}
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <Label className="text-sm font-medium">
+                      Event Requirements:
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedEvent.requirements}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-warning/5 border border-warning/20 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <Bell className="h-4 w-4 text-warning mt-0.5" />
+                      <div>
+                        <p className="font-medium text-warning mb-1">
+                          Registration Notice
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Your registration will be reviewed by the event
+                          organizer. You will be notified of approval status via
+                          SMS or email.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsRegistrationDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    onClick={handleSubmitRegistration}
+                    disabled={registrationsLoading}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Submit Registration
                   </Button>
                 </DialogFooter>
               </>

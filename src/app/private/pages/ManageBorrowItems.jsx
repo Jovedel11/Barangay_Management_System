@@ -1,7 +1,5 @@
-import { useState } from "react";
 import {
   Search,
-  Calendar,
   Clock,
   Package,
   BookOpen,
@@ -10,23 +8,19 @@ import {
   AlertTriangle,
   Plus,
   Eye,
-  CalendarDays,
-  MapPin,
   User,
   Truck,
   Home,
   Wallet,
   Info,
 } from "lucide-react";
-import {
-  IconArmchair2,
-  IconTable,
-  IconSpeakerphone,
-  IconTent,
-  IconTools,
-  IconBuildingWarehouse,
-} from "@tabler/icons-react";
 
+// Shared Components
+import PageHeader from "@/app/shared/components/page-header";
+import StatsGrid from "@/app/shared/components/stats-grid";
+import StatusBadge from "@/app/shared/components/status-badge";
+
+// UI Components
 import {
   Card,
   CardContent,
@@ -56,245 +50,47 @@ import { Label } from "@/core/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/core/components/ui/radio-group";
 import { Checkbox } from "@/core/components/ui/checkbox";
 
+// Custom Hook
+import useResidentItemBooking from "../hooks/useResidentItemBooking";
+
 export default function ManageBorrowItems() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [bookingForm, setBookingForm] = useState({
-    quantity: 1,
-    borrowDate: "",
-    returnDate: "",
-    purpose: "",
-    eventLocation: "",
-    contactNumber: "",
-    deliveryMethod: "pickup", // pickup or delivery (COD for seniors/pregnant)
-    specialRequirements: {
-      isSenior: false,
-      isFemale: false,
-      isPregnant: false,
-    },
-  });
+  const {
+    // State
+    searchTerm,
+    setSearchTerm,
+    filterCategory,
+    setFilterCategory,
+    selectedItem,
+    isBookingDialogOpen,
+    setIsBookingDialogOpen,
+    isDetailsDialogOpen,
+    setIsDetailsDialogOpen,
+    bookingForm,
+    setBookingForm,
 
-  // Mock user profile data (would come from auth context)
-  const userProfile = {
-    name: "Juan Dela Cruz",
-    age: 35,
-    gender: "male", // male, female
-    isSenior: false, // auto-delivery with COD if true
-    address: "123 Main St, Barangay Kaypian",
-  };
+    // Data
+    filteredItems,
+    userBookings,
+    userProfile,
+    stats,
+    categories,
 
-  // Mock data for available items to borrow
-  const availableItems = [
-    {
-      id: 1,
-      name: "Plastic Chairs",
-      category: "furniture",
-      description: "White plastic chairs perfect for events and gatherings",
-      available: 85,
-      total: 100,
-      icon: IconArmchair2,
-      condition: "Good",
-      borrowingFee: "Free",
-      maxBorrowDays: 7,
-      deliveryAvailable: true,
-      requirements: ["Valid ID", "Barangay Residency Proof"],
-      notes: "Available quantity updates the day after borrow date",
-    },
-    {
-      id: 2,
-      name: "Folding Tables",
-      category: "furniture",
-      description: "6ft folding tables for events and meetings",
-      available: 25,
-      total: 30,
-      icon: IconTable,
-      condition: "Excellent",
-      borrowingFee: "Free",
-      maxBorrowDays: 7,
-      deliveryAvailable: true,
-      requirements: ["Valid ID", "Barangay Residency Proof"],
-      notes: "Available quantity updates the day after borrow date",
-    },
-    {
-      id: 3,
-      name: "Sound System",
-      category: "electronics",
-      description: "Portable sound system with wireless microphones",
-      available: 2,
-      total: 3,
-      icon: IconSpeakerphone,
-      condition: "Good",
-      borrowingFee: "₱200/day",
-      maxBorrowDays: 3,
-      deliveryAvailable: true,
-      requirements: [
-        "Valid ID",
-        "Security Deposit: ₱2,000 (cash)",
-        "Technical Briefing Required",
-      ],
-      notes:
-        "Payment and deposit at barangay office. Technical briefing mandatory.",
-    },
-    {
-      id: 4,
-      name: "Event Tents",
-      category: "shelter",
-      description: "Large white tents for outdoor events (10x10 ft)",
-      available: 6,
-      total: 8,
-      icon: IconTent,
-      condition: "Good",
-      borrowingFee: "₱100/day",
-      maxBorrowDays: 5,
-      deliveryAvailable: true,
-      requirements: ["Valid ID", "Event Permit", "Setup Location Details"],
-      notes:
-        "Payment at barangay office. Setup assistance available for delivery.",
-    },
-    {
-      id: 5,
-      name: "Cleaning Tools Set",
-      category: "tools",
-      description: "Complete set: brooms, mops, and cleaning supplies",
-      available: 18,
-      total: 20,
-      icon: IconTools,
-      condition: "Fair",
-      borrowingFee: "Free",
-      maxBorrowDays: 3,
-      deliveryAvailable: false, // pickup only
-      requirements: ["Valid ID"],
-      notes: "Walk-in pickup only at barangay office",
-    },
-    {
-      id: 6,
-      name: "Projector & Screen",
-      category: "electronics",
-      description: "HD projector with portable projection screen",
-      available: 1,
-      total: 2,
-      icon: IconBuildingWarehouse,
-      condition: "Excellent",
-      borrowingFee: "₱300/day",
-      maxBorrowDays: 3,
-      deliveryAvailable: true,
-      requirements: [
-        "Valid ID",
-        "Security Deposit: ₱5,000 (cash)",
-        "Technical Training Certificate",
-      ],
-      notes:
-        "Payment and deposit at barangay office. Technical training required.",
-    },
-  ];
+    // Loading states
+    itemsLoading,
+    bookingsLoading,
 
-  // Mock data for user's current bookings
-  const myBookings = [
-    {
-      id: 1,
-      itemName: "Plastic Chairs",
-      quantity: 50,
-      borrowDate: "2024-01-20",
-      returnDate: "2024-01-22",
-      purpose: "Family Birthday Party",
-      status: "confirmed",
-      daysLeft: 2,
-      bookingDate: "2024-01-18",
-      location: "123 Main St, Kaypian",
-      deliveryMethod: "delivery",
-      deliveryStatus: "delivered",
-      paymentStatus: "paid",
-      totalAmount: "Free",
-    },
-    {
-      id: 2,
-      itemName: "Sound System",
-      quantity: 1,
-      borrowDate: "2024-01-15",
-      returnDate: "2024-01-18",
-      purpose: "Wedding Reception",
-      status: "overdue",
-      daysLeft: -3,
-      bookingDate: "2024-01-12",
-      location: "456 Oak Ave, Kaypian",
-      deliveryMethod: "pickup",
-      deliveryStatus: "picked_up",
-      paymentStatus: "paid",
-      totalAmount: "₱600 + ₱2,000 deposit",
-      overdueReason: "Extended event duration",
-    },
-    {
-      id: 3,
-      itemName: "Folding Tables",
-      quantity: 10,
-      borrowDate: "2024-01-25",
-      returnDate: "2024-01-27",
-      purpose: "Community Meeting",
-      status: "pending_pickup",
-      daysLeft: 5,
-      bookingDate: "2024-01-20",
-      location: "Barangay Hall",
-      deliveryMethod: "pickup",
-      deliveryStatus: "ready_for_pickup",
-      paymentStatus: "pending",
-      totalAmount: "Free",
-    },
-  ];
+    // Event handlers
+    handleBookItem,
+    handleSubmitBooking,
+    handleMarkAsReturned,
+    handleViewDetails,
+    handleRefresh,
+  } = useResidentItemBooking();
 
-  // Statistics for the resident
-  const myStats = [
-    {
-      title: "Available to Book",
-      value: availableItems.reduce((sum, item) => sum + item.available, 0),
-      description: "Items ready for booking",
-      icon: Package,
-      color: "text-success",
-      bgColor: "bg-success/10",
-      borderColor: "border-success/20",
-    },
-    {
-      title: "My Active Bookings",
-      value: myBookings.filter((b) => b.status === "confirmed").length,
-      description: "Currently borrowed",
-      icon: BookOpen,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
-      borderColor: "border-primary/20",
-    },
-    {
-      title: "Pending Pickup",
-      value: myBookings.filter((b) => b.status === "pending_pickup").length,
-      description: "Ready at barangay office",
-      icon: CalendarDays,
-      color: "text-accent",
-      bgColor: "bg-accent/10",
-      borderColor: "border-accent/20",
-    },
-    {
-      title: "Overdue Items",
-      value: myBookings.filter((b) => b.status === "overdue").length,
-      description: "Need immediate return",
-      icon: AlertTriangle,
-      color: "text-destructive",
-      bgColor: "bg-destructive/10",
-      borderColor: "border-destructive/20",
-    },
-  ];
-
-  const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "furniture", label: "Furniture" },
-    { value: "electronics", label: "Electronics" },
-    { value: "shelter", label: "Shelter & Tents" },
-    { value: "tools", label: "Tools & Equipment" },
-  ];
-
+  // Helper functions
   const getStatusBadge = (status, daysLeft) => {
     switch (status) {
-      case "confirmed":
+      case "active":
         return (
           <Badge className="bg-success/10 text-success border-success/30">
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -308,15 +104,15 @@ export default function ManageBorrowItems() {
             Overdue ({Math.abs(daysLeft)} days)
           </Badge>
         );
-      case "pending_pickup":
+      case "pending_approval":
         return (
           <Badge className="bg-warning/10 text-warning border-warning/30">
             <Clock className="h-3 w-3 mr-1" />
-            Ready for Pickup
+            Pending Approval
           </Badge>
         );
       default:
-        return null;
+        return <StatusBadge status={status} type="item" />;
     }
   };
 
@@ -333,14 +129,14 @@ export default function ManageBorrowItems() {
       );
     } else {
       const statusStyles = {
-        ready_for_pickup: "bg-warning/10 text-warning border-warning/30",
-        delivered: "bg-success/10 text-success border-success/30",
+        pending: "bg-warning/10 text-warning border-warning/30",
         scheduled: "bg-primary/10 text-primary border-primary/30",
+        delivered: "bg-success/10 text-success border-success/30",
       };
       return (
         <Badge
           variant="outline"
-          className={statusStyles[status] || statusStyles.scheduled}
+          className={statusStyles[status] || statusStyles.pending}
         >
           <Truck className="h-3 w-3 mr-1" />
           {paymentStatus === "paid" ? "Delivery (Paid)" : "COD Delivery"}
@@ -363,65 +159,24 @@ export default function ManageBorrowItems() {
     );
   };
 
-  const filteredItems = availableItems.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || item.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleBookItem = (item) => {
-    setSelectedItem(item);
-
-    // Auto-set delivery method based on user profile
-    let defaultDeliveryMethod = "pickup";
-    let defaultSpecialRequirements = {
-      isSenior: userProfile.isSenior,
-      isFemale: userProfile.gender === "female",
-      isPregnant: false,
-    };
-
-    // Auto-delivery for seniors (but COD)
-    if (userProfile.isSenior && item.deliveryAvailable) {
-      defaultDeliveryMethod = "delivery";
-    }
-
-    setBookingForm({
-      quantity: 1,
-      borrowDate: "",
-      returnDate: "",
-      purpose: "",
-      eventLocation: "",
-      contactNumber: "",
-      deliveryMethod: defaultDeliveryMethod,
-      specialRequirements: defaultSpecialRequirements,
-    });
-    setIsBookingDialogOpen(true);
-  };
-
-  const handleSubmitBooking = () => {
-    // Handle booking submission (would connect to backend)
-    console.log("Booking submitted:", { item: selectedItem, ...bookingForm });
-    setIsBookingDialogOpen(false);
-    // Show success message
-  };
+  // Page header actions
+  const pageHeaderActions = [
+    {
+      label: "Refresh",
+      variant: "outline",
+      onClick: handleRefresh,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <div className="space-y-8 p-8 pt-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Borrow Items
-            </h1>
-            <p className="text-muted-foreground">
-              Book barangay equipment online • Pay and collect at barangay
-              office
-            </p>
-          </div>
+        {/* Page Header */}
+        <PageHeader
+          title="Borrow Items"
+          description="Book barangay equipment online • Pay and collect at barangay office"
+          actions={pageHeaderActions}
+        >
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
@@ -436,36 +191,10 @@ export default function ManageBorrowItems() {
               </Badge>
             )}
           </div>
-        </div>
+        </PageHeader>
 
         {/* Statistics */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {myStats.map((stat, index) => (
-            <Card
-              key={index}
-              className={`transition-all duration-200 hover:shadow-lg border ${stat.borderColor} bg-card hover:bg-card/80`}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <div
-                  className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center shadow-sm`}
-                >
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold text-foreground">
-                  {stat.value}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <StatsGrid stats={stats} />
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Available Items to Book */}
@@ -514,94 +243,97 @@ export default function ManageBorrowItems() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {filteredItems.map((item) => (
-                  <Card
-                    key={item.id}
-                    className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <item.icon className="h-5 w-5 text-primary" />
+              {itemsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">Loading items...</div>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {filteredItems.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <item.icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-foreground">
+                                {item.name}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {item.description}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-medium text-foreground">
-                              {item.name}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              {item.description}
-                            </p>
+                          {getConditionBadge(item.condition)}
+                        </div>
+
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Available:
+                            </span>
+                            <span className="font-medium text-success">
+                              {item.available} units
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Fee:</span>
+                            <span className="font-medium text-primary">
+                              {item.borrowingFee}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Max Days:
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {item.maxBorrowDays} days
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Payment:
+                            </span>
+                            <span className="font-medium text-warning">
+                              Walk-in Only
+                            </span>
                           </div>
                         </div>
-                        {getConditionBadge(item.condition)}
-                      </div>
 
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            Available:
-                          </span>
-                          <span className="font-medium text-success">
-                            {item.available} units
-                          </span>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                            disabled={item.available === 0}
+                            onClick={() => handleBookItem(item)}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Book Now
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewDetails(item)}
+                            className="border-primary/30 text-primary hover:bg-primary/10"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Fee:</span>
-                          <span className="font-medium text-primary">
-                            {item.borrowingFee}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            Max Days:
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {item.maxBorrowDays} days
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            Payment:
-                          </span>
-                          <span className="font-medium text-warning">
-                            Walk-in Only
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                          disabled={item.available === 0}
-                          onClick={() => handleBookItem(item)}
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Book Now
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedItem(item);
-                            setIsDetailsDialogOpen(true);
-                          }}
-                          className="border-primary/30 text-primary hover:bg-primary/10"
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* My Current Bookings */}
-          <Card className="bg-card border-border hover:shadow-lg transition-all duration-200">
+          <Card className="bg-card border-border hover:shadow-lg transition-all duration-200 h-200">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <BookOpen className="h-5 w-5 text-accent" />
@@ -612,130 +344,143 @@ export default function ManageBorrowItems() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {myBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="p-4 border border-border rounded-lg hover:shadow-sm transition-all duration-200 bg-background/50"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-medium text-foreground">
-                            {booking.itemName}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Qty: {booking.quantity}
-                          </p>
+              {bookingsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">
+                    Loading bookings...
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4s">
+                  {userBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="p-4 border border-border rounded-lg hover:shadow-sm transition-all duration-200 bg-background/50"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-medium text-foreground">
+                              {booking.itemName}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Qty: {booking.quantity}
+                            </p>
+                          </div>
+                          {getStatusBadge(booking.status, booking.daysLeft)}
                         </div>
-                        {getStatusBadge(booking.status, booking.daysLeft)}
-                      </div>
 
-                      <div className="space-y-1">
-                        {getDeliveryStatusBadge(
-                          booking.deliveryMethod,
-                          booking.deliveryStatus,
-                          booking.paymentStatus
-                        )}
-                      </div>
+                        <div className="space-y-1">
+                          {getDeliveryStatusBadge(
+                            booking.deliveryMethod,
+                            booking.deliveryStatus,
+                            booking.paymentStatus
+                          )}
+                        </div>
 
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <div className="flex justify-between">
-                          <span>Purpose:</span>
-                          <span className="text-foreground font-medium">
-                            {booking.purpose}
-                          </span>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <div className="flex justify-between">
+                            <span>Purpose:</span>
+                            <span className="text-foreground font-medium">
+                              {booking.purpose}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Amount:</span>
+                            <span className="text-foreground font-medium">
+                              {booking.totalAmount}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Payment:</span>
+                            <span
+                              className={`font-medium ${
+                                booking.paymentStatus === "paid"
+                                  ? "text-success"
+                                  : "text-warning"
+                              }`}
+                            >
+                              {booking.paymentStatus === "paid"
+                                ? "Paid at Office"
+                                : "Pending - Walk-in"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Return Date:</span>
+                            <span
+                              className={`font-medium ${
+                                booking.status === "overdue"
+                                  ? "text-destructive"
+                                  : "text-foreground"
+                              }`}
+                            >
+                              {new Date(
+                                booking.returnDate
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Amount:</span>
-                          <span className="text-foreground font-medium">
-                            {booking.totalAmount}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Payment:</span>
-                          <span
-                            className={`font-medium ${
-                              booking.paymentStatus === "paid"
-                                ? "text-success"
-                                : "text-warning"
-                            }`}
-                          >
-                            {booking.paymentStatus === "paid"
-                              ? "Paid at Office"
-                              : "Pending - Walk-in"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Return Date:</span>
-                          <span
-                            className={`font-medium ${
-                              booking.status === "overdue"
-                                ? "text-destructive"
-                                : "text-foreground"
-                            }`}
-                          >
-                            {new Date(booking.returnDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
 
-                      {booking.status === "overdue" && (
-                        <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-sm">
-                          <p className="text-destructive font-medium">
-                            Overdue Notice
-                          </p>
-                          <p className="text-destructive/80">
-                            Please return immediately to barangay office
-                          </p>
-                        </div>
-                      )}
-
-                      {booking.status === "pending_pickup" && (
-                        <div className="p-2 bg-warning/10 border border-warning/20 rounded text-sm">
-                          <p className="text-warning font-medium">
-                            Ready for Pickup
-                          </p>
-                          <p className="text-warning/80">
-                            Visit barangay office to pay and collect
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        {booking.status === "confirmed" && (
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
-                          >
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Mark as Returned
-                          </Button>
-                        )}
                         {booking.status === "overdue" && (
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                          >
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Return Now
-                          </Button>
+                          <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-sm">
+                            <p className="text-destructive font-medium">
+                              Overdue Notice
+                            </p>
+                            <p className="text-destructive/80">
+                              Please return immediately to barangay office
+                            </p>
+                          </div>
                         )}
-                        {booking.status === "pending_pickup" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 border-warning/30 text-warning hover:bg-warning/10"
-                          >
-                            <Wallet className="h-3 w-3 mr-1" />
-                            Pay at Office
-                          </Button>
+
+                        {booking.status === "pending_approval" && (
+                          <div className="p-2 bg-warning/10 border border-warning/20 rounded text-sm">
+                            <p className="text-warning font-medium">
+                              Pending Approval
+                            </p>
+                            <p className="text-warning/80">
+                              Admin will review your booking request
+                            </p>
+                          </div>
                         )}
+
+                        <div className="flex gap-2">
+                          {booking.status === "active" && (
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
+                              onClick={() => handleMarkAsReturned(booking.id)}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Mark as Returned
+                            </Button>
+                          )}
+                          {booking.status === "overdue" && (
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                              onClick={() => handleMarkAsReturned(booking.id)}
+                            >
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Return Now
+                            </Button>
+                          )}
+                          {booking.status === "pending_approval" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 border-warning/30 text-warning hover:bg-warning/10"
+                              disabled
+                            >
+                              <Clock className="h-3 w-3 mr-1" />
+                              Awaiting Approval
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <Button
                 variant="outline"
@@ -840,7 +585,7 @@ export default function ManageBorrowItems() {
                         onChange={(e) =>
                           setBookingForm({
                             ...bookingForm,
-                            quantity: e.target.value,
+                            quantity: parseInt(e.target.value) || 1,
                           })
                         }
                       />
@@ -1084,6 +829,7 @@ export default function ManageBorrowItems() {
                   <Button
                     className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={handleSubmitBooking}
+                    disabled={itemsLoading}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Submit Booking Request
