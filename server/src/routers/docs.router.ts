@@ -9,11 +9,10 @@ import {
   createDocs,
   deleteDocs,
   updateDocs,
-  retrieveAllDocs,
 } from "@/controller/brgy.docs.controller";
 import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
-import { AvailableDocs } from "@/models/documents.model";
+import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import searchItemValidation from "@/middleware/search.middleware";
 const router = Router();
 
@@ -31,8 +30,14 @@ const searchData = createSearchController(AvailableDocs, [
   "specialNote",
 ]);
 
-router.get("/retrieve-all", retrieveAllDocs); // Retrieve all docs created by the admin (resident)
-router.get("/search", searchItemValidation, searchData); // Search available docs
+const getRequestDocs = createSearchController(
+  DocsModel,
+  ["user", "purpose", "deliveryMethod", "contactNumber", "specificDetails"],
+  true
+);
+
+router.get("/get-request", searchItemValidation, getRequestDocs); // Retrieve all request docs
+router.get("/get-available", searchItemValidation, searchData); // Search available docs
 router.put("/update", updateDocsValidation, updateDocs); // Update request docs (reusable)
 router.delete("/delete", deleteDocsValidation, deleteDocs); // Delete docs in admin or req docs  (reusable)
 router.post("/request", requestDocsValidation, requestDocs); // Insert a form for docs request

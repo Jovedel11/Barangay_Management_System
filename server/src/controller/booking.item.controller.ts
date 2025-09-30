@@ -105,7 +105,8 @@ const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
 // Search specific item (reusable)
 const createSearchController = (
   CollectionModel: Model<any>,
-  fieldsToSearch: string[]
+  fieldsToSearch: string[],
+  value: boolean = false
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -124,6 +125,7 @@ const createSearchController = (
         search,
         category,
         model: CollectionModel,
+        hasUser: value,
         data: fieldsToSearch,
       });
       if (result?.error) throw result.error;

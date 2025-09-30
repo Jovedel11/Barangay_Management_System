@@ -7,10 +7,14 @@ const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      throw new Error("Book item: Invalid fields");
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
     }
     const data = matchedData(req);
     const docs = await DocsModel.create({ ...data }); // Requires user ID to reference the account collection
+    console.log(data);
     return res
       .status(201)
       .json({ message: "Document successfully requested", document: docs });

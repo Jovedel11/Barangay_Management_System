@@ -41,6 +41,7 @@ const requestDocsValidation = [
 
   requiredBoolean("urgentRequest", "Urgent request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
+    .customSanitizer((value) => value.toLowerCase())
     .isIn(["pickup", "delivery"])
     .withMessage("Invalid delivery method."),
 
@@ -48,11 +49,17 @@ const requestDocsValidation = [
     .isMobilePhone("any")
     .withMessage("Invalid contact number format."),
 
-  body("emailAddress")
-    .exists({ checkFalsy: true })
-    .withMessage("Email address is required.")
-    .isEmail()
-    .withMessage("Invalid email address format."),
+  body("specificDetails")
+    .optional()
+    .isString()
+    .withMessage("Specific details must be a string")
+    .trim(),
+
+  body("isPregnant")
+    .optional()
+    .isBoolean()
+    .withMessage("isPregnant must be true or false")
+    .toBoolean(),
 
   body("specificDetails")
     .optional()

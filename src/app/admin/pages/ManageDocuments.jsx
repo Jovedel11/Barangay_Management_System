@@ -1,13 +1,14 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/core/components/ui/button";
 import { CheckCircle, GitPullRequest, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddDocument from "@/components/custom/AddDocument";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import DocumentTypeCard from "@/app/shared/components/document-type-card";
 import customRequest from "@/services/customRequest";
 import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
+import DocumentRequestsTable from "@/components/custom/DocReqTable";
 
 const filterOptions = [
   "All Categories",
@@ -22,13 +23,15 @@ const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
+  const [activeTab, setActiveTab] = useState("get-available"); // "request" or "available"
+
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["availableDocs", debouncedSearchQuery, category],
+    queryKey: ["documents", activeTab, debouncedSearchQuery, category],
     queryFn: () =>
       customRequest({
-        path: `/api/brgy-docs/search?search=${debouncedSearchQuery}&category=${category}`,
+        path: `/api/brgy-docs/${activeTab}?search=${debouncedSearchQuery}&category=${category}`,
         attributes: {
           method: "GET",
           credentials: "include",
@@ -39,13 +42,13 @@ const ManageDocuments = () => {
     refetchOnWindowFocus: false,
   });
 
-  const handleOpenChange = () => {
-    setOpen((prevState) => !prevState);
-  };
+  const handleOpenChange = () => setOpen((prev) => !prev);
+  const documents = Array.isArray(data?.response) ? data.response : [];
+  console.log(data);
   return (
     <div className="w-full min-h-screen">
+      {/* Header */}
       <div className="w-full flex">
-        {/*header */}
         <div className="flex flex-col">
           <span className="text-3xl font-extrabold">Document Management</span>
           <span className="text-slate-500">view and manage your documents</span>
@@ -59,85 +62,89 @@ const ManageDocuments = () => {
           </AddDocument>
         </div>
       </div>
+
       <Tabs
         defaultValue="request"
-        onValueChange={(value) => {
-          console.log("Active tab:", value);
-        }}
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value)}
         className="w-full mt-5"
       >
         <TabsList className="rounded-sm">
           <TabsTrigger
-            value="request"
+            value="get-request"
             className="rounded-sm data-[state=active]:bg-slate-950"
           >
             <GitPullRequest />
             Request Docs
           </TabsTrigger>
           <TabsTrigger
-            value="available"
+            value="get-available"
             className="rounded-sm data-[state=active]:bg-slate-950"
           >
             <CheckCircle />
             Available Docs
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="request">
-          <div className="border flex flex-col border-slate-700 bg-slate-800 p-5 rounded-md w-full mt-5">
-            <span className="text-2xl font-extrabold">
-              Service Appointments
-            </span>
-            <span className="text-slate-500">
-              view and manage your appointments
-            </span>
+        <div className="border flex flex-col border-slate-700 bg-slate-800 p-5 rounded-md w-full mt-5">
+          <div className="px-2">
+            <SearchComponent
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              category={category}
+              setCategory={setCategory}
+              filterOptions={filterOptions}
+            />
           </div>
-        </TabsContent>
-        <TabsContent value="available">
-          <div className="border flex flex-col border-slate-700 bg-slate-800 p-5 rounded-md w-full mt-5">
-            <span className="text-2xl font-extrabold">Available Documents</span>
-            <span className="text-slate-500 mb-5">
-              view and manage your appointments documents
-            </span>
-            <div>
-              <SearchComponent
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                category={category}
-                setCategory={setCategory}
-                filterOptions={filterOptions}
-              />
+          <TabsContent value="get-request">
+            <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
+              <span className="text-2xl font-extrabold">
+                Service Appointments
+              </span>
+              <span className="text-slate-500">
+                view and manage your appointments
+              </span>
+              {data && <DocumentRequestsTable requests={data?.response} />}
             </div>
-            <div className="grid grid-col-1 md:grid-cols-3 gap-3">
-              {isLoading ? (
-                <div className="col-span-3 text-center py-4">
-                  Loading documents...
-                </div>
-              ) : error || !data?.response ? (
-                <div className="col-span-3 text-center text-red-500 py-4">
-                  No documents found
-                </div>
-              ) : data?.response?.length === 0 ? (
-                <div className="col-span-3 text-center text-slate-500 py-4">
-                  No documents found
-                </div>
-              ) : (
-                data?.response?.map((docType) => (
-                  <DocumentTypeCard
-                    key={docType._id}
-                    documentType={docType}
-                    onView={() => {}}
-                    onToggleStatus={() => {}}
-                    onDelete={() => {}}
-                    onSettings={(docType) =>
-                      console.log("Settings for:", docType)
-                    }
-                    refetch={refetch}
-                  />
-                ))
-              )}
+          </TabsContent>
+
+          <TabsContent value="get-available">
+            <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
+              <span className="text-2xl font-extrabold">
+                Available Documents
+              </span>
+              <span className="text-slate-500 mb-5">
+                view and manage your available documents
+              </span>
+              <div className="grid grid-col-1 md:grid-cols-3 gap-3">
+                {isLoading ? (
+                  <div className="col-span-3 text-center py-4">
+                    Loading appointments...
+                  </div>
+                ) : error ? (
+                  <div className="col-span-3 text-center text-red-500 py-4">
+                    Error loading data
+                  </div>
+                ) : documents.length === 0 ? (
+                  <div className="col-span-3 text-center text-slate-500 py-4">
+                    No appointments found
+                  </div>
+                ) : (
+                  documents.map((doc) => (
+                    <DocumentTypeCard
+                      key={doc._id}
+                      documentType={doc}
+                      onView={() => {}}
+                      onToggleStatus={() => {}}
+                      onDelete={() => {}}
+                      onSettings={(doc) => console.log("Settings for:", doc)}
+                      refetch={refetch}
+                    />
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        </TabsContent>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
