@@ -18,18 +18,22 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
     if (!params) throw new Error("Params are empty");
     const { search, model: CollectionModel, category, data } = params;
     if (!data) throw new Error("Data is empty");
-    const searchRegex = { $regex: search?.trim() ?? "", $options: "i" };
-    const query: Record<string, Record<string, string>>[] = data.map((key) => ({
-      [key as string]: searchRegex,
-    }));
+    const filters: any = {};
 
-    if (category) {
-      query.push({ [category as string]: searchRegex });
+    // Only add search filter if there's a search term
+    if (search?.trim()) {
+      const searchRegex = { $regex: search.trim(), $options: "i" };
+      filters.$or = data.map((key) => ({
+        [key as string]: searchRegex,
+      }));
     }
-    const filteredData = await CollectionModel.find({
-      $or: query,
-    }).lean(); // Transform the response into plain JS Object
 
+    if (category && category !== "All Categories") {
+      filters.category = { $regex: `^${category}$`, $options: "i" };   
+    }
+
+    const filteredData = await CollectionModel.find(filters).lean(); // Transform the response into plain JS Object
+    console.log(filteredData);
     if (!filteredData || filteredData.length === 0) {
       return { notFound: true };
     }

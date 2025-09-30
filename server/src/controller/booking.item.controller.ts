@@ -119,7 +119,7 @@ const createSearchController = (
       const { search, category } = matchedData(req, {
         locations: ["query"],
       });
-
+      console.log(search, category);
       const result = await FilterCollection({
         search,
         category,

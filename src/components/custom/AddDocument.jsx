@@ -21,7 +21,6 @@ import {
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import customRequest from "@/services/customRequest";
-import { InfinityIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CustomToast } from "./CustomToast";
 //import { CustomToast } from "@/components/custom/CustomToast";
@@ -52,27 +51,26 @@ const AddDocument = ({
   });
 
   const categoryOptions = [
-    "Document Processing",
-    "Certification",
-    "Registration",
-    "Legal Services",
-    "Administrative",
-    "Financial Services",
+    "Barangay Clearance",
+    "Indengency Certificate",
+    "Residency Certificate",
+    "Business Permit",
     "Other",
   ];
 
   const nothingChanged = useMemo(() => {
     const anyEmpty =
-      !info.name.trim() ||
-      !info.category.trim() ||
-      !info.description.trim() ||
-      !info.fee.trim() ||
-      !info.processingTime.trim() ||
-      !info.requirements.trim() ||
-      !info.purposes.trim() ||
-      !info.urgentFee.trim() ||
-      !info.urgentTime.trim() ||
-      !info.specialNote.trim();
+      !isEdit &&
+      (!info.name.trim() ||
+        !info.category.trim() ||
+        !info.description.trim() ||
+        !info.fee.trim() ||
+        !info.processingTime.trim() ||
+        !info.requirements.trim() ||
+        !info.purposes.trim() ||
+        !info.urgentFee.trim() ||
+        !info.urgentTime.trim() ||
+        !info.specialNote.trim());
 
     if (anyEmpty) return true;
 
@@ -95,15 +93,19 @@ const AddDocument = ({
       return true;
     }
     return false;
-  }, [data, info]);
+  }, [data, info, isEdit]);
 
-  const handleChange = useCallback((e) => {
-    const { id, value, type, checked } = e.target;
-    setInfo((prevState) => ({
-      ...prevState,
-      [id]: type === "checkbox" ? checked : value,
-    }));
-  }, []);
+  const handleChange = useCallback(
+    (e) => {
+      const { id, value, type, checked } = e.target;
+      setInfo((prevState) => ({
+        ...prevState,
+        [id]:
+          type === "checkbox" ? checked : value.trimStart(),
+      }));
+    },
+    []
+  );
 
   const handleSelectChange = useCallback((value) => {
     setInfo((prevState) => ({
@@ -278,6 +280,7 @@ const AddDocument = ({
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Requirements</span>
               <Input
+                type="text"
                 id="requirements"
                 value={info.requirements}
                 onChange={handleChange}
