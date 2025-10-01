@@ -149,7 +149,7 @@ const AddDocument = ({
     onSuccess: ({ success }) => {
       if (success) {
         queryClient.invalidateQueries({
-          queryKey: ["availableDocs"],
+          queryKey: ["get-available"],
         });
         handleOpenChange();
         return CustomToast({

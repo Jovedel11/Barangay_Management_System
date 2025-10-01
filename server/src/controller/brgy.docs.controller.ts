@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import { matchedData, validationResult } from "express-validator";
+import type { Model } from "mongoose";
 
 // Send docs request (resident)
 const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
@@ -43,21 +44,25 @@ const createDocs = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Deleting docs (admin)
-const deleteDocs = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new Error("Docs : Invalid fields");
+const deleteDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        throw new Error("Docs : Invalid fields");
+      }
+      const { docs_id } = matchedData(req);
+      const { deletedCount } = await CollectionModel.deleteOne({
+        _id: docs_id,
+      });
+      if (deletedCount === 0) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      return res.status(200).json({ message: "Document successfully deleted" });
+    } catch (error) {
+      next(error);
     }
-    const { docs_id } = matchedData(req);
-    const { deletedCount } = await AvailableDocs.deleteOne({ _id: docs_id });
-    if (deletedCount === 0) {
-      return res.status(404).json({ message: "Document not found" });
-    }
-    return res.status(200).json({ message: "Document successfully deleted" });
-  } catch (error) {
-    next(error);
-  }
+  };
 };
 
 // Updating Docs (reusable)

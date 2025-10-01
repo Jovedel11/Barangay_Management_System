@@ -41,7 +41,7 @@ const DocumentTypeCard = ({
     try {
       if (!documentType._id) throw new Error();
       const result = await customRequest({
-        path: "/api/brgy-docs/delete",
+        path: "/api/brgy-docs/delete/available",
         attributes: {
           method: "DELETE",
           headers: {

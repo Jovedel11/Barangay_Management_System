@@ -28,7 +28,7 @@ const ManageDocuments = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["documents", activeTab, debouncedSearchQuery, category],
+    queryKey: [activeTab, debouncedSearchQuery, category],
     queryFn: () =>
       customRequest({
         path: `/api/brgy-docs/${activeTab}?search=${debouncedSearchQuery}&category=${category}`,
@@ -103,7 +103,12 @@ const ManageDocuments = () => {
               <span className="text-slate-500">
                 view and manage your appointments
               </span>
-              {data && <DocumentRequestsTable requests={data?.response} />}
+              {data && (
+                <DocumentRequestsTable
+                  refetch={refetch}
+                  requests={data?.response}
+                />
+              )}
             </div>
           </TabsContent>
 

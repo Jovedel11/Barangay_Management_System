@@ -39,7 +39,16 @@ const getRequestDocs = createSearchController(
 router.get("/get-request", searchItemValidation, getRequestDocs); // Retrieve all request docs
 router.get("/get-available", searchItemValidation, searchData); // Search available docs
 router.put("/update", updateDocsValidation, updateDocs); // Update request docs (reusable)
-router.delete("/delete", deleteDocsValidation, deleteDocs); // Delete docs in admin or req docs  (reusable)
+router.delete(
+  "/delete/available",
+  deleteDocsValidation,
+  deleteDocs({ model: AvailableDocs })
+); // Delete docs in admin
+router.delete(
+  "/delete/request",
+  deleteDocsValidation,
+  deleteDocs({ model: DocsModel })
+); // Resident
 router.post("/request", requestDocsValidation, requestDocs); // Insert a form for docs request
 router.post("/available/insert", availableDocsValidation, createDocs); // Insert available docs (admin)
 
