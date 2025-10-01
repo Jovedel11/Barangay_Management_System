@@ -1,4 +1,11 @@
-import { Edit, MoreHorizontal, Eye, Archive, Trash2 } from "lucide-react";
+import {
+  Edit,
+  MoreHorizontal,
+  Eye,
+  Archive,
+  Trash2,
+  WarehouseIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
@@ -10,15 +17,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import { useCallback, useState } from "react";
+import ItemDialog from "@/components/custom/ItemDialog";
+import ViewItemDialog from "@/components/custom/ViewItem";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "@/components/custom/CustomToast";
 
-const ItemCard = ({
-  item,
-  onEdit,
-  onView,
-  onToggleStatus,
-  onDelete,
-  className = "",
-}) => {
+const ItemCard = ({ item, className = "", refetch }) => {
+  const [open, setOpen] = useState(false);
+  const [openView, setOpenView] = useState(false);
+
   const getConditionBadge = (condition) => {
     const conditionStyles = {
       Excellent: "bg-success/10 text-success border-success/30",
@@ -33,6 +41,83 @@ const ItemCard = ({
     );
   };
 
+  const onOpen = () => {
+    setOpenView((state) => !state);
+  };
+
+  const onDelete = async (requestId) => {
+    try {
+      if (!requestId) throw new Error();
+      const result = await customRequest({
+        path: "/api/borrow-item/delete",
+        attributes: {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ item_id: requestId }),
+        },
+      });
+      if (!result?.success) {
+        return CustomToast({
+          description: "Failed to delete the item",
+          status: "error",
+        });
+      }
+      refetch();
+      CustomToast({
+        description: "Item has been deleted successfully",
+        status: "success",
+      });
+    } catch (error) {
+      console.log(error);
+      CustomToast({
+        description: "Internal server error",
+        status: "error",
+      });
+    }
+  };
+
+  const onUpdate = useCallback(
+    async ({ item_id, status }) => {
+      try {
+        // Send the opposite of current status to toggle it
+        const result = await customRequest({
+          path: "/api/borrow-item/update/available",
+          attributes: {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              docs_id: item_id,
+              status: !status, // Just negate the current status
+            }),
+            credentials: "include",
+          },
+        });
+        if (result?.success) {
+          refetch();
+          return CustomToast({
+            description: "Item status has been updated",
+            status: "success",
+          });
+        }
+        CustomToast({
+          description: "Failed to update item's status",
+          status: "error",
+        });
+      } catch (error) {
+        console.log(error);
+        CustomToast({
+          description: "Internal server error",
+          status: "error",
+        });
+      }
+    },
+    [refetch]
+  );
+
   return (
     <Card
       className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
@@ -41,7 +126,7 @@ const ItemCard = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              {item?.icon ? <item.icon className="h-5 w-5 text-primary" /> : ""}
+              <WarehouseIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h4 className="font-medium text-foreground">{item?.name}</h4>
@@ -59,7 +144,6 @@ const ItemCard = ({
             )}
           </div>
         </div>
-
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Available:</span>
@@ -92,32 +176,43 @@ const ItemCard = ({
             </div>
           )}
         </div>
+        <ViewItemDialog data={item} open={openView} handleOpenChange={onOpen} />
 
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
-            onClick={() => onEdit(item)}
+          <ItemDialog
+            open={open}
+            data={item}
+            handleOpenChange={setOpen}
+            isEdit={true}
           >
-            <Edit className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+          </ItemDialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="px-2">
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onView(item)}>
+              <DropdownMenuItem onClick={onOpen}>
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(item?._id)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  onUpdate({ item_id: item?._id, status: item?.status })
+                }
+              >
                 <Archive className="h-4 w-4 mr-2" />
-                {item?.isActive ? "Deactivate" : "Activate"}
+                {item?.status ? "Deactivate" : "Activate"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

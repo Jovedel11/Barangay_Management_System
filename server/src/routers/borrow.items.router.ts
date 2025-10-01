@@ -8,35 +8,37 @@ import {
   bookItem,
   addAvailableBooking,
   getAvailableBooking,
-  updateItem,
   deleteItem,
   createSearchController,
 } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import { BorrowableItemsModel } from "@/models/borrow.items";
 import searchItemValidation from "@/middleware/search.middleware";
+import { updateDocs } from "@/controller/brgy.docs.controller";
 const router = Router();
 
 // Search controller for searching specific data (reusable)
-const searchData = createSearchController(BorrowableItemsModel, [
+const retreiveAllItems = createSearchController(BorrowableItemsModel, [
   "name",
   "category",
   "description",
-  "available",
   "total",
   "condition",
   "borrowingFee",
   "maxBorrowDays",
-  "deliveryAvailable",
   "requirements",
   "notes",
 ]);
 
 router.get("/retrieve", getAvailableBooking); // Retrieve (resident)
-router.get("/search", searchItemValidation, searchData); // Search
-router.post("/update", updateItemValidation, updateItem); // Update (reusable)
-router.post("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
+router.get("/available/items", searchItemValidation, retreiveAllItems); // Retrieve all
+router.put(
+  "/update/available",
+  updateItemValidation,
+  updateDocs({ model: BorrowableItemsModel })
+); // Update (reusable)
+router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
 router.post("/insert", itemBorrowValidation, bookItem); // Insert for booking request
-router.post("/availabe/insert", borrowableItemValidation, addAvailableBooking); // Insert for available items
+router.post("/available/insert", borrowableItemValidation, addAvailableBooking); // Insert for available items
 
 export default router;

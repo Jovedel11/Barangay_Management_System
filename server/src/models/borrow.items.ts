@@ -12,10 +12,11 @@ type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
     isFemale: boolean;
     isPregnant: boolean;
   };
+  status?: string;
 };
 
 type IBorrowableItem<T extends string> = {
-  user: Schema.Types.ObjectId;
+  //user: Schema.Types.ObjectId;
   name: T;
   category: T;
   description: T;
@@ -25,8 +26,9 @@ type IBorrowableItem<T extends string> = {
   borrowingFee: T;
   maxBorrowDays: number;
   deliveryAvailable: boolean;
-  requirements: T[];
+  requirements: T;
   notes: T;
+  status: boolean;
 };
 
 const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
@@ -43,10 +45,11 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
     isFemale: { type: Boolean, required: true },
     isPregnant: { type: Boolean, required: true },
   },
+  status: { type: String, required: false, default: "Pending" },
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
-  user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
+  //user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   name: { type: String, required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
@@ -56,8 +59,9 @@ const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
   borrowingFee: { type: String, required: true },
   maxBorrowDays: { type: Number, required: true },
   deliveryAvailable: { type: Boolean, required: true },
-  requirements: { type: [String], required: true },
+  requirements: { type: String, required: true },
   notes: { type: String, required: true },
+  status: { type: Boolean, required: false, default: false },
 });
 
 const BorrowRequestModel = model<ItemBorrowRequest<string>>(
