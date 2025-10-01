@@ -170,7 +170,6 @@ const updateDocsValidation = [
       "Status must be one of: pending, processing, completed, rejected"
     ),
 
-  // Ensure at least one updateable field is provided
   body().custom((value) => {
     const availableDocsFields = [
       "name",
@@ -189,8 +188,6 @@ const updateDocsValidation = [
     ];
 
     const docsModelFields = ["status"];
-
-    // Check both sets of fields
     const hasUpdateField = [...availableDocsFields, ...docsModelFields].some(
       (field) => value[field] !== undefined
     );

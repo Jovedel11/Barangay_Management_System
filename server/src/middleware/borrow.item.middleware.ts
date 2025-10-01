@@ -60,16 +60,17 @@ const itemBorrowValidation = [
     .withMessage("isPregnant status is required.")
     .isBoolean()
     .withMessage("isPregnant must be a boolean (true or false)."),
+  body("status").optional().isString().withMessage("status must be a string"),
 ];
 
 const borrowableItemValidation = [
-  body("user")
+  /*body("user")
     .exists()
     .withMessage("User ID is required.")
     .notEmpty()
     .withMessage("User ID cannot be empty.")
     .isMongoId()
-    .withMessage("User ID must be a valid Mongo ID."),
+    .withMessage("User ID must be a valid Mongo ID."),*/
   body("name")
     .exists()
     .withMessage("Item name is required.")
@@ -121,20 +122,15 @@ const borrowableItemValidation = [
     .withMessage("Delivery availability is required.")
     .isBoolean()
     .withMessage("Delivery availability must be a boolean (true or false)."),
+  body("status")
+    .optional()
+    .isBoolean()
+    .withMessage("Status availability must be a boolean (true or false)."),
   body("requirements")
     .exists()
     .withMessage("Requirements are required.")
-    .isArray({ min: 1 })
-    .withMessage("Requirements must be a non-empty array of strings.")
-    .custom((value) => {
-      if (!Array.isArray(value)) return false;
-      if (
-        value.some((item) => typeof item !== "string" || item.trim() === "")
-      ) {
-        throw new Error("All requirements must be non-empty strings.");
-      }
-      return true;
-    }),
+    .isString()
+    .withMessage("Requirements must be strings."),
   body("notes")
     .exists()
     .withMessage("Notes are required.")
@@ -143,16 +139,73 @@ const borrowableItemValidation = [
 ];
 
 const updateItemValidation = [
-  body("item_id")
+  body("docs_id")
     .exists()
     .withMessage("Item ID is required")
     .isMongoId()
     .withMessage("Item ID must be a valid MongoDB ID"),
-  body()
-    .notEmpty()
-    .withMessage(
-      "Request body cannot be empty and must contain fields to update"
-    ),
+  body("name").optional().isString().withMessage("Name must be a string"),
+  body("category")
+    .optional()
+    .isString()
+    .withMessage("Category must be a string"),
+  body("description")
+    .optional()
+    .isString()
+    .withMessage("Description must be a string"),
+  body("available")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("Available must be a non-negative integer"),
+  body("total")
+    .optional()
+    .isInt({ gt: 0 })
+    .withMessage("Total must be a positive integer"),
+  body("condition")
+    .optional()
+    .isString()
+    .withMessage("Condition must be a string"),
+  body("borrowingFee")
+    .optional()
+    .isString()
+    .withMessage("Borrowing fee must be a string"),
+  body("maxBorrowDays")
+    .optional()
+    .isInt({ gt: 0 })
+    .withMessage("Max borrow days must be a positive integer"),
+  body("deliveryAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Delivery available must be a boolean"),
+  body("requirements")
+    .optional()
+    .isString()
+    .withMessage("Requirements must be a string"),
+  body("notes").optional().isString().withMessage("Notes must be a string"),
+  body("status").optional().isBoolean().withMessage("Status must be a boolean"),
+  body().custom((value) => {
+    const updateFields = [
+      "name",
+      "category",
+      "description",
+      "available",
+      "total",
+      "condition",
+      "borrowingFee",
+      "maxBorrowDays",
+      "deliveryAvailable",
+      "requirements",
+      "notes",
+      "status",
+    ];
+    const hasUpdateField = updateFields.some(
+      (field) => value[field] !== undefined
+    );
+    if (!hasUpdateField) {
+      throw new Error("At least one field must be provided to update");
+    }
+    return true;
+  }),
 ];
 
 const deleteItemValidation = [

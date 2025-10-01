@@ -17,7 +17,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     const bookItem = await BorrowRequestModel.create({ ...item }); //for admin (book item)
     bookItem.save();
-    res.send(200).json({ message: "Item booked successfully!" });
+    return res.status(201).json({ message: "Item booked successfully!" });
   } catch (error) {
     console.log(error);
     next(error);
@@ -38,7 +38,9 @@ const addAvailableBooking = async (
     const item = matchedData(req);
     const availableItem = await BorrowableItemsModel.create({ ...item }); //for admin (available item)
     availableItem.save();
-    res.send(200).json({ message: "Items added! They're ready for booking." });
+    return res
+      .status(201)
+      .json({ message: "Items added! They're ready for booking." });
   } catch (error) {
     console.log(error);
     next(error);
@@ -53,8 +55,10 @@ const getAvailableBooking = async (
 ) => {
   try {
     const availableItem = await BorrowableItemsModel.find(); //for admin (available item)
-    if (!availableItem) throw new Error();
-    res.send(200).json({ ...availableItem });
+    if (!availableItem) {
+      return res.status(404).json({ message: "No available items found" });
+    }
+    return res.status(200).json(availableItem);
   } catch (error) {
     console.log(error);
     next(error);
@@ -76,8 +80,13 @@ const updateItem = async (req: Request, res: Response, next: NextFunction) => {
           $set: { ...updateData },
         }
       );
-    if (matchedCount === 0 && modifiedCount === 0) throw new Error();
-    res.send(200).json({ message: "Update successful" });
+    if (matchedCount === 0) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    if (modifiedCount === 0) {
+      return res.status(400).json({ message: "No changes made" });
+    }
+    return res.status(200).json({ message: "Update successful" });
   } catch (error) {
     console.log(error);
     next(error);
@@ -93,9 +102,13 @@ const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
       throw new Error("Book item: Invalid fields");
     }
     const { item_id } = matchedData(req);
-    const { deletedCount } = await BorrowableItemsModel.deleteOne({ item_id });
-    if (deletedCount === 0) throw new Error();
-    res.send(200).json({ message: "Booking request successfully updated" });
+    const { deletedCount } = await BorrowableItemsModel.deleteOne({
+      _id: item_id,
+    });
+    if (deletedCount === 0) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    return res.status(200).json({ message: "Item successfully deleted" });
   } catch (error) {
     console.log(error);
     next(error);

@@ -99,10 +99,11 @@ const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
       if (modifiedCount === 0) {
         return res
           .status(400)
-          .json({ message: "No changes made to the document" });
+          .json({ success: false, message: "No changes made to the document" });
       }
 
       return res.status(200).json({
+        success: true,
         message: "Document successfully updated",
         modifiedCount,
       });
