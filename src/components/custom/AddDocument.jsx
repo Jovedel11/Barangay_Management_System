@@ -95,17 +95,13 @@ const AddDocument = ({
     return false;
   }, [data, info, isEdit]);
 
-  const handleChange = useCallback(
-    (e) => {
-      const { id, value, type, checked } = e.target;
-      setInfo((prevState) => ({
-        ...prevState,
-        [id]:
-          type === "checkbox" ? checked : value.trimStart(),
-      }));
-    },
-    []
-  );
+  const handleChange = useCallback((e) => {
+    const { id, value, type, checked } = e.target;
+    setInfo((prevState) => ({
+      ...prevState,
+      [id]: type === "checkbox" ? checked : value.trimStart(),
+    }));
+  }, []);
 
   const handleSelectChange = useCallback((value) => {
     setInfo((prevState) => ({
@@ -149,7 +145,7 @@ const AddDocument = ({
     onSuccess: ({ success }) => {
       if (success) {
         queryClient.invalidateQueries({
-          queryKey: ["availableDocs"],
+          queryKey: ["get-available"],
         });
         handleOpenChange();
         return CustomToast({
@@ -180,7 +176,7 @@ const AddDocument = ({
     try {
       submitMutation.mutate({
         path: isEdit
-          ? "/api/brgy-docs/update"
+          ? "/api/brgy-docs/update/available"
           : "/api/brgy-docs/available/insert",
         attributes: {
           method: isEdit ? "PUT" : "POST",

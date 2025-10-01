@@ -41,7 +41,7 @@ const DocumentTypeCard = ({
     try {
       if (!documentType._id) throw new Error();
       const result = await customRequest({
-        path: "/api/brgy-docs/delete",
+        path: "/api/brgy-docs/delete/available",
         attributes: {
           method: "DELETE",
           headers: {
@@ -119,13 +119,13 @@ const DocumentTypeCard = ({
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Total Requests:</span>
             <span className="font-medium text-foreground">
-              {documentType?.totalRequests}
+              {documentType?.totalReq ?? "0"}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Pending:</span>
             <span className="font-medium text-warning">
-              {documentType?.pendingRequests}
+              {documentType?.pendings ?? "0"}
             </span>
           </div>
         </div>

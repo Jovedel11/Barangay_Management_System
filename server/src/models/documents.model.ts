@@ -10,9 +10,9 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   user: Schema.Types.ObjectId;
   urgentRequest: boolean;
   contactNumber: T;
-  emailAddress: T;
   specificDetails: T;
   isPregnant: boolean;
+  status?: string;
 };
 
 const docsSchema = new Schema<DocumentRequest<string>>({
@@ -22,9 +22,9 @@ const docsSchema = new Schema<DocumentRequest<string>>({
   urgentRequest: { type: Boolean, required: true },
   deliveryMethod: { type: String, required: true },
   contactNumber: { type: String, required: true },
-  emailAddress: { type: String, required: true },
   specificDetails: { type: String, required: false },
   isPregnant: { type: Boolean, required: true },
+  status: { type: String, required: false, default: "pending" },
 });
 
 // Reused interface for both purposes and requirements
@@ -47,6 +47,8 @@ interface IAvailableDoc {
   urgentTime: string;
   isActive: boolean;
   specialNote: string;
+  totalReq?: number;
+  pendings?: number;
 }
 
 const AvailableDocsSchema = new Schema<IAvailableDoc>({
@@ -63,6 +65,8 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   urgentTime: { type: String, required: true },
   isActive: { type: Boolean, required: true },
   specialNote: { type: String, required: true },
+  totalReq: { type: Number, required: false, default: 0 }, //No functionalities yet
+  pendings: { type: Number, required: false, default: 0 }, //No functionalities yet
 });
 
 const AvailableDocs = model<IAvailableDoc>(

@@ -41,6 +41,7 @@ const requestDocsValidation = [
 
   requiredBoolean("urgentRequest", "Urgent request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
+    .customSanitizer((value) => value.toLowerCase())
     .isIn(["pickup", "delivery"])
     .withMessage("Invalid delivery method."),
 
@@ -48,11 +49,17 @@ const requestDocsValidation = [
     .isMobilePhone("any")
     .withMessage("Invalid contact number format."),
 
-  body("emailAddress")
-    .exists({ checkFalsy: true })
-    .withMessage("Email address is required.")
-    .isEmail()
-    .withMessage("Invalid email address format."),
+  body("specificDetails")
+    .optional()
+    .isString()
+    .withMessage("Specific details must be a string")
+    .trim(),
+
+  body("isPregnant")
+    .optional()
+    .isBoolean()
+    .withMessage("isPregnant must be true or false")
+    .toBoolean(),
 
   body("specificDetails")
     .optional()
@@ -153,9 +160,19 @@ const updateDocsValidation = [
     .isBoolean()
     .withMessage("isActive must be boolean"),
 
+  // Add status field validation for DocsModel
+  body("status")
+    .optional()
+    .isString()
+    .trim()
+    .isIn(["pending", "processing", "completed", "rejected"])
+    .withMessage(
+      "Status must be one of: pending, processing, completed, rejected"
+    ),
+
   // Ensure at least one updateable field is provided
   body().custom((value) => {
-    const updateableFields = [
+    const availableDocsFields = [
       "name",
       "category",
       "description",
@@ -171,7 +188,10 @@ const updateDocsValidation = [
       "isActive",
     ];
 
-    const hasUpdateField = updateableFields.some(
+    const docsModelFields = ["status"];
+
+    // Check both sets of fields
+    const hasUpdateField = [...availableDocsFields, ...docsModelFields].some(
       (field) => value[field] !== undefined
     );
 
