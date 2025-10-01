@@ -32,13 +32,29 @@ const searchData = createSearchController(AvailableDocs, [
 
 const getRequestDocs = createSearchController(
   DocsModel,
-  ["user", "purpose", "deliveryMethod", "contactNumber", "specificDetails"],
+  [
+    "user",
+    "purpose",
+    "deliveryMethod",
+    "contactNumber",
+    "specificDetails",
+    "status",
+  ],
   true
 );
 
 router.get("/get-request", searchItemValidation, getRequestDocs); // Retrieve all request docs
 router.get("/get-available", searchItemValidation, searchData); // Search available docs
-router.put("/update", updateDocsValidation, updateDocs); // Update request docs (reusable)
+router.put(
+  "/update/available",
+  updateDocsValidation,
+  updateDocs({ model: AvailableDocs })
+); // Update availablde docs (admin)
+router.put(
+  "/update/request",
+  updateDocsValidation,
+  updateDocs({ model: DocsModel })
+); // Update request docs (resident)
 router.delete(
   "/delete/available",
   deleteDocsValidation,

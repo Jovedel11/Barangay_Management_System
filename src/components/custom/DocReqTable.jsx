@@ -1,4 +1,11 @@
-import { Eye, MoreHorizontal, Trash2, X } from "lucide-react";
+import {
+  CheckCircle,
+  Eye,
+  Loader,
+  MoreHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -28,9 +35,11 @@ import {
 } from "@/components/ui/dialog";
 import { CustomToast } from "./CustomToast";
 import customRequest from "@/services/customRequest";
-import { useState } from "react";
+import { Fragment, useCallback, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DocumentRequestsTable({ requests = [], refetch }) {
+  const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -72,6 +81,57 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
     }
   };
 
+  const updateMutation = useMutation({
+    mutationFn: async (data) => {
+      return customRequest(data);
+    },
+    onSuccess: ({ success }) => {
+      if (success) {
+        queryClient.invalidateQueries({
+          queryKey: ["get-request"],
+        });
+        return CustomToast({
+          description: "Progress status has been updated!",
+          status: "success",
+        });
+      }
+      return CustomToast({
+        description: "Failed to update status",
+        status: "error",
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      CustomToast({
+        description: "Something went wrong",
+        status: "error",
+      });
+    },
+  });
+
+  const handleUpdate = useCallback(
+    async ({ docs_id, status }) => {
+      console.log(docs_id, status);
+      try {
+        const reqStatus = status === "pending" ? "completed" : "pending";
+        updateMutation.mutate({
+          path: "/api/brgy-docs/update/request",
+          attributes: {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ docs_id, status: reqStatus }),
+            credentials: "include",
+          },
+        });
+      } catch (error) {
+        console.error("Error submitting:", error);
+      }
+    },
+    [updateMutation]
+  );
+
   return (
     <>
       <div className="w-full mt-4 space-y-4">
@@ -112,7 +172,16 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>{request.purpose}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span>{request.purpose}</span>
+                        <span className="text-sm text-zinc-400">
+                          {request?.status === "completed"
+                            ? "Ready for pickup"
+                            : "Pending"}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <span className="pl-5"> {request.quantity}</span>
                     </TableCell>
@@ -134,7 +203,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuContent align="end" className="w-46">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -142,6 +211,26 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                           >
                             <Eye className="mr-2" />
                             View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleUpdate({
+                                docs_id: request?._id,
+                                status: request?.status,
+                              })
+                            }
+                          >
+                            {request?.status !== "completed" ? (
+                              <Fragment>
+                                <CheckCircle className="mr-2" />
+                                Mark as Done
+                              </Fragment>
+                            ) : (
+                              <Fragment>
+                                <Loader className="mr-2" />
+                                Mark as Pending
+                              </Fragment>
+                            )}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -196,7 +285,9 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">
                       Contact Number
                     </h4>
-                    <p className="text-base">{selectedRequest?.contactNumber}</p>
+                    <p className="text-base">
+                      {selectedRequest?.contactNumber}
+                    </p>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">
@@ -222,17 +313,25 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     <p className="text-base">{selectedRequest?.quantity}</p>
                   </div>
                 </div>
-
-                <div>
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                    Specific Details
-                  </h4>
-                  <p className="text-base">
-                    {selectedRequest?.specificDetails ||
-                      "No additional details provided"}
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
+                      Specific Details
+                    </h4>
+                    <p className="text-base">
+                      {selectedRequest?.specificDetails ||
+                        "No additional details provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
+                      Progress Status
+                    </h4>
+                    <p className="text-base">
+                      {selectedRequest?.status || "No outgoing progress"}
+                    </p>
+                  </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">

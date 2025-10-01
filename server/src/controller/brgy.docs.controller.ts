@@ -66,48 +66,50 @@ const deleteDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
 };
 
 // Updating Docs (reusable)
-const updateDocs = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      console.log(errors);
-      throw new Error("Docs : Invalid fields");
-    }
-    const data = matchedData(req);
-
-    const { docs_id, ...updateFields } = data;
-    Object.keys(updateFields).forEach((key) => {
-      if (
-        updateFields[key] &&
-        typeof updateFields[key] === "object" &&
-        Object.keys(updateFields[key]).length === 0
-      ) {
-        delete updateFields[key];
+const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      console.log("Request Body: ", req.body);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.log(errors);
+        throw new Error("Docs : Invalid fields");
       }
-    });
+      const data = matchedData(req);
 
-    const { matchedCount, modifiedCount } = await AvailableDocs.updateOne(
-      { _id: docs_id },
-      { $set: updateFields }
-    );
+      const { docs_id, ...updateFields } = data;
+      Object.keys(updateFields).forEach((key) => {
+        if (
+          updateFields[key] &&
+          typeof updateFields[key] === "object" &&
+          Object.keys(updateFields[key]).length === 0
+        ) {
+          delete updateFields[key];
+        }
+      });
+      const { matchedCount, modifiedCount } = await CollectionModel.updateOne(
+        { _id: docs_id },
+        { $set: updateFields }
+      );
 
-    if (matchedCount === 0) {
-      return res.status(404).json({ message: "Document not found" });
+      if (matchedCount === 0) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (modifiedCount === 0) {
+        return res
+          .status(400)
+          .json({ message: "No changes made to the document" });
+      }
+
+      return res.status(200).json({
+        message: "Document successfully updated",
+        modifiedCount,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    if (modifiedCount === 0) {
-      return res
-        .status(400)
-        .json({ message: "No changes made to the document" });
-    }
-
-    return res.status(200).json({
-      message: "Document successfully updated",
-      modifiedCount,
-    });
-  } catch (error) {
-    next(error);
-  }
+  };
 };
 
 // Retrieve all docs (reusable)

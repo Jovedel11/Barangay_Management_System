@@ -160,9 +160,19 @@ const updateDocsValidation = [
     .isBoolean()
     .withMessage("isActive must be boolean"),
 
+  // Add status field validation for DocsModel
+  body("status")
+    .optional()
+    .isString()
+    .trim()
+    .isIn(["pending", "processing", "completed", "rejected"])
+    .withMessage(
+      "Status must be one of: pending, processing, completed, rejected"
+    ),
+
   // Ensure at least one updateable field is provided
   body().custom((value) => {
-    const updateableFields = [
+    const availableDocsFields = [
       "name",
       "category",
       "description",
@@ -178,7 +188,10 @@ const updateDocsValidation = [
       "isActive",
     ];
 
-    const hasUpdateField = updateableFields.some(
+    const docsModelFields = ["status"];
+
+    // Check both sets of fields
+    const hasUpdateField = [...availableDocsFields, ...docsModelFields].some(
       (field) => value[field] !== undefined
     );
 
