@@ -1,4 +1,4 @@
-import { Edit, MoreHorizontal, Eye, Archive, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal, Eye, Archive, Trash2, SettingsIcon } from "lucide-react";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
@@ -69,7 +69,7 @@ const ServiceCard = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <service.icon className="h-5 w-5 text-primary" />
+              <SettingsIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h4 className="font-medium text-foreground">{service.name}</h4>
@@ -80,7 +80,7 @@ const ServiceCard = ({
           </div>
           <div className="flex items-center gap-1">
             {getServiceTypeBadge(service.serviceType)}
-            {!service.isActive && (
+            {!service.status && (
               <Badge className="bg-muted/10 text-muted-foreground border-muted/30">
                 Inactive
               </Badge>
