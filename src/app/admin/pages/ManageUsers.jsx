@@ -17,7 +17,6 @@ import {
 // Shared Components
 import PageHeader from "@/app/shared/components/page-header";
 import StatsGrid from "@/app/shared/components/stats-grid";
-import SearchFilterBar from "@/app/shared/components/search-filter-bar";
 import DataTable from "@/app/shared/components/data-table";
 import UserDetailsModal from "@/app/shared/components/user-details-modal";
 import PendingSignupCard from "@/app/shared/components/pending-signup-card";
@@ -116,16 +115,6 @@ const ManageUsers = () => {
               </div>
             );
 
-          case "occupationIncome":
-            return (
-              <div>
-                <p className="font-medium text-foreground">{value}</p>
-                <p className="text-sm text-muted-foreground">
-                  {item.monthlyIncome}
-                </p>
-              </div>
-            );
-
           case "userInfo":
             return (
               <div>
@@ -176,7 +165,7 @@ const ManageUsers = () => {
         {/* Header */}
         <PageHeader
           title="User Management"
-          description="Manage all residents, registered users, and pending signups"
+          description="Manage barangay residents, system users, and review new applications"
           actions={pageHeaderActions}
         />
 
@@ -195,19 +184,19 @@ const ManageUsers = () => {
         <StatsGrid stats={getStatsWithIcons()} />
 
         {/* Tab Navigation */}
-        <div className="flex space-x-1 bg-muted/30 p-1 rounded-lg w-fit">
+        <div className="flex space-x-1 bg-muted/30 border border-border p-1 rounded-lg w-fit">
           <Button
             variant={activeTab === "residents" ? "default" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("residents")}
             className={
               activeTab === "residents"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }
           >
             <Users className="h-4 w-4 mr-2" />
-            All Residents
+            Residents ({residents.length})
           </Button>
           <Button
             variant={activeTab === "users" ? "default" : "ghost"}
@@ -215,12 +204,12 @@ const ManageUsers = () => {
             onClick={() => setActiveTab("users")}
             className={
               activeTab === "users"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }
           >
             <UserCheck className="h-4 w-4 mr-2" />
-            Registered Users
+            System Users ({users.length})
           </Button>
           <Button
             variant={activeTab === "pending" ? "default" : "ghost"}
@@ -228,15 +217,15 @@ const ManageUsers = () => {
             onClick={() => setActiveTab("pending")}
             className={
               activeTab === "pending"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Pending Signups
+            New Applications
             {pendingSignups.filter((p) => p.status === "pending_approval")
               .length > 0 && (
-              <span className="ml-2 px-2 py-1 text-xs bg-warning/20 text-warning rounded-full">
+              <span className="ml-2 px-2 py-1 text-xs bg-warning/20 text-warning border border-warning/30 rounded-full">
                 {
                   pendingSignups.filter((p) => p.status === "pending_approval")
                     .length
@@ -246,46 +235,26 @@ const ManageUsers = () => {
           </Button>
         </div>
 
-        {/* Search and Filters */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Search & Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SearchFilterBar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              filters={getFilters()}
-              searchPlaceholder={
-                activeTab === "residents"
-                  ? "Search residents..."
-                  : activeTab === "users"
-                  ? "Search users..."
-                  : "Search pending signups..."
-              }
-              showAddButton={false}
-              showExportButton={false}
-              onRefresh={refreshData}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Pending Signups Alert */}
+        {/* New Applications Alert */}
         {activeTab === "pending" &&
           pendingSignups.filter((p) => p.status === "pending_approval").length >
             0 && (
             <Alert className="border-warning/30 bg-warning/10">
               <AlertTriangle className="h-4 w-4 text-warning" />
               <AlertTitle className="text-warning">
-                Attention Required
+                New Applications Pending Review
               </AlertTitle>
               <AlertDescription className="text-warning/80">
-                You have{" "}
                 {
                   pendingSignups.filter((p) => p.status === "pending_approval")
                     .length
                 }{" "}
-                pending signup(s) that require your review and approval.
+                new resident
+                {pendingSignups.filter((p) => p.status === "pending_approval")
+                  .length > 1
+                  ? "s have"
+                  : " has"}{" "}
+                applied for barangay registration and require your approval.
               </AlertDescription>
             </Alert>
           )}
@@ -293,20 +262,20 @@ const ManageUsers = () => {
         {/* Content based on active tab */}
         {activeTab === "residents" && (
           <Card className="bg-card border-border hover:shadow-lg transition-all duration-200">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 border-b border-border">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <Users className="h-5 w-5 text-primary" />
-                    All Barangay Residents
+                    Registered Residents
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">
-                    Complete list of all residents in the barangay
+                    All officially registered residents in the barangay
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <DataTable
                 data={residents}
                 columns={getTableColumns()}
@@ -315,6 +284,13 @@ const ManageUsers = () => {
                 onDelete={(item) => handleDelete(item, "resident")}
                 emptyMessage="No residents found"
                 isLoading={isLoading}
+                customActions={[
+                  {
+                    label: "Update Information",
+                    onClick: (item) => handleEdit(item, "resident"),
+                    className: "text-primary hover:text-primary/80",
+                  },
+                ]}
               />
             </CardContent>
           </Card>
@@ -322,20 +298,20 @@ const ManageUsers = () => {
 
         {activeTab === "users" && (
           <Card className="bg-card border-border hover:shadow-lg transition-all duration-200">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 border-b border-border">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <UserCheck className="h-5 w-5 text-primary" />
-                    Registered Users
+                    System Users
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">
-                    Residents with active system accounts
+                    Residents with access to the barangay online system
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <DataTable
                 data={users}
                 columns={getTableColumns()}
@@ -344,16 +320,22 @@ const ManageUsers = () => {
                 onDelete={(item) => handleDelete(item, "user")}
                 customActions={[
                   {
+                    label: "Manage Account",
+                    onClick: (item) => handleEdit(item, "user"),
+                    className: "text-primary hover:text-primary/80",
+                  },
+                  {
                     label: "Suspend Account",
                     onClick: handleSuspend,
-                    className: "text-warning",
+                    className: "text-warning hover:text-warning/80",
                   },
                   {
                     label: "Reset Password",
                     onClick: handleResetPassword,
+                    className: "text-accent hover:text-accent/80",
                   },
                 ]}
-                emptyMessage="No registered users found"
+                emptyMessage="No system users found"
                 isLoading={isLoading}
               />
             </CardContent>
@@ -362,38 +344,53 @@ const ManageUsers = () => {
 
         {activeTab === "pending" && (
           <Card className="bg-card border-border hover:shadow-lg transition-all duration-200">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 border-b border-border">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <UserPlus className="h-5 w-5 text-primary" />
-                    Pending Signups
+                    New Applications
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">
-                    New account requests awaiting admin approval
+                    Review and process new resident registration applications
                   </CardDescription>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Total: {pendingSignups.length} applications
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {pendingSignups.map((signup) => (
-                  <PendingSignupCard
-                    key={signup.id}
-                    signup={signup}
-                    onViewDetails={(item) => handleViewDetails(item, "pending")}
-                    onProcess={handleProcess}
-                    onApprove={(item) =>
-                      processPendingSignup(item.id, "approve")
-                    }
-                    onReject={(item) => processPendingSignup(item.id, "reject")}
-                  />
-                ))}
-              </div>
-              {pendingSignups.length === 0 && (
-                <div className="text-center py-8">
+            <CardContent className="pt-6">
+              {pendingSignups.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {pendingSignups.map((signup) => (
+                    <PendingSignupCard
+                      key={signup.id}
+                      signup={signup}
+                      onViewDetails={(item) =>
+                        handleViewDetails(item, "pending")
+                      }
+                      onProcess={handleProcess}
+                      onApprove={(item) =>
+                        processPendingSignup(item.id, "approve")
+                      }
+                      onReject={(item) =>
+                        processPendingSignup(item.id, "reject")
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mb-4">
+                    <UserPlus className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    No Pending Applications
+                  </h3>
                   <p className="text-muted-foreground">
-                    No pending signups found
+                    All registration applications have been processed. New
+                    applications will appear here for your review.
                   </p>
                 </div>
               )}
@@ -407,53 +404,62 @@ const ManageUsers = () => {
           onClose={() => setIsDetailsModalOpen(false)}
           user={selectedItem}
           type={modalType}
-          onEdit={handleEdit}
+          onEdit={modalType === "pending" ? null : handleEdit} // No edit for pending applications
         />
 
-        <ModalForm
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          title={`Edit ${modalType === "user" ? "User Account" : "Resident"}`}
-          description={`Update ${
-            modalType === "user" ? "user account" : "resident"
-          } information and settings`}
-          fields={modalType === "user" ? userFormFields : residentFormFields}
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={
-            modalType === "user" ? handleSubmitUser : handleSubmitResident
-          }
-          isLoading={isLoading}
-          submitText="Update"
-          size="xl"
-        />
+        {/* Edit Modal - Only for Residents and Users */}
+        {modalType !== "pending" && (
+          <ModalForm
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            title={`Update ${
+              modalType === "user" ? "User Account" : "Resident Information"
+            }`}
+            description={`Modify ${
+              modalType === "user"
+                ? "user account settings and permissions"
+                : "resident personal and contact information"
+            }`}
+            fields={modalType === "user" ? userFormFields : residentFormFields}
+            formData={formData}
+            setFormData={setFormData}
+            onSubmit={
+              modalType === "user" ? handleSubmitUser : handleSubmitResident
+            }
+            isLoading={isLoading}
+            submitText="Save Changes"
+            size="xl"
+          />
+        )}
 
+        {/* Add New Resident Modal */}
         <ModalForm
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          title="Add New Resident"
-          description="Register a new resident in the barangay system"
+          title="Register New Resident"
+          description="Add a new resident to the barangay registry with their complete information"
           fields={residentFormFields}
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleSubmitResident}
           isLoading={isLoading}
-          submitText="Add Resident"
+          submitText="Register Resident"
           size="xl"
         />
 
+        {/* Process Application Modal - Only for Pending */}
         <ModalForm
           isOpen={isProcessModalOpen}
           onClose={() => setIsProcessModalOpen(false)}
           title="Process Application"
-          description={`Review and process ${selectedItem?.firstName} ${selectedItem?.lastName}'s application`}
+          description={`Review and make a decision on ${selectedItem?.firstName} ${selectedItem?.lastName}'s registration application`}
           fields={pendingProcessFormFields}
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleSubmitProcess}
           isLoading={isLoading}
           submitText="Process Application"
-          size="s"
+          size="lg"
         />
       </div>
     </div>

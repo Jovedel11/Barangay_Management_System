@@ -26,7 +26,7 @@ const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
-  const [activeTab, setActiveTab] = useState("available/items"); // "request" or "available"
+  const [activeTab, setActiveTab] = useState("available/items");
   const [statusFilter, setStatusFilter] = useState("All status");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
@@ -50,20 +50,23 @@ const ManageDocuments = () => {
 
   const documents = Array.isArray(data?.response) ? data.response : [];
   console.log(data);
+
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full min-h-screen bg-background">
       {/* Header */}
       <div className="w-full flex">
         <div className="flex flex-col">
-          <span className="text-3xl font-extrabold">Item Management</span>
-          <span className="text-slate-500">
+          <span className="text-3xl font-extrabold text-foreground">
+            Item Management
+          </span>
+          <span className="text-muted-foreground">
             Manage inventory, track bookings, and process resident requests
           </span>
         </div>
         <div className="ml-auto">
           <ItemDialog open={open} handleOpenChange={setOpen}>
-            <Button className="ml-auto">
-              <Plus />
+            <Button className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Plus className="mr-2 h-4 w-4" />
               <span className="hidden md:block">Add Item</span>
             </Button>
           </ItemDialog>
@@ -76,23 +79,24 @@ const ManageDocuments = () => {
         onValueChange={(value) => setActiveTab(value)}
         className="w-full mt-5"
       >
-        <TabsList className="rounded-sm">
+        <TabsList className="rounded-sm bg-muted">
           <TabsTrigger
             value="request/items"
-            className="rounded-sm data-[state=active]:bg-slate-950"
+            className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            <GitPullRequest />
+            <GitPullRequest className="mr-2 h-4 w-4" />
             Request Items
           </TabsTrigger>
           <TabsTrigger
             value="available/items"
-            className="rounded-sm data-[state=active]:bg-slate-950"
+            className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            <CheckCircle />
+            <CheckCircle className="mr-2 h-4 w-4" />
             Item Inventory
           </TabsTrigger>
         </TabsList>
-        <div className="border flex flex-col border-slate-700 bg-slate-800 p-5 rounded-md w-full mt-5">
+
+        <div className="border border-border bg-card p-5 rounded-md w-full mt-5 shadow-sm">
           <div className="px-2">
             <SearchComponent
               searchQuery={searchQuery}
@@ -105,11 +109,14 @@ const ManageDocuments = () => {
               statusFilterOptions={statusFilterOptions}
             />
           </div>
+
           <TabsContent value="request/items">
-            <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
-              <span className="text-2xl font-extrabold">Item Bookings</span>
-              <span className="text-slate-500">
-                view and manage your resident bookings
+            <div className="flex flex-col bg-card px-2 rounded-md w-full mt-3">
+              <span className="text-2xl font-extrabold text-card-foreground">
+                Item Bookings
+              </span>
+              <span className="text-muted-foreground">
+                View and manage resident item bookings
               </span>
               {data && (
                 <ItemBookingTable refetch={refetch} bookings={data?.response} />
@@ -118,23 +125,25 @@ const ManageDocuments = () => {
           </TabsContent>
 
           <TabsContent value="available/items">
-            <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
-              <span className="text-2xl font-extrabold">Items Inventory</span>
-              <span className="text-slate-500 mb-5">
-                manage available items and their details
+            <div className="flex flex-col bg-card px-2 rounded-md w-full mt-3">
+              <span className="text-2xl font-extrabold text-card-foreground">
+                Items Inventory
+              </span>
+              <span className="text-muted-foreground mb-5">
+                Manage available items and their details
               </span>
               <div className="grid grid-col-1 md:grid-cols-3 gap-3">
                 {isLoading ? (
-                  <div className="col-span-3 text-center py-4">
-                    Loading appointments...
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    <div className="animate-pulse">Loading items...</div>
                   </div>
                 ) : error ? (
-                  <div className="col-span-3 text-center text-red-500 py-4">
+                  <div className="col-span-3 text-center text-destructive py-8">
                     Error loading data
                   </div>
                 ) : documents.length === 0 ? (
-                  <div className="col-span-3 text-center text-slate-500 py-4">
-                    No appointments found
+                  <div className="col-span-3 text-center text-muted-foreground py-8">
+                    No items found
                   </div>
                 ) : (
                   documents?.map((item) => (

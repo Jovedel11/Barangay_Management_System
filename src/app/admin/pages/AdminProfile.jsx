@@ -9,6 +9,9 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  Edit,
+  Save,
+  X,
 } from "lucide-react";
 
 import {
@@ -153,14 +156,45 @@ const AdminProfile = () => {
     }));
   };
 
+  // Render individual form field for inline editing
+  const renderProfileField = (field, value, onChange) => {
+    if (field.type === "select") {
+      return (
+        <select
+          value={value || ""}
+          onChange={(e) => onChange(field.name, e.target.value)}
+          className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          required={field.required}
+        >
+          <option value="">{field.placeholder}</option>
+          {field.options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    return (
+      <Input
+        type={field.type || "text"}
+        value={value || ""}
+        onChange={(e) => onChange(field.name, e.target.value)}
+        placeholder={field.placeholder}
+        required={field.required}
+        className="bg-background border-border text-foreground"
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="space-y-8 p-8 pt-6">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Page Header */}
         <PageHeader
           title="Admin Profile"
           description="Manage your personal information and account settings"
-          actions={pageHeaderActions}
         />
 
         {/* Error Alert */}
@@ -177,126 +211,278 @@ const AdminProfile = () => {
         {/* Statistics */}
         <StatsGrid stats={profileStats} />
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Profile Information */}
           <div className="lg:col-span-2">
-            <Card className="bg-card border-border hover:shadow-lg transition-all duration-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-foreground">
-                  <User className="h-5 w-5 text-primary" />
-                  Profile Information
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  {isEditMode
-                    ? "Update your personal and professional information"
-                    : "Your personal and professional information"}
-                </CardDescription>
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-4 border-b border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-foreground">
+                      <User className="h-5 w-5 text-primary" />
+                      Profile Information
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      {isEditMode
+                        ? "Update your personal and professional information"
+                        : "Your personal and professional information"}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {!isEditMode ? (
+                      <Button
+                        onClick={handleEditToggle}
+                        variant="outline"
+                        size="sm"
+                        className="border-border text-foreground hover:bg-muted"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={handleEditToggle}
+                          variant="outline"
+                          size="sm"
+                          className="border-border text-foreground hover:bg-muted"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => handleProfileUpdate(profileForm)}
+                          size="sm"
+                          disabled={isLoading}
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          {isLoading ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                {isEditMode ? (
-                  <ModalForm
-                    isOpen={true}
-                    onClose={() => {}}
-                    title=""
-                    description=""
-                    fields={profileFormFields}
-                    formData={profileForm}
-                    setFormData={setProfileForm}
-                    onSubmit={handleProfileUpdate}
-                    isLoading={isLoading}
-                    submitText="Save Changes"
-                    showHeader={false}
-                    showFooter={true}
-                    size="full"
-                  />
-                ) : (
-                  <div className="space-y-6">
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Full Name
-                        </Label>
+
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                    {/* First Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        First Name{" "}
+                        {isEditMode && (
+                          <span className="text-destructive">*</span>
+                        )}
+                      </Label>
+                      {isEditMode ? (
+                        renderProfileField(
+                          {
+                            name: "firstName",
+                            type: "text",
+                            placeholder: "Enter first name",
+                            required: true,
+                          },
+                          profileForm.firstName,
+                          (name, value) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              [name]: value,
+                            }))
+                        )
+                      ) : (
                         <p className="text-lg font-semibold text-foreground">
-                          {`${adminData.firstName} ${adminData.middleName} ${adminData.lastName}`}
+                          {adminData.firstName}
                         </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Employee ID
-                        </Label>
+                      )}
+                    </div>
+
+                    {/* Last Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Last Name{" "}
+                        {isEditMode && (
+                          <span className="text-destructive">*</span>
+                        )}
+                      </Label>
+                      {isEditMode ? (
+                        renderProfileField(
+                          {
+                            name: "lastName",
+                            type: "text",
+                            placeholder: "Enter last name",
+                            required: true,
+                          },
+                          profileForm.lastName,
+                          (name, value) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              [name]: value,
+                            }))
+                        )
+                      ) : (
                         <p className="text-lg font-semibold text-foreground">
-                          {adminData.employeeId}
+                          {adminData.lastName}
                         </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          Email Address
-                        </Label>
+                      )}
+                    </div>
+
+                    {/* Employee ID */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Employee ID
+                      </Label>
+                      <p className="text-lg font-semibold text-foreground">
+                        {adminData.employeeId}
+                      </p>
+                    </div>
+
+                    {/* Position */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Position
+                      </Label>
+                      {isEditMode ? (
+                        renderProfileField(
+                          {
+                            name: "position",
+                            type: "select",
+                            placeholder: "Select position",
+                            options: [
+                              {
+                                value: "Barangay Captain",
+                                label: "Barangay Captain",
+                              },
+                              {
+                                value: "Barangay Secretary",
+                                label: "Barangay Secretary",
+                              },
+                              {
+                                value: "Barangay Treasurer",
+                                label: "Barangay Treasurer",
+                              },
+                              {
+                                value: "Barangay Clerk",
+                                label: "Barangay Clerk",
+                              },
+                            ],
+                          },
+                          profileForm.position,
+                          (name, value) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              [name]: value,
+                            }))
+                        )
+                      ) : (
+                        <Badge className="bg-primary/10 text-primary border-primary/20">
+                          {adminData.position}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Email Address{" "}
+                        {isEditMode && (
+                          <span className="text-destructive">*</span>
+                        )}
+                      </Label>
+                      {isEditMode ? (
+                        renderProfileField(
+                          {
+                            name: "email",
+                            type: "email",
+                            placeholder: "Enter email address",
+                            required: true,
+                          },
+                          profileForm.email,
+                          (name, value) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              [name]: value,
+                            }))
+                        )
+                      ) : (
                         <p className="text-foreground">{adminData.email}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          Phone Number
-                        </Label>
+                      )}
+                    </div>
+
+                    {/* Phone */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone Number{" "}
+                        {isEditMode && (
+                          <span className="text-destructive">*</span>
+                        )}
+                      </Label>
+                      {isEditMode ? (
+                        renderProfileField(
+                          {
+                            name: "phoneNumber",
+                            type: "tel",
+                            placeholder: "Enter phone number",
+                            required: true,
+                          },
+                          profileForm.phoneNumber,
+                          (name, value) =>
+                            setProfileForm((prev) => ({
+                              ...prev,
+                              [name]: value,
+                            }))
+                        )
+                      ) : (
                         <p className="text-foreground">
                           {adminData.phoneNumber}
                         </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Position
-                        </Label>
-                        <Badge className="bg-primary/10 text-primary">
-                          {adminData.position}
-                        </Badge>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Department
-                        </Label>
-                        <Badge
-                          variant="outline"
-                          className="border-accent/30 text-accent"
-                        >
-                          {adminData.department}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Office Address
-                      </Label>
-                      <p className="text-foreground">{adminData.address}</p>
-                    </div>
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Date Hired
-                        </Label>
-                        <p className="text-foreground">
-                          {new Date(adminData.dateHired).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">
-                          Account Status
-                        </Label>
-                        <Badge
-                          className={
-                            adminData.isActive
-                              ? "bg-success/10 text-success"
-                              : "bg-destructive/10 text-destructive"
-                          }
-                        >
-                          {adminData.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
+                      )}
                     </div>
                   </div>
-                )}
+
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Office Address
+                    </Label>
+                    {isEditMode ? (
+                      renderProfileField(
+                        {
+                          name: "address",
+                          type: "text",
+                          placeholder: "Enter office address",
+                        },
+                        profileForm.address,
+                        (name, value) =>
+                          setProfileForm((prev) => ({ ...prev, [name]: value }))
+                      )
+                    ) : (
+                      <p className="text-foreground">{adminData.address}</p>
+                    )}
+                  </div>
+
+                  {/* Account Status */}
+                  {!isEditMode && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        Account Status
+                      </Label>
+                      <Badge
+                        className={
+                          adminData.isActive
+                            ? "bg-success/10 text-success border-success/20"
+                            : "bg-destructive/10 text-destructive border-destructive/20"
+                        }
+                      >
+                        {adminData.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -304,24 +490,26 @@ const AdminProfile = () => {
           {/* Avatar and Quick Actions */}
           <div className="space-y-6">
             {/* Avatar Card */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Profile Picture</CardTitle>
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-4 border-b border-border">
+                <CardTitle className="text-lg text-foreground">
+                  Profile Picture
+                </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col items-center space-y-4">
+              <CardContent className="flex flex-col items-center space-y-4 pt-6">
                 <div className="relative">
-                  <Avatar className="h-32 w-32">
+                  <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
                     <AvatarImage src={adminData.avatar} alt="Admin Avatar" />
-                    <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                      {adminData.firstName.charAt(0)}
-                      {adminData.lastName.charAt(0)}
+                    <AvatarFallback className="text-lg sm:text-2xl bg-primary/10 text-primary border-2 border-primary/20">
+                      {adminData.firstName?.charAt(0)}
+                      {adminData.lastName?.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                    className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90 transition-colors shadow-lg"
                   >
-                    <Camera className="h-4 w-4" />
+                    <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
                   </label>
                   <input
                     id="avatar-upload"
@@ -343,14 +531,14 @@ const AdminProfile = () => {
             </Card>
 
             {/* Security Card */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
+            <Card className="bg-card border-border shadow-sm">
+              <CardHeader className="pb-4 border-b border-border">
+                <CardTitle className="text-lg flex items-center gap-2 text-foreground">
                   <Shield className="h-5 w-5 text-primary" />
                   Security
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 <Button
                   onClick={() => setIsChangePasswordOpen(true)}
                   className="w-full"

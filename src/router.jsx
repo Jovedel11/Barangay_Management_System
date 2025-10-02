@@ -11,7 +11,7 @@ import BarangayEvents from "./app/private/pages/BarangayEvents";
 import BarangayServices from "./app/private/pages/BarangayServices";
 import AdminLayout from "./app/admin/layout/AdminLayout";
 import ManageDocuments from "./app/admin/pages/ManageDocuments";
-import ManageItems from "./app/admin/pages/ManageItems";
+import ManageItem from "./app/admin/pages/ManageItem";
 import ManageServices from "./app/admin/pages/ManageServices";
 import ManageEvents from "./app/admin/pages/ManageEvents";
 import ManageUsers from "./app/admin/pages/ManageUsers";
@@ -88,7 +88,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "manage-items",
-        element: <ManageItems />,
+        element: <ManageItem />,
       },
       {
         path: "manage-documents",

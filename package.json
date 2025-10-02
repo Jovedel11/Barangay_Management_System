@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "dev:backend": "npm --prefix backend run dev",
-    "dev:all": "concurrently -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:backend\""
+    "dev:all": "concurrently -n FRONTEND,BACKEND -c magenta,cyan \"npm run dev\" \"npm run dev:server\""
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -32,10 +32,12 @@
     "@tanstack/react-query": "^5.90.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "connect-mongo": "^5.1.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.13",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
+    "mongoose": "^8.18.3",
     "next-themes": "^0.4.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -49,9 +51,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/mongoose": "^5.11.96",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react-swc": "^4.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

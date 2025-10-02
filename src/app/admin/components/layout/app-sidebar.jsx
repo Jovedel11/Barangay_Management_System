@@ -1,25 +1,14 @@
 import * as React from "react";
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
   IconFolder,
   IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
-  IconReport,
-  IconSearch,
   IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
 
 import { NavDocuments } from "../navigation/nav-documents";
 import { NavMain } from "../navigation/nav-main";
-import { NavSecondary } from "../navigation/nav-secondary";
 import { NavUser } from "@/app/shared/components/nav-user";
 import {
   Sidebar,
@@ -35,7 +24,7 @@ import { CalendarSync, HandPlatter, ScrollText, UserPen } from "lucide-react";
 const data = {
   user: {
     name: "shadcn",
-    email: "m@example.com",
+    email: "admin@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
@@ -101,7 +90,7 @@ export function AppSidebar(props) {
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary">
                   <img
-                    src="/image/favicon-96x96.png"
+                    src="image/favicon.svg"
                     alt="Barangay Kaypian Logo"
                     className="w-6 h-6 object-contain"
                   />
@@ -122,7 +111,6 @@ export function AppSidebar(props) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

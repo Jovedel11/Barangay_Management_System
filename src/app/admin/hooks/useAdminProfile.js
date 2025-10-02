@@ -16,10 +16,8 @@ const useAdminProfile = () => {
     middleName: "Santos",
     email: "admin@barangay.gov.ph",
     phoneNumber: "09123456789",
-    address: "123 Main Street, Barangay Hall, City",
+    address: "R3C7+M2Q, Barangay Kaypian SJDM, 3023 Bulacan",
     position: "Barangay Captain",
-    department: "Executive Office",
-    dateHired: "2020-01-15",
     employeeId: "BRGY-001",
     avatar: "/images/admin-avatar.jpg",
     isActive: true,
@@ -44,7 +42,6 @@ const useAdminProfile = () => {
     phoneNumber: adminData.phoneNumber,
     address: adminData.address,
     position: adminData.position,
-    department: adminData.department,
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -106,21 +103,6 @@ const useAdminProfile = () => {
       gridClassName: "md:col-span-1",
     },
     {
-      name: "department",
-      label: "Department",
-      type: "select",
-      required: true,
-      options: [
-        { value: "Executive Office", label: "Executive Office" },
-        { value: "Legislative", label: "Legislative" },
-        { value: "Finance", label: "Finance" },
-        { value: "Health Services", label: "Health Services" },
-        { value: "Public Safety", label: "Public Safety" },
-        { value: "Social Services", label: "Social Services" },
-      ],
-      gridClassName: "md:col-span-1",
-    },
-    {
       name: "address",
       label: "Complete Address",
       type: "textarea",
@@ -159,15 +141,6 @@ const useAdminProfile = () => {
   // Statistics for admin profile
   const getProfileStats = () => [
     {
-      title: "Total Logins",
-      value: adminData.loginCount,
-      description: "System access count",
-      icon: User,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
-      borderColor: "border-primary/20",
-    },
-    {
       title: "Account Status",
       value: adminData.isActive ? "Active" : "Inactive",
       description: "Current status",
@@ -184,15 +157,6 @@ const useAdminProfile = () => {
       color: "text-accent",
       bgColor: "bg-accent/10",
       borderColor: "border-accent/20",
-    },
-    {
-      title: "Years of Service",
-      value: new Date().getFullYear() - new Date(adminData.dateHired).getFullYear(),
-      description: "Experience",
-      icon: Calendar,
-      color: "text-warning",
-      bgColor: "bg-warning/10",
-      borderColor: "border-warning/20",
     },
   ];
 

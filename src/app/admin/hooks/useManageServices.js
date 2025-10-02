@@ -431,10 +431,6 @@ const useManageServices = () => {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export functionality to be implemented");
-  };
-
   const handleRefresh = () => {
     if (activeTab === "services") {
       refreshServices();
@@ -445,13 +441,6 @@ const useManageServices = () => {
 
   // Page header configuration
   const pageHeaderActions = [
-    {
-      label: "Export Report",
-      variant: "outline",
-      icon: Download,
-      onClick: handleExport,
-      className: "border-primary/30 text-primary hover:bg-primary/10",
-    },
     {
       label: "Add New Service",
       icon: Plus,
@@ -518,7 +507,6 @@ const useManageServices = () => {
     handleProcessAppointment,
     handleSubmitProcessing,
     handleDeleteAppointment,
-    handleExport,
     handleRefresh,
     toggleServiceStatus,
 

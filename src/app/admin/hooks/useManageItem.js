@@ -387,10 +387,6 @@ const useManageItem = () => {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export functionality to be implemented");
-  };
-
   const handleRefresh = () => {
     if (activeTab === "items") {
       refreshItems();
@@ -401,13 +397,6 @@ const useManageItem = () => {
 
   // Page header configuration
   const pageHeaderActions = [
-    {
-      label: "Export Report",
-      variant: "outline",
-      icon: Download,
-      onClick: handleExport,
-      className: "border-primary/30 text-primary hover:bg-primary/10",
-    },
     {
       label: "Add New Item",
       icon: Plus,
@@ -471,7 +460,6 @@ const useManageItem = () => {
     handleViewBookingDetails,
     handleProcessBooking,
     handleSubmitProcessing,
-    handleExport,
     handleRefresh,
     toggleItemStatus,
     cancelBooking,

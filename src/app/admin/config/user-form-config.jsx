@@ -51,7 +51,7 @@ export const residentFormFields = [
     ],
     gridClassName: "md:col-span-1",
   },
-  
+
   // Contact Information
   {
     name: "address",
@@ -90,7 +90,7 @@ export const residentFormFields = [
     required: true,
     gridClassName: "md:col-span-2",
   },
-  
+
   // Economic Information
   {
     name: "occupation",
@@ -100,20 +100,13 @@ export const residentFormFields = [
     gridClassName: "md:col-span-1",
   },
   {
-    name: "monthlyIncome",
-    label: "Monthly Income",
-    type: "text",
-    placeholder: "₱0.00",
-    gridClassName: "md:col-span-1",
-  },
-  {
     name: "familyMembers",
     label: "Family Members",
     type: "number",
     defaultValue: 1,
     gridClassName: "md:col-span-1",
   },
-  
+
   // Government IDs
   {
     name: "voterIdNumber",
@@ -142,7 +135,7 @@ export const residentFormFields = [
     placeholder: "XXX-XXX-XXX-XXX",
     gridClassName: "md:col-span-1",
   },
-  
+
   // Special Status Checkboxes
   {
     name: "isSenior",
@@ -262,20 +255,20 @@ export const pendingProcessFormFields = [
     type: "radio",
     required: true,
     options: [
-      { 
-        value: "approve", 
+      {
+        value: "approve",
         label: "Approve Application",
-        className: "text-success"
+        className: "text-success",
       },
-      { 
-        value: "reject", 
+      {
+        value: "reject",
         label: "Reject Application",
-        className: "text-destructive"
+        className: "text-destructive",
       },
-      { 
-        value: "request_more", 
+      {
+        value: "request_more",
         label: "Request More Information",
-        className: "text-warning"
+        className: "text-warning",
       },
     ],
     gridClassName: "col-span-full",

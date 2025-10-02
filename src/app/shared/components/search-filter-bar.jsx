@@ -57,25 +57,6 @@ const SearchFilterBar = ({
       ))}
 
       {/* Action Buttons */}
-      <div className="flex gap-2">
-        {showRefreshButton && (
-          <Button variant="outline" size="icon" onClick={onRefresh}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        )}
-        {showExportButton && (
-          <Button variant="outline" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        )}
-        {showAddButton && (
-          <Button onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-2" />
-            {addButtonText}
-          </Button>
-        )}
-      </div>
     </div>
   );
 };

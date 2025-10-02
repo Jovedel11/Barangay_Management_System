@@ -2,6 +2,7 @@ import app from "@/App";
 import dotenv from "dotenv";
 import { ConnectDB } from "@/config/db";
 dotenv.config();
+console.log("RESEND_API_KEY:", process.env.RESEND_API_KEY);
 
 (async () => {
   await ConnectDB();

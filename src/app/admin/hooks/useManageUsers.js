@@ -152,7 +152,6 @@ const useManageUsers = () => {
       phoneNumber: "",
       email: "",
       occupation: "",
-      monthlyIncome: "",
       familyMembers: 1,
       emergencyContact: "",
       emergencyPhone: "",
@@ -209,10 +208,6 @@ const useManageUsers = () => {
         console.error("Error resetting password:", error);
       }
     }
-  };
-
-  const handleExport = () => {
-    console.log("Export functionality to be implemented");
   };
 
   // Form submission handlers
@@ -317,13 +312,6 @@ const useManageUsers = () => {
   // Page header configuration
   const pageHeaderActions = [
     {
-      label: "Export Data",
-      variant: "outline",
-      icon: Download,
-      onClick: handleExport,
-      className: "border-primary/30 text-primary hover:bg-primary/10",
-    },
-    {
       label: "Add Resident",
       icon: Plus,
       onClick: handleAdd,
@@ -370,7 +358,6 @@ const useManageUsers = () => {
     handleDelete,
     handleSuspend,
     handleResetPassword,
-    handleExport,
     handleSubmitResident,
     handleSubmitUser,
     handleSubmitProcess,

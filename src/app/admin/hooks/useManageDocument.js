@@ -396,10 +396,6 @@ const useManageDocument = () => {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export functionality to be implemented");
-  };
-
   const handleRefresh = () => {
     if (activeTab === "requests") {
       refreshRequests();
@@ -410,13 +406,6 @@ const useManageDocument = () => {
 
   // Page header configuration
   const pageHeaderActions = [
-    {
-      label: "Export Reports",
-      variant: "outline",
-      icon: Download,
-      onClick: handleExport,
-      className: "border-primary/30 text-primary hover:bg-primary/10",
-    },
     {
       label: "Add Document Type",
       icon: Plus,
@@ -481,7 +470,6 @@ const useManageDocument = () => {
     handleProcessRequest,
     handleSubmitProcessing,
     handleDeleteRequest,
-    handleExport,
     handleRefresh,
     toggleDocumentTypeStatus,
   };

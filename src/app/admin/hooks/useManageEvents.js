@@ -340,13 +340,6 @@ const useManageEvents = () => {
       gridClassName: "col-span-2",
     },
     {
-      name: "image",
-      label: "Image URL (Optional)",
-      type: "text",
-      placeholder: "e.g., /images/basketball-tournament.jpg",
-      gridClassName: "col-span-2",
-    },
-    {
       name: "featured",
       label: "Featured Event",
       type: "checkbox",
@@ -404,7 +397,6 @@ const useManageEvents = () => {
       categories: "",
       featured: false,
       status: "upcoming",
-      image: "",
     });
     setSelectedEvent(null);
     setIsEventDialogOpen(true);
@@ -430,7 +422,6 @@ const useManageEvents = () => {
       categories: event.categories || "",
       featured: event.featured,
       status: event.status,
-      image: event.image || "",
     });
     setIsEventDialogOpen(true);
   };
@@ -502,10 +493,6 @@ const useManageEvents = () => {
     }
   };
 
-  const handleExport = () => {
-    console.log("Export functionality to be implemented");
-  };
-
   const handleRefresh = () => {
     if (activeTab === "events") {
       refreshEvents();
@@ -516,13 +503,6 @@ const useManageEvents = () => {
 
   // Page header configuration
   const pageHeaderActions = [
-    {
-      label: "Export Report",
-      variant: "outline",
-      icon: Download,
-      onClick: handleExport,
-      className: "border-primary/30 text-primary hover:bg-primary/10",
-    },
     {
       label: "Add New Event",
       icon: Plus,
@@ -592,7 +572,6 @@ const useManageEvents = () => {
     handleProcessRegistration,
     handleSubmitProcessing,
     handleDeleteRegistration,
-    handleExport,
     handleRefresh,
     toggleEventStatus,
     toggleFeaturedStatus,

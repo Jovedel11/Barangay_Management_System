@@ -65,7 +65,9 @@ const ModalForm = ({
             placeholder={field.placeholder}
             required={field.required}
             disabled={field.disabled}
-            className={field.className}
+            className={`bg-background border-border text-foreground ${
+              field.className || ""
+            }`}
           />
         );
 
@@ -79,7 +81,9 @@ const ModalForm = ({
             required={field.required}
             disabled={field.disabled}
             rows={field.rows || 3}
-            className={field.className}
+            className={`bg-background border-border text-foreground ${
+              field.className || ""
+            }`}
           />
         );
 
@@ -93,12 +97,20 @@ const ModalForm = ({
             required={field.required}
             disabled={field.disabled}
           >
-            <SelectTrigger className={field.className}>
+            <SelectTrigger
+              className={`bg-background border-border text-foreground ${
+                field.className || ""
+              }`}
+            >
               <SelectValue placeholder={field.placeholder} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover border-border">
               {field.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className="text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+                >
                   {option.label}
                 </SelectItem>
               ))}
@@ -113,10 +125,11 @@ const ModalForm = ({
               id={field.name}
               checked={value}
               onCheckedChange={(checked) =>
-                handleInputChange(field.name, !checked)
+                handleInputChange(field.name, checked)
               }
+              className="border-border"
             />
-            <Label htmlFor={field.name} className="text-sm">
+            <Label htmlFor={field.name} className="text-sm text-foreground">
               {field.checkboxLabel}
             </Label>
           </div>
@@ -136,10 +149,11 @@ const ModalForm = ({
                 <RadioGroupItem
                   value={option.value}
                   id={`${field.name}-${option.value}`}
+                  className="border-border"
                 />
                 <Label
                   htmlFor={`${field.name}-${option.value}`}
-                  className="text-sm"
+                  className="text-sm text-foreground"
                 >
                   {option.label}
                 </Label>
@@ -173,12 +187,14 @@ const ModalForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={getSizeClass()}>
+      <DialogContent className={`${getSizeClass()} bg-card border-border`}>
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
+          <DialogHeader className="border-b border-border pb-4">
+            <DialogTitle className="text-foreground">{title}</DialogTitle>
             {description && (
-              <DialogDescription>{description}</DialogDescription>
+              <DialogDescription className="text-muted-foreground">
+                {description}
+              </DialogDescription>
             )}
           </DialogHeader>
 
@@ -189,7 +205,10 @@ const ModalForm = ({
                 className={`grid gap-2 ${field.gridClassName || ""}`}
               >
                 {field.label && (
-                  <Label htmlFor={field.name} className="text-sm font-medium">
+                  <Label
+                    htmlFor={field.name}
+                    className="text-sm font-medium text-foreground"
+                  >
                     {field.label}
                     {field.required && (
                       <span className="text-destructive ml-1">*</span>
@@ -206,11 +225,20 @@ const ModalForm = ({
             ))}
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter className="border-t border-border pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="border-border text-foreground hover:bg-muted"
+            >
               {cancelText}
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
               {isLoading ? "Loading..." : submitText}
             </Button>
           </DialogFooter>
