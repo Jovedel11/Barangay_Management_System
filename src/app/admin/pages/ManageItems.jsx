@@ -10,6 +10,7 @@ import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
 import DocumentRequestsTable from "@/components/custom/DocReqTable";
 import ItemCard from "@/app/shared/components/item-card";
+import ItemBookingTable from "@/components/custom/ItemBookingTable";
 
 const filterOptions = [
   "All Categories",
@@ -19,19 +20,24 @@ const filterOptions = [
   "Tools & Equipment",
 ];
 
+const statusFilterOptions = ["All status", "approved", "completed", "pending"];
+
 const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [activeTab, setActiveTab] = useState("available/items"); // "request" or "available"
+  const [statusFilter, setStatusFilter] = useState("All status");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [activeTab, debouncedSearchQuery, category],
+    queryKey: [activeTab, debouncedSearchQuery, category, statusFilter],
     queryFn: () =>
       customRequest({
-        path: `/api/borrow-item/${activeTab}?search=${debouncedSearchQuery}&category=${category}`,
+        path: `/api/borrow-item/${activeTab}?search=${debouncedSearchQuery}&category=${category}${
+          statusFilter !== "All status" ? `&status=${statusFilter}` : ""
+        }`,
         attributes: {
           method: "GET",
           credentials: "include",
@@ -72,7 +78,7 @@ const ManageDocuments = () => {
       >
         <TabsList className="rounded-sm">
           <TabsTrigger
-            value="get-request"
+            value="request/items"
             className="rounded-sm data-[state=active]:bg-slate-950"
           >
             <GitPullRequest />
@@ -94,21 +100,19 @@ const ManageDocuments = () => {
               category={category}
               setCategory={setCategory}
               filterOptions={filterOptions}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              statusFilterOptions={statusFilterOptions}
             />
           </div>
-          <TabsContent value="get-request">
+          <TabsContent value="request/items">
             <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
-              <span className="text-2xl font-extrabold">
-                Service Appointments
-              </span>
+              <span className="text-2xl font-extrabold">Item Bookings</span>
               <span className="text-slate-500">
-                view and manage your appointments
+                view and manage your resident bookings
               </span>
               {data && (
-                <DocumentRequestsTable
-                  refetch={refetch}
-                  requests={data?.response}
-                />
+                <ItemBookingTable refetch={refetch} bookings={data?.response} />
               )}
             </div>
           </TabsContent>

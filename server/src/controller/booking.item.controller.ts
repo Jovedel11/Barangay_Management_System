@@ -130,13 +130,14 @@ const createSearchController = (
           errors: errors.array(),
         });
       }
-      const { search, category } = matchedData(req, {
+      const { search, category, status } = matchedData(req, {
         locations: ["query"],
       });
-      console.log(search, category);
+      console.log(search, category, status);
       const result = await FilterCollection({
         search,
         category,
+        status,
         model: CollectionModel,
         hasUser: value,
         data: fieldsToSearch,
