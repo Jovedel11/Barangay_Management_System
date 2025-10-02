@@ -8,9 +8,9 @@ type IBrgyService<T extends string> = {
   time: T;
   location: T;
   cost: T;
-  requirements: T[];
+  requirements: T;
   serviceType: T;
-  available: boolean;
+  status: boolean;
   slots: T;
   contact: T;
   phone: T;
@@ -25,9 +25,9 @@ const brgyServiceSchema = new Schema<IBrgyService<string>>({
   time: { type: String, required: true },
   location: { type: String, required: true },
   cost: { type: String, required: true },
-  requirements: { type: [String], required: true },
+  requirements: { type: String, required: true },
   serviceType: { type: String, required: true },
-  available: { type: Boolean, required: true },
+  status: { type: Boolean, required: true },
   slots: { type: String, required: true },
   contact: { type: String, required: true },
   phone: { type: String, required: true },
