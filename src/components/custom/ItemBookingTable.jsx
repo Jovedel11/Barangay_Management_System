@@ -225,7 +225,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{booking.purpose}</span>
+                          <span className="font-medium">{booking.name}</span>
                           <span className="text-sm text-zinc-400">
                             Qty: {booking.quantity}
                           </span>
@@ -363,9 +363,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Purpose
+                      Item Name
                     </h4>
-                    <p className="text-base">{selectedBooking?.purpose}</p>
+                    <p className="text-base">{selectedBooking?.name}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">
@@ -415,6 +415,14 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                       {formatDate(selectedBooking?.returnDate)}
                     </p>
                   </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-1">
+                    Purpose
+                  </h4>
+                  <p className="text-base">
+                    {selectedBooking?.purpose ?? "N/A"}
+                  </p>
                 </div>
               </div>
             </div>

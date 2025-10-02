@@ -11,6 +11,11 @@ const searchItemValidation = [
     .trim()
     .isString()
     .withMessage("Category must be a string between 1 and 50 characters."),
+  query("status")
+    .optional()
+    .trim()
+    .isString()
+    .withMessage("Status must be a string"),
 ];
 
 export default searchItemValidation;

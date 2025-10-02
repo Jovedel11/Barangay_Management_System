@@ -3,12 +3,14 @@ import { Schema, model } from "mongoose";
 
 type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
   user: Schema.Types.ObjectId;
+  name: string;
   borrowDate: T;
   returnDate: T;
   eventLocation: T;
   contactNumber: T;
   //specialRequirements: Partial<Record<string, boolean>>;
   status?: string;
+  category: string;
 };
 
 type IBorrowableItem<T extends string> = {
@@ -29,6 +31,7 @@ type IBorrowableItem<T extends string> = {
 
 const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
+  name: { type: String, required: true },
   quantity: { type: Number, required: true },
   borrowDate: { type: String, required: true },
   returnDate: { type: String, required: true },
@@ -36,6 +39,7 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   eventLocation: { type: String, required: true },
   contactNumber: { type: String, required: true },
   deliveryMethod: { type: String, required: true },
+  category: { type: String, required: true },
   /*specialRequirements: {
     isSenior: { type: Boolean, required: false, default: false },
     isFemale: { type: Boolean, required: false, default: false },

@@ -8,6 +8,11 @@ const itemBorrowValidation = [
     .withMessage("User ID cannot be empty.")
     .isMongoId()
     .withMessage("User ID must be a valid Mongo ID."),
+  body("name")
+    .exists()
+    .withMessage("Item name date is required.")
+    .notEmpty()
+    .withMessage("Item name cannot be empty."),
   body("quantity")
     .exists()
     .withMessage("Quantity is required.")
@@ -41,6 +46,11 @@ const itemBorrowValidation = [
     .notEmpty()
     .withMessage("Contact number cannot be empty."),
   body("deliveryMethod")
+    .exists()
+    .withMessage("Delivery method is required.")
+    .notEmpty()
+    .withMessage("Delivery method cannot be empty."),
+  body("category")
     .exists()
     .withMessage("Delivery method is required.")
     .notEmpty()
@@ -150,16 +160,19 @@ const updateBorrowRequestValidation = [
     .isString()
     .withMessage("Status must be a string")
     .isIn(["pending", "approved", "rejected", "completed"])
-    .withMessage("Status must be one of: pending, approved, rejected, completed"),
-  body()
-    .custom((value) => {
-      const updateFields = ["status"];
-      const hasUpdateField = updateFields.some(field => value[field] !== undefined);
-      if (!hasUpdateField) {
-        throw new Error("At least one field must be provided to update");
-      }
-      return true;
-    }),
+    .withMessage(
+      "Status must be one of: pending, approved, rejected, completed"
+    ),
+  body().custom((value) => {
+    const updateFields = ["status"];
+    const hasUpdateField = updateFields.some(
+      (field) => value[field] !== undefined
+    );
+    if (!hasUpdateField) {
+      throw new Error("At least one field must be provided to update");
+    }
+    return true;
+  }),
 ];
 
 const updateItemValidation = [

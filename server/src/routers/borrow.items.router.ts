@@ -37,6 +37,7 @@ const retreieveItemRequests = createSearchController(
   BorrowRequestModel,
   [
     "user",
+    "name",
     "quantity",
     "borrowDate",
     "returnDate",
@@ -45,6 +46,7 @@ const retreieveItemRequests = createSearchController(
     "contactNumber",
     "deliveryMethod",
     "status",
+    "category",
   ],
   true
 );

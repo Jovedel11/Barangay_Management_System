@@ -4,9 +4,10 @@ type Filter = {
   search?: string;
   model: Model<any>;
   category?: string;
+  status?: string;
   data: string[];
-  hasUser?: boolean; // Optional flag to include user data
-  userModel?: string; // Optional name of the user collection (e.g., "Account")
+  hasUser?: boolean; 
+  userModel?: string;
 };
 
 type FilterResponse = {
@@ -22,6 +23,7 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
       search,
       model: CollectionModel,
       category,
+      status,
       data,
       hasUser = false,
       userModel = "accounts",
@@ -29,27 +31,22 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
     if (!data) throw new Error("Data is empty");
 
     const pipeline: any[] = [];
-
-    // Match stage for filtering
     const matchStage: any = {};
-
-    // Add search conditions if search term exists
     if (search?.trim()) {
       const searchRegex = { $regex: search.trim(), $options: "i" };
       matchStage.$or = data.map((key) => ({
         [key]: searchRegex,
       }));
     }
-
-    // Add category filter ONLY if specified and not "All Categories"
     if (category && category.trim() !== "" && category !== "All Categories") {
       matchStage.category = { $regex: `^${category}$`, $options: "i" };
     }
 
-    // Always push $match, even if it's empty → means "match everything"
-    pipeline.push({ $match: matchStage });
+    if (status && status.trim() !== "") {
+      matchStage.status = { $regex: `^${status}$`, $options: "i" };
+    }
 
-    // Add lookup stage for user data if hasUser is true
+    pipeline.push({ $match: matchStage });
     if (hasUser) {
       pipeline.push(
         {

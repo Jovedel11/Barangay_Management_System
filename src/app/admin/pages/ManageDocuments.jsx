@@ -23,7 +23,7 @@ const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
-  const [activeTab, setActiveTab] = useState("get-available"); // "request" or "available"
+  const [activeTab, setActiveTab] = useState("get-available");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 

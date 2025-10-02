@@ -20,19 +20,24 @@ const filterOptions = [
   "Tools & Equipment",
 ];
 
+const statusFilterOptions = ["All status", "approved", "completed", "pending"];
+
 const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [activeTab, setActiveTab] = useState("available/items"); // "request" or "available"
+  const [statusFilter, setStatusFilter] = useState("All status");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [activeTab, debouncedSearchQuery, category],
+    queryKey: [activeTab, debouncedSearchQuery, category, statusFilter],
     queryFn: () =>
       customRequest({
-        path: `/api/borrow-item/${activeTab}?search=${debouncedSearchQuery}&category=${category}`,
+        path: `/api/borrow-item/${activeTab}?search=${debouncedSearchQuery}&category=${category}${
+          statusFilter !== "All status" ? `&status=${statusFilter}` : ""
+        }`,
         attributes: {
           method: "GET",
           credentials: "include",
@@ -95,13 +100,14 @@ const ManageDocuments = () => {
               category={category}
               setCategory={setCategory}
               filterOptions={filterOptions}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              statusFilterOptions={statusFilterOptions}
             />
           </div>
           <TabsContent value="request/items">
             <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
-              <span className="text-2xl font-extrabold">
-                Item Bookings
-              </span>
+              <span className="text-2xl font-extrabold">Item Bookings</span>
               <span className="text-slate-500">
                 view and manage your resident bookings
               </span>
