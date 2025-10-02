@@ -128,8 +128,8 @@ const ItemCard = ({ item, className = "", refetch }) => {
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <WarehouseIcon className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <h4 className="font-medium text-foreground">{item?.name}</h4>
+            <div className="truncate w-24 md:w-32">
+              <h4 className="font-medium text-foreground truncate">{item?.name}</h4>
               <p className="text-sm text-muted-foreground capitalize">
                 {item?.category}
               </p>
@@ -137,7 +137,7 @@ const ItemCard = ({ item, className = "", refetch }) => {
           </div>
           <div className="flex items-center gap-1">
             {getConditionBadge(item?.condition)}
-            {!item?.isActive && (
+            {!item?.status && (
               <Badge className="bg-muted/10 text-muted-foreground border-muted/30">
                 Inactive
               </Badge>

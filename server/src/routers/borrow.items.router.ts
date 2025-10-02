@@ -2,17 +2,20 @@ import {
   itemBorrowValidation,
   borrowableItemValidation,
   updateItemValidation,
+  updateBorrowRequestValidation,
   deleteItemValidation,
 } from "@/middleware/borrow.item.middleware";
 import {
   bookItem,
   addAvailableBooking,
-  getAvailableBooking,
   deleteItem,
   createSearchController,
 } from "@/controller/booking.item.controller";
 import { Router } from "express";
-import { BorrowableItemsModel } from "@/models/borrow.items";
+import {
+  BorrowableItemsModel,
+  BorrowRequestModel,
+} from "@/models/borrow.items";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
 const router = Router();
@@ -30,13 +33,34 @@ const retreiveAllItems = createSearchController(BorrowableItemsModel, [
   "notes",
 ]);
 
-router.get("/retrieve", getAvailableBooking); // Retrieve (resident)
+const retreieveItemRequests = createSearchController(
+  BorrowRequestModel,
+  [
+    "user",
+    "quantity",
+    "borrowDate",
+    "returnDate",
+    "purpose",
+    "eventLocation",
+    "contactNumber",
+    "deliveryMethod",
+    "status",
+  ],
+  true
+);
+
+router.get("/request/items", searchItemValidation, retreieveItemRequests); // Retrieve (resident)
 router.get("/available/items", searchItemValidation, retreiveAllItems); // Retrieve all
 router.put(
   "/update/available",
   updateItemValidation,
   updateDocs({ model: BorrowableItemsModel })
 ); // Update (reusable)
+router.put(
+  "/update/item-request",
+  updateBorrowRequestValidation,
+  updateDocs({ model: BorrowRequestModel })
+);
 router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
 router.post("/insert", itemBorrowValidation, bookItem); // Insert for booking request
 router.post("/available/insert", borrowableItemValidation, addAvailableBooking); // Insert for available items

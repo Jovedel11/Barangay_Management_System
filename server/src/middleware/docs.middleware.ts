@@ -163,12 +163,27 @@ const updateDocsValidation = [
   // Add status field validation for DocsModel
   body("status")
     .optional()
-    .isString()
-    .trim()
-    .isIn(["pending", "processing", "completed", "rejected"])
-    .withMessage(
-      "Status must be one of: pending, processing, completed, rejected"
-    ),
+    .custom((value) => {
+      if (typeof value === "boolean") {
+        return true;
+      }
+      if (typeof value === "string") {
+        const allowed = [
+          "pending",
+          "processing",
+          "completed",
+          "rejected",
+          "approved",
+        ];
+        if (allowed.includes(value.toLocaleLowerCase())) {
+          console.log("Allowed");
+          return true;
+        }
+      }
+      throw new Error(
+        "Status must be a boolean or one of: pending, processing, completed, rejected, approved"
+      );
+    }),
 
   body().custom((value) => {
     const availableDocsFields = [

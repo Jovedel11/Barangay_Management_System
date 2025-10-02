@@ -45,6 +45,7 @@ const itemBorrowValidation = [
     .withMessage("Delivery method is required.")
     .notEmpty()
     .withMessage("Delivery method cannot be empty."),
+  /*
   body("specialRequirements.isSenior")
     .exists()
     .withMessage("isSenior status is required.")
@@ -59,7 +60,7 @@ const itemBorrowValidation = [
     .exists()
     .withMessage("isPregnant status is required.")
     .isBoolean()
-    .withMessage("isPregnant must be a boolean (true or false)."),
+    .withMessage("isPregnant must be a boolean (true or false)."),*/
   body("status").optional().isString().withMessage("status must be a string"),
 ];
 
@@ -138,6 +139,29 @@ const borrowableItemValidation = [
     .withMessage("Notes cannot be empty."),
 ];
 
+const updateBorrowRequestValidation = [
+  body("docs_id")
+    .exists()
+    .withMessage("Item ID is required")
+    .isMongoId()
+    .withMessage("Item ID must be a valid MongoDB ID"),
+  body("status")
+    .optional()
+    .isString()
+    .withMessage("Status must be a string")
+    .isIn(["pending", "approved", "rejected", "completed"])
+    .withMessage("Status must be one of: pending, approved, rejected, completed"),
+  body()
+    .custom((value) => {
+      const updateFields = ["status"];
+      const hasUpdateField = updateFields.some(field => value[field] !== undefined);
+      if (!hasUpdateField) {
+        throw new Error("At least one field must be provided to update");
+      }
+      return true;
+    }),
+];
+
 const updateItemValidation = [
   body("docs_id")
     .exists()
@@ -182,7 +206,22 @@ const updateItemValidation = [
     .isString()
     .withMessage("Requirements must be a string"),
   body("notes").optional().isString().withMessage("Notes must be a string"),
-  body("status").optional().isBoolean().withMessage("Status must be a boolean"),
+  body("status")
+    .optional()
+    .custom((value) => {
+      if (typeof value === "boolean") {
+        return true;
+      }
+      if (typeof value === "string") {
+        const allowed = ["pending", "processing", "completed", "rejected"];
+        if (allowed.includes(value.toLowerCase())) {
+          return true;
+        }
+      }
+      throw new Error(
+        "Status must be a boolean or one of: pending, processing, completed, rejected"
+      );
+    }),
   body().custom((value) => {
     const updateFields = [
       "name",
@@ -220,5 +259,6 @@ export {
   itemBorrowValidation,
   borrowableItemValidation,
   updateItemValidation,
+  updateBorrowRequestValidation,
   deleteItemValidation,
 };

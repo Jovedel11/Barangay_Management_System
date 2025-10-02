@@ -10,6 +10,7 @@ import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
 import DocumentRequestsTable from "@/components/custom/DocReqTable";
 import ItemCard from "@/app/shared/components/item-card";
+import ItemBookingTable from "@/components/custom/ItemBookingTable";
 
 const filterOptions = [
   "All Categories",
@@ -72,7 +73,7 @@ const ManageDocuments = () => {
       >
         <TabsList className="rounded-sm">
           <TabsTrigger
-            value="get-request"
+            value="request/items"
             className="rounded-sm data-[state=active]:bg-slate-950"
           >
             <GitPullRequest />
@@ -96,19 +97,16 @@ const ManageDocuments = () => {
               filterOptions={filterOptions}
             />
           </div>
-          <TabsContent value="get-request">
+          <TabsContent value="request/items">
             <div className="flex flex-col bg-slate-800 px-2 rounded-md w-full mt-3">
               <span className="text-2xl font-extrabold">
-                Service Appointments
+                Item Bookings
               </span>
               <span className="text-slate-500">
-                view and manage your appointments
+                view and manage your resident bookings
               </span>
               {data && (
-                <DocumentRequestsTable
-                  refetch={refetch}
-                  requests={data?.response}
-                />
+                <ItemBookingTable refetch={refetch} bookings={data?.response} />
               )}
             </div>
           </TabsContent>

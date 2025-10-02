@@ -7,11 +7,7 @@ type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
   returnDate: T;
   eventLocation: T;
   contactNumber: T;
-  specialRequirements: {
-    isSenior: boolean;
-    isFemale: boolean;
-    isPregnant: boolean;
-  };
+  //specialRequirements: Partial<Record<string, boolean>>;
   status?: string;
 };
 
@@ -40,12 +36,12 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   eventLocation: { type: String, required: true },
   contactNumber: { type: String, required: true },
   deliveryMethod: { type: String, required: true },
-  specialRequirements: {
-    isSenior: { type: Boolean, required: true },
-    isFemale: { type: Boolean, required: true },
-    isPregnant: { type: Boolean, required: true },
-  },
-  status: { type: String, required: false, default: "Pending" },
+  /*specialRequirements: {
+    isSenior: { type: Boolean, required: false, default: false },
+    isFemale: { type: Boolean, required: false, default: false },
+    isPregnant: { type: Boolean, required: false, default: false },
+  },*/
+  status: { type: String, required: false, default: "pending" },
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
