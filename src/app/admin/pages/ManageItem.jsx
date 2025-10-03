@@ -107,6 +107,7 @@ const ManageDocuments = () => {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
+              showStatus={activeTab === "req/items"}
             />
           </div>
 

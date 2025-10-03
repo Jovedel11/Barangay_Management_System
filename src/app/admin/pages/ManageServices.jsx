@@ -111,6 +111,7 @@ const ManageDocuments = () => {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
+              showStatus={activeTab === "request/services"}
             />
           </div>
 
@@ -154,10 +155,7 @@ const ManageDocuments = () => {
                     <ServiceCard
                       key={service._id}
                       service={service}
-                      onEdit={() => {}}
-                      onView={() => {}}
-                      onToggleStatus={() => {}}
-                      onDelete={() => {}}
+                      refetch={refetch}
                     />
                   ))
                 )}

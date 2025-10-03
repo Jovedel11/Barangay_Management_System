@@ -157,7 +157,7 @@ const AddService = ({
     onSuccess: ({ success }) => {
       if (success) {
         queryClient.invalidateQueries({
-          queryKey: ["get-services"],
+          queryKey: ["available/services"],
         });
         handleOpenChange();
         return CustomToast({
@@ -188,15 +188,15 @@ const AddService = ({
     try {
       submitMutation.mutate({
         path: isEdit
-          ? "/api/services/update"
-          : "/api/services/insert",
+          ? "/api/brgy-services/update/available"
+          : "/api/brgy-services/insert/available",
         attributes: {
           method: isEdit ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(
-            !isEdit ? info : { service_id: data?._id, ...info }
+            !isEdit ? info : { docs_id: data?._id, ...info }
           ),
           credentials: "include",
         },
@@ -222,7 +222,7 @@ const AddService = ({
               : "Add new service information"}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="w-full flex flex-col gap-y-4">
           <div className="flex gap-x-2">
             <div className="w-full flex flex-col gap-y-1">
@@ -332,7 +332,9 @@ const AddService = ({
             <span className="text-sm font-medium">Service Type</span>
             <Select
               value={info.serviceType}
-              onValueChange={(value) => handleSelectChange("serviceType", value)}
+              onValueChange={(value) =>
+                handleSelectChange("serviceType", value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select service type" />

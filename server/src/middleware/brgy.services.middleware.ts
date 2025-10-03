@@ -219,13 +219,23 @@ const handleValidationErrors = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log("Error in adding services");
     return res.status(400).json({ errors: errors.array() });
   }
   next();
 };
 
+const deleteServiceValidation = [
+  body("service_id")
+    .exists()
+    .withMessage("Service ID is required for deletion")
+    .isMongoId()
+    .withMessage("Service ID must be a valid MongoDB ID"),
+];
+
 export {
   updateServiceValidation,
   createServiceValidation,
   handleValidationErrors,
+  deleteServiceValidation,
 };

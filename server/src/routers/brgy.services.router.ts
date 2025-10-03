@@ -2,13 +2,14 @@ import {
   updateServiceValidation,
   createServiceValidation,
   handleValidationErrors,
+  deleteServiceValidation,
 } from "@/middleware/brgy.services.middleware";
 import BrgyService from "@/models/brgy.services";
-import { createService } from "@/controller/brgy.services.controller";
 import {
-  deleteItem,
-  createSearchController,
-} from "@/controller/booking.item.controller";
+  createService,
+  deleteService,
+} from "@/controller/brgy.services.controller";
+import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
@@ -38,11 +39,11 @@ router.put(
   updateDocs({ model: BrgyService })
 ); // Update (reusable)
 router.post(
-  "/available/insert",
+  "/insert/available",
   createServiceValidation,
   handleValidationErrors,
   createService
 ); // Insert for available service
-router.delete("/delete", deleteItem);
+router.delete("/delete", deleteServiceValidation, deleteService);
 
 export default router;

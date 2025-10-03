@@ -17,6 +17,7 @@ export default function SearchComponent({
   statusFilter,
   statusFilterOptions = [],
   setStatusFilter,
+  showStatus = false,
 }) {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -44,7 +45,7 @@ export default function SearchComponent({
               className="pl-10 border border-slate-700 w-full mb-2 md:mb-0 md:max-w-[30rem] lg:max-w-[35rem]"
             />
           </div>
-          {statusFilterOptions?.length > 0 && (
+          {(statusFilterOptions?.length > 0 && showStatus) && (
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px] border border-slate-700 mb-2 md:mb-0">
                 <SelectValue placeholder="All status" />

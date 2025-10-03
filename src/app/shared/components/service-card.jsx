@@ -1,4 +1,11 @@
-import { Edit, MoreHorizontal, Eye, Archive, Trash2, SettingsIcon } from "lucide-react";
+import {
+  Edit,
+  MoreHorizontal,
+  Eye,
+  Archive,
+  Trash2,
+  SettingsIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/core/components/ui/card";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
@@ -10,15 +17,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import AddService from "@/components/custom/AddService";
+import { useCallback, useState } from "react";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "@/components/custom/CustomToast";
+import ViewServiceDialog from "@/components/custom/ViewService";
 
-const ServiceCard = ({
-  service,
-  onEdit,
-  onView,
-  onToggleStatus,
-  onDelete,
-  className = "",
-}) => {
+const ServiceCard = ({ service, className = "", refetch }) => {
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openView, setOpenView] = useState(false);
   const getServiceTypeBadge = (type) => {
     switch (type) {
       case "walk-in":
@@ -60,6 +67,82 @@ const ServiceCard = ({
     if (cost === "FREE") return "text-success font-semibold";
     return "text-primary font-semibold";
   };
+
+  const onEditChange = () => setOpenEdit((prev) => !prev);
+  const onViewChange = () => setOpenView((prev) => !prev);
+
+  const handleBookingDeletion = async (serviceId) => {
+    try {
+      if (!serviceId) throw new Error();
+      const result = await customRequest({
+        path: "/api/brgy-services/delete",
+        attributes: {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ service_id: serviceId }),
+        },
+      });
+      if (!result?.success) {
+        return CustomToast({
+          description: "Failed to delete the service",
+          status: "error",
+        });
+      }
+      refetch();
+      CustomToast({
+        description: "Service has been deleted successfully",
+        status: "success",
+      });
+    } catch (error) {
+      console.log(error);
+      CustomToast({
+        description: "Internal server error",
+        status: "error",
+      });
+    }
+  };
+
+  const onUpdate = useCallback(
+    async ({ service_id, status }) => {
+      try {
+        // Send the opposite of current status to toggle it
+        const result = await customRequest({
+          path: "/api/brgy-services/update/available",
+          attributes: {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              docs_id: service_id,
+              status: !status, // Just negate the current status
+            }),
+            credentials: "include",
+          },
+        });
+        if (result?.success) {
+          refetch();
+          return CustomToast({
+            description: "Service status has been updated",
+            status: "success",
+          });
+        }
+        CustomToast({
+          description: "Failed to update service' status",
+          status: "error",
+        });
+      } catch (error) {
+        console.log(error);
+        CustomToast({
+          description: "Internal server error",
+          status: "error",
+        });
+      }
+    },
+    [refetch]
+  );
 
   return (
     <Card
@@ -118,17 +201,27 @@ const ServiceCard = ({
             </span>
           </div>
         </div>
-
+        <ViewServiceDialog
+          data={service}
+          open={openView}
+          handleOpenChange={onViewChange}
+        />
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
-            onClick={() => onEdit(service)}
+          <AddService
+            open={openEdit}
+            handleOpenChange={onEditChange}
+            isEdit={true}
+            data={service}
           >
-            <Edit className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+          </AddService>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="px-2">
@@ -137,18 +230,25 @@ const ServiceCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onView(service)}>
+              <DropdownMenuItem onClick={onViewChange}>
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(service.id)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  onUpdate({
+                    service_id: service?._id,
+                    status: service?.status,
+                  })
+                }
+              >
                 <Archive className="h-4 w-4 mr-2" />
-                {service.isActive ? "Deactivate" : "Activate"}
+                {service?.status ? "Deactivate" : "Activate"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => onDelete(service.id)}
+                onClick={() => handleBookingDeletion(service?._id)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete Service
