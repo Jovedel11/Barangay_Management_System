@@ -3,8 +3,9 @@ import {
   createServiceValidation,
   handleValidationErrors,
   deleteServiceValidation,
+  serviceRequestValidation,
 } from "@/middleware/brgy.services.middleware";
-import BrgyService from "@/models/brgy.services";
+import { BrgyService, ServiceRequest } from "@/models/brgy.services";
 import {
   createService,
   deleteService,
@@ -32,18 +33,35 @@ const retrieveAllServices = createSearchController(BrgyService, [
   "details",
 ]);
 
-router.get("/available/services", searchItemValidation, retrieveAllServices); // Retrieve (resident)
+const retrieveServiceRequest = createSearchController(
+  ServiceRequest,
+  ["service", "category", "status", "details"],
+  true
+);
+
+router.get("/available/services", searchItemValidation, retrieveAllServices); // Retrieve (admin)
+router.get("/request/services", searchItemValidation, retrieveServiceRequest); // Retrieve (resident)
 router.put(
   "/update/available",
   updateServiceValidation,
   updateDocs({ model: BrgyService })
-); // Update (reusable)
+); // Update (availablle)
+router.put(
+  "/update/request",
+  updateServiceValidation,
+  updateDocs({ model: ServiceRequest })
+); // Update (request)
 router.post(
   "/insert/available",
   createServiceValidation,
   handleValidationErrors,
-  createService
+  createService({ model: BrgyService })
 ); // Insert for available service
+router.post(
+  "/insert/request",
+  serviceRequestValidation,
+  createService({ model: ServiceRequest })
+);
 router.delete("/delete", deleteServiceValidation, deleteService);
 
 export default router;
