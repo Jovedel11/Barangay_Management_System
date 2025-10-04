@@ -47,11 +47,10 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
       confirmed: "default",
       pending: "secondary",
       completed: "default",
-      "no show": "destructive",
+      rescheduled: "destructive",
     };
     return variants[status] || "secondary";
   };
-
 
   const handleEdit = (request) => {
     setProcessReq(request);
@@ -113,7 +112,7 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
             request={processReq}
             isOpen={isProcessOpen}
             onOpenChange={onProcessChange}
-            onSubmit={() => {}}
+            refetch={refetch}
           />
           <Table>
             <TableHeader>

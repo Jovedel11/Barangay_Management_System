@@ -25,7 +25,7 @@ const filterOptions = [
   "Other",
 ];
 
-const statusFilterOptions = ["All status", "approved", "completed", "pending"];
+const statusFilterOptions = ["All status", "approved", "completed", "pending", "rescheduled"];
 
 const ManageDocuments = () => {
   const [open, setOpen] = useState(false);

@@ -21,8 +21,9 @@ interface IServiceRequestBase {
   user: ObjectId;
   service: string;
   category: string;
-  status: "confirmed" | "pending" | "completed" | "no show";
+  status: "confirmed" | "pending" | "completed" | "rescheduled";
   details: string;
+  specialNote?: string;
 }
 
 export interface IServiceRequest extends IServiceRequestBase, Document {
@@ -38,9 +39,10 @@ const serviceRequestSchema = new Schema<IServiceRequest>(
     status: {
       type: String,
       required: true,
-      enum: ["confirmed", "pending", "completed", "no show"],
+      enum: ["confirmed", "pending", "completed", "rescheduled"],
     },
     details: { type: String, required: true },
+    specialNote: { type: String, required: false },
   },
   {
     timestamps: true,
