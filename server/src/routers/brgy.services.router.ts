@@ -62,6 +62,15 @@ router.post(
   serviceRequestValidation,
   createService({ model: ServiceRequest })
 );
-router.delete("/delete", deleteServiceValidation, deleteService);
+router.delete(
+  "/delete/available",
+  deleteServiceValidation,
+  deleteService({ model: BrgyService })
+);
 
+router.delete(
+  "/delete/request",
+  deleteServiceValidation,
+  deleteService({ model: ServiceRequest })
+);
 export default router;

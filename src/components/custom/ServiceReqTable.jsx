@@ -1,4 +1,4 @@
-import { Edit, Eye, MoreHorizontal, Trash2, CheckCircle } from "lucide-react";
+import { Eye, MoreHorizontal, Trash2, CheckCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,10 +27,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "./CustomToast";
+import ProcessRequestDialog from "./ProcessReq";
 
 export default function ServiceRequestTable({ requests = [], refetch }) {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isProcessOpen, setIsProcessOpen] = useState(false);
+  const [processReq, setProcessReq] = useState(null);
 
   const handleViewDetails = (request) => {
     setSelectedRequest(request);
@@ -47,19 +52,43 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
     return variants[status] || "secondary";
   };
 
-  const handleProcessAppointment = async (request) => {
-    // TODO: Implement process appointment logic
-    console.log("Processing appointment:", request._id);
-  };
 
   const handleEdit = (request) => {
-    // TODO: Implement edit logic
-    console.log("Editing request:", request._id);
+    setProcessReq(request);
+    setIsProcessOpen(true);
   };
 
   const handleDelete = async (requestId) => {
-    // TODO: Implement delete logic
-    console.log("Deleting request:", requestId);
+    try {
+      if (!requestId) throw new Error();
+      const result = await customRequest({
+        path: "/api/brgy-services/delete/request",
+        attributes: {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ service_id: requestId }),
+        },
+      });
+      if (!result?.success) {
+        return CustomToast({
+          description: "Failed to delete the service",
+          status: "error",
+        });
+      }
+      refetch();
+      CustomToast({
+        description: "Service has been deleted successfully",
+        status: "success",
+      });
+    } catch (error) {
+      console.log(error);
+      CustomToast({
+        description: "Internal server error",
+        status: "error",
+      });
+    }
   };
 
   const formatDateTime = (dateString) => {
@@ -73,10 +102,19 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
     });
   };
 
+  const onProcessChange = () => {
+    setIsProcessOpen((prevstate) => !prevstate);
+  };
   return (
     <>
       <div className="w-full mt-4 space-y-4">
         <div className="border rounded-lg">
+          <ProcessRequestDialog
+            request={processReq}
+            isOpen={isProcessOpen}
+            onOpenChange={onProcessChange}
+            onSubmit={() => {}}
+          />
           <Table>
             <TableHeader>
               <TableRow>
@@ -157,19 +195,13 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEdit(request)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Adjust Schedule
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleProcessAppointment(request)}
-                          >
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Process Request
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => handleDelete(request._id)}
+                            onClick={() => handleDelete(request?._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete

@@ -75,7 +75,7 @@ const ServiceCard = ({ service, className = "", refetch }) => {
     try {
       if (!serviceId) throw new Error();
       const result = await customRequest({
-        path: "/api/brgy-services/delete",
+        path: "/api/brgy-services/delete/available",
         attributes: {
           method: "DELETE",
           headers: {
