@@ -24,16 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
 
-const EventCard = ({
-  event,
-  onEdit,
-  onView,
-  onToggleStatus,
-  onDelete,
-  onViewRegistrations,
-  onToggleFeatured,
-  className = "",
-}) => {
+const EventCard = ({ event, refetch, className = "" }) => {
   const getEventStatusBadge = (status, date) => {
     const eventDate = new Date(date);
     const today = new Date();
@@ -91,27 +82,23 @@ const EventCard = ({
 
   const getCategoryBadge = (category) => {
     const categoryStyles = {
-      sports: "bg-success/10 text-success border-success/30",
-      pageant: "bg-accent/10 text-accent border-accent/30",
-      entertainment: "bg-primary/10 text-primary border-primary/30",
-      competition: "bg-warning/10 text-warning border-warning/30",
-      community:
+      "Sports Athletic": "bg-success/10 text-success border-success/30",
+      "Beauty Pageants": "bg-accent/10 text-accent border-accent/30",
+      Entertainment: "bg-primary/10 text-primary border-primary/30",
+      Competitions: "bg-warning/10 text-warning border-warning/30",
+      "Community Events":
         "bg-secondary/20 text-secondary-foreground border-secondary/30",
-      fiesta: "bg-destructive/10 text-destructive border-destructive/30",
-    };
-
-    const categoryLabels = {
-      sports: "Sports",
-      pageant: "Pageant",
-      entertainment: "Entertainment",
-      competition: "Competition",
-      community: "Community",
-      fiesta: "Fiesta",
+      "Fiesta & Celebration":
+        "bg-destructive/10 text-destructive border-destructive/30",
     };
 
     return (
-      <Badge className={categoryStyles[category] || categoryStyles.community}>
-        {categoryLabels[category] || category}
+      <Badge
+        className={
+          categoryStyles[category] || categoryStyles["Community Events"]
+        }
+      >
+        {category}
       </Badge>
     );
   };
@@ -122,19 +109,19 @@ const EventCard = ({
     >
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 w-full">
             <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <event.icon className="h-7 w-7 text-primary" />
+              <Calendar className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="text-lg font-semibold text-foreground line-clamp-2">
-                  {event.title}
+                  {event.eventTitle}
                 </h3>
                 <div className="flex gap-2 ml-4">
                   {getCategoryBadge(event.category)}
-                  {getEventStatusBadge(event.status, event.date)}
-                  {event.featured && (
+                  {getEventStatusBadge(event.status, event.startDate)}
+                  {event.featuredEvent && (
                     <Badge className="bg-accent/10 text-accent border-accent/30">
                       <Star className="h-3 w-3 mr-1" />
                       Featured
@@ -154,7 +141,8 @@ const EventCard = ({
             <Calendar className="h-4 w-4 text-primary shrink-0" />
             <div>
               <p className="font-medium text-foreground">
-                {new Date(event.date).toLocaleDateString()}
+                {event.startDate &&
+                  new Date(event.startDate).toLocaleDateString()}
                 {event.endDate &&
                   ` - ${new Date(event.endDate).toLocaleDateString()}`}
               </p>
@@ -182,45 +170,58 @@ const EventCard = ({
             <Trophy className="h-4 w-4 text-warning shrink-0" />
             <div>
               <p className="font-medium text-foreground">
-                {event.totalRegistrations} registered
+                {event.participants} participants
               </p>
-              <p className="text-muted-foreground">Participants</p>
+              <p className="text-muted-foreground">Expected</p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3 text-sm mb-4">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Budget:</span>
-            <span className="font-medium text-primary">{event.budget}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Confirmed:</span>
-            <span className="font-medium text-success">
-              {event.confirmedRegistrations}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Pending:</span>
-            <span className="font-medium text-warning">
-              {event.pendingRegistrations}
-            </span>
-          </div>
-        </div>
-
-        <Separator className="my-4" />
+        {(event.prizesAwards || event.requirements || event.activities) && (
+          <>
+            <div className="grid gap-3 md:grid-cols-3 text-sm mb-4">
+              {event.prizesAwards && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Prizes:</span>
+                  <span className="font-medium text-primary line-clamp-1">
+                    {event.prizesAwards}
+                  </span>
+                </div>
+              )}
+              {event.requirements && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Requirements:</span>
+                  <span className="font-medium text-foreground line-clamp-1">
+                    Available
+                  </span>
+                </div>
+              )}
+              {event.activities && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Activities:</span>
+                  <span className="font-medium text-foreground line-clamp-1">
+                    Planned
+                  </span>
+                </div>
+              )}
+            </div>
+            <Separator className="my-4" />
+          </>
+        )}
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Phone className="h-4 w-4" />
-            <span>Contact: {event.contact}</span>
+            <span>
+              {event.contactPerson} - {event.phoneNumber}
+            </span>
           </div>
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="outline"
               className="border-primary/30 text-primary hover:bg-primary/10"
-              onClick={() => onEdit(event)}
+              onClick={() => {}}
             >
               <Edit className="h-3 w-3 mr-1" />
               Edit
@@ -233,26 +234,28 @@ const EventCard = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => onView(event)}>
+                <DropdownMenuItem onClick={() => {}}>
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onViewRegistrations(event)}>
+                <DropdownMenuItem onClick={() => {}}>
                   <Users className="h-4 w-4 mr-2" />
                   View Registrations
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onToggleFeatured(event.id)}>
+                <DropdownMenuItem onClick={() => {}}>
                   <Star className="h-4 w-4 mr-2" />
-                  {event.featured ? "Remove from Featured" : "Mark as Featured"}
+                  {event.featuredEvent
+                    ? "Remove from Featured"
+                    : "Mark as Featured"}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onToggleStatus(event.id)}>
+                <DropdownMenuItem onClick={() => {}}>
                   <Archive className="h-4 w-4 mr-2" />
                   {event.isActive ? "Deactivate" : "Activate"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive"
-                  onClick={() => onDelete(event.id)}
+                  onClick={() => {}}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Event

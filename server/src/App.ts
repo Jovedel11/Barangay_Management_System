@@ -13,6 +13,7 @@ import errorHandler from "@/middleware/error.middleware";
 import docsRouter from "@/routers/docs.router";
 import borrowItemsRouter from "@/routers/borrow.items.router";
 import brgyServiceRouter from "@/routers/brgy.services.router";
+import brgyEventRouter from "@/routers/brgy.event.router";
 const app = express();
 
 app.use(express.json());
@@ -46,6 +47,7 @@ app.use(passport.session());
 app.use("/api/borrow-item", borrowItemsRouter);
 app.use("/api/brgy-docs", docsRouter);
 app.use("/api/brgy-services", brgyServiceRouter);
+app.use("/api/brgy-events", brgyEventRouter);
 
 app.use(errorHandler);
 
