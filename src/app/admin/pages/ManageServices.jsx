@@ -25,9 +25,15 @@ const filterOptions = [
   "Other",
 ];
 
-const statusFilterOptions = ["All status", "approved", "completed", "pending"];
+const statusFilterOptions = [
+  "All status",
+  "approved",
+  "completed",
+  "pending",
+  "rescheduled",
+];
 
-const ManageDocuments = () => {
+const ManageService = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
@@ -71,7 +77,7 @@ const ManageDocuments = () => {
         <div className="ml-auto">
           <AddService open={open} handleOpenChange={setOpen}>
             <Button className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-0 md:mr-2 h-4 w-4" />
               <span className="hidden md:block">Add Service</span>
             </Button>
           </AddService>
@@ -125,7 +131,10 @@ const ManageDocuments = () => {
                 View and manage resident service appointments
               </span>
               {data && (
-                <ServiceRequestTable refetch={refetch} requests={data?.response} />
+                <ServiceRequestTable
+                  refetch={refetch}
+                  requests={data?.response}
+                />
               )}
             </div>
           </TabsContent>
@@ -169,4 +178,4 @@ const ManageDocuments = () => {
   );
 };
 
-export default ManageDocuments;
+export default ManageService;

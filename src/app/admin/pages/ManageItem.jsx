@@ -66,7 +66,7 @@ const ManageDocuments = () => {
         <div className="ml-auto">
           <ItemDialog open={open} handleOpenChange={setOpen}>
             <Button className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-0 md:mr-2 h-4 w-4" />
               <span className="hidden md:block">Add Item</span>
             </Button>
           </ItemDialog>
@@ -107,7 +107,7 @@ const ManageDocuments = () => {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
-              showStatus={activeTab === "req/items"}
+              showStatus={activeTab === "request/items"}
             />
           </div>
 

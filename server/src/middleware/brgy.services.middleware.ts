@@ -5,7 +5,12 @@ import {
 } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 
-const STATUS_ENUM: string[] = ["confirmed", "pending", "completed", "no show"];
+const STATUS_ENUM: string[] = [
+  "confirmed",
+  "pending",
+  "completed",
+  "rescheduled",
+];
 
 export const serviceRequestValidation: ValidationChain[] = [
   body("user")
@@ -97,7 +102,19 @@ const updateServiceValidation = [
     .trim()
     .notEmpty()
     .withMessage("Service type cannot be empty"),
-  body("status").optional().isBoolean().withMessage("Status must be a boolean"),
+  body("status")
+    .optional()
+    .custom((value) => {
+      if (typeof value === "string") {
+        const allowed = ["confirmed", "pending", "completed", "rescheduled"];
+        if (allowed.includes(value.toLowerCase())) {
+          return true;
+        }
+      }
+      throw new Error(
+        "Status must be a string or one of: pending, processing, completed, rejected, rescheduled"
+      );
+    }),
   body("slots")
     .optional()
     .isString()
@@ -122,6 +139,12 @@ const updateServiceValidation = [
     .trim()
     .notEmpty()
     .withMessage("Details cannot be empty"),
+  body("specialNote")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Special note cannot be empty"),
   body().custom((value) => {
     const updateFields = [
       "name",
@@ -138,6 +161,7 @@ const updateServiceValidation = [
       "contact",
       "phone",
       "details",
+      "specialNote",
     ];
     const hasUpdateField = updateFields.some(
       (field) => value[field] !== undefined

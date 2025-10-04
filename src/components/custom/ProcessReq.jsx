@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,60 +18,67 @@ import {
   SelectValue,
 } from "@/core/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "./CustomToast";
 
 export default function ProcessRequestDialog({
   isOpen,
   onOpenChange,
   request,
-  onSubmit,
+  refetch,
 }) {
-  const [status, setStatus] = useState(request?.status || "");
-  const [schedule, setSchedule] = useState("");
-  const [time, setTime] = useState("");
+  const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!status) {
-      alert("Please select a status");
-      return;
-    }
-
-    if (!schedule || !time) {
-      alert("Please fill in both schedule and time");
-      return;
-    }
-
-    setIsSubmitting(true);
-
+  const onProcessUpdate = useCallback(async () => {
     try {
-      await onSubmit({
-        requestId: request._id,
-        status,
-        schedule,
-        time,
-        description,
+      setIsSubmitting(true);
+      const result = await customRequest({
+        path: "/api/brgy-services/update/request",
+        attributes: {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            docs_id: request._id,
+            status,
+            ...(description ? { specialNote: description } : {}),
+          }),
+          credentials: "include",
+        },
       });
-
-      // Reset form
-      setStatus("");
-      setSchedule("");
-      setTime("");
-      setDescription("");
-      onOpenChange(false);
+      if (result?.success) {
+        refetch();
+        onOpenChange();
+        return CustomToast({
+          description: "Process request succeeded",
+          status: "success",
+        });
+      }
+      CustomToast({
+        description: "Failed to process request",
+        status: "error",
+      });
     } catch (error) {
-      console.error("Error processing request:", error);
+      console.log(error);
+      CustomToast({
+        description: "Internal server error",
+        status: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
+  }, [refetch, request, status, description, onOpenChange]);
+
+  const handleSubmit = async () => {
+    onProcessUpdate();
   };
 
   const handleOpenChange = (open) => {
     if (!open) {
-      // Reset form when closing
       setStatus(request?.status || "");
-      setSchedule("");
-      setTime("");
       setDescription("");
     }
     onOpenChange(open);
@@ -119,41 +126,15 @@ export default function ProcessRequestDialog({
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="no show">No Show</SelectItem>
+                <SelectItem value="rescheduled">Rescheduled</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Schedule and Time */}
-          <div className="flex gap-x-2">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">
-                Schedule <span className="text-destructive">*</span>
-              </span>
-              <Input
-                id="schedule"
-                value={schedule}
-                onChange={(e) => setSchedule(e.target.value)}
-                placeholder="e.g., Mon-Fri"
-              />
-            </div>
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">
-                Time <span className="text-destructive">*</span>
-              </span>
-              <Input
-                id="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                placeholder="e.g., 8:00 AM - 5:00 PM"
-              />
-            </div>
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <span className="text-sm font-medium">
-              Notes / Reason for Changes
+              Processing Note
               <span className="text-muted-foreground text-xs ml-1">
                 (Optional)
               </span>
