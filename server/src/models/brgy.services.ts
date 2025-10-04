@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document, ObjectId } from "mongoose";
 
 type IBrgyService<T extends string> = {
   name: T;
@@ -16,6 +16,36 @@ type IBrgyService<T extends string> = {
   phone: T;
   details: T;
 };
+
+interface IServiceRequestBase {
+  user: ObjectId;
+  service: string;
+  category: string;
+  status: "confirmed" | "pending" | "completed" | "no show";
+  details: string;
+}
+
+export interface IServiceRequest extends IServiceRequestBase, Document {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const serviceRequestSchema = new Schema<IServiceRequest>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
+    service: { type: String, required: true },
+    category: { type: String, required: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ["confirmed", "pending", "completed", "no show"],
+    },
+    details: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const brgyServiceSchema = new Schema<IBrgyService<string>>({
   name: { type: String, required: true },
@@ -39,4 +69,9 @@ const BrgyService = model<IBrgyService<string>>(
   brgyServiceSchema
 );
 
-export default BrgyService;
+const ServiceRequest = model<IServiceRequest>(
+  "ServiceRequest",
+  serviceRequestSchema
+);
+
+export { BrgyService, ServiceRequest };

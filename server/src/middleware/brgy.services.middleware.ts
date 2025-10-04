@@ -1,5 +1,41 @@
-import { body, validationResult } from "express-validator";
+import {
+  body,
+  validationResult,
+  type ValidationChain,
+} from "express-validator";
 import { Request, Response, NextFunction } from "express";
+
+const STATUS_ENUM: string[] = ["confirmed", "pending", "completed", "no show"];
+
+export const serviceRequestValidation: ValidationChain[] = [
+  body("user")
+    .exists({ checkFalsy: true })
+    .withMessage("User ID is required")
+    .isMongoId()
+    .withMessage("User ID must be a valid MongoDB ObjectId"),
+  body("service")
+    .isString()
+    .withMessage("Service must be a string")
+    .notEmpty()
+    .withMessage("Service field cannot be empty"),
+  body("category")
+    .isString()
+    .withMessage("Category must be a string")
+    .notEmpty()
+    .withMessage("Category field cannot be empty"),
+  body("status")
+    .isString()
+    .withMessage("Status must be a string")
+    .notEmpty()
+    .withMessage("Status field cannot be empty")
+    .isIn(STATUS_ENUM)
+    .withMessage(`Status must be one of: ${STATUS_ENUM.join(", ")}`),
+  body("details")
+    .isString()
+    .withMessage("Details must be a string")
+    .notEmpty()
+    .withMessage("Details field cannot be empty"),
+];
 
 const updateServiceValidation = [
   body("docs_id")
@@ -219,13 +255,23 @@ const handleValidationErrors = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log("Error in adding services");
     return res.status(400).json({ errors: errors.array() });
   }
   next();
 };
 
+const deleteServiceValidation = [
+  body("service_id")
+    .exists()
+    .withMessage("Service ID is required for deletion")
+    .isMongoId()
+    .withMessage("Service ID must be a valid MongoDB ID"),
+];
+
 export {
   updateServiceValidation,
   createServiceValidation,
   handleValidationErrors,
+  deleteServiceValidation,
 };

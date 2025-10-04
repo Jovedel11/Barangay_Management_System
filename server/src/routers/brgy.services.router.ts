@@ -2,13 +2,15 @@ import {
   updateServiceValidation,
   createServiceValidation,
   handleValidationErrors,
+  deleteServiceValidation,
+  serviceRequestValidation,
 } from "@/middleware/brgy.services.middleware";
-import BrgyService from "@/models/brgy.services";
-import { createService } from "@/controller/brgy.services.controller";
+import { BrgyService, ServiceRequest } from "@/models/brgy.services";
 import {
-  deleteItem,
-  createSearchController,
-} from "@/controller/booking.item.controller";
+  createService,
+  deleteService,
+} from "@/controller/brgy.services.controller";
+import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
@@ -31,18 +33,44 @@ const retrieveAllServices = createSearchController(BrgyService, [
   "details",
 ]);
 
-router.get("/available/services", searchItemValidation, retrieveAllServices); // Retrieve (resident)
+const retrieveServiceRequest = createSearchController(
+  ServiceRequest,
+  ["service", "category", "status", "details"],
+  true
+);
+
+router.get("/available/services", searchItemValidation, retrieveAllServices); // Retrieve (admin)
+router.get("/request/services", searchItemValidation, retrieveServiceRequest); // Retrieve (resident)
 router.put(
   "/update/available",
   updateServiceValidation,
   updateDocs({ model: BrgyService })
-); // Update (reusable)
+); // Update (availablle)
+router.put(
+  "/update/request",
+  updateServiceValidation,
+  updateDocs({ model: ServiceRequest })
+); // Update (request)
 router.post(
-  "/available/insert",
+  "/insert/available",
   createServiceValidation,
   handleValidationErrors,
-  createService
+  createService({ model: BrgyService })
 ); // Insert for available service
-router.delete("/delete", deleteItem);
+router.post(
+  "/insert/request",
+  serviceRequestValidation,
+  createService({ model: ServiceRequest })
+);
+router.delete(
+  "/delete/available",
+  deleteServiceValidation,
+  deleteService({ model: BrgyService })
+);
 
+router.delete(
+  "/delete/request",
+  deleteServiceValidation,
+  deleteService({ model: ServiceRequest })
+);
 export default router;

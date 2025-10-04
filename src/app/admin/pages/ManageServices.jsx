@@ -13,6 +13,7 @@ import ItemCard from "@/app/shared/components/item-card";
 import ItemBookingTable from "@/components/custom/ItemBookingTable";
 import AddService from "@/components/custom/AddService";
 import ServiceCard from "@/app/shared/components/service-card";
+import ServiceRequestTable from "@/components/custom/ServiceReqTable";
 
 const filterOptions = [
   "All Categories",
@@ -111,6 +112,7 @@ const ManageDocuments = () => {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
+              showStatus={activeTab === "request/services"}
             />
           </div>
 
@@ -123,7 +125,7 @@ const ManageDocuments = () => {
                 View and manage resident service appointments
               </span>
               {data && (
-                <ItemBookingTable refetch={refetch} bookings={data?.response} />
+                <ServiceRequestTable refetch={refetch} requests={data?.response} />
               )}
             </div>
           </TabsContent>
@@ -154,10 +156,7 @@ const ManageDocuments = () => {
                     <ServiceCard
                       key={service._id}
                       service={service}
-                      onEdit={() => {}}
-                      onView={() => {}}
-                      onToggleStatus={() => {}}
-                      onDelete={() => {}}
+                      refetch={refetch}
                     />
                   ))
                 )}
