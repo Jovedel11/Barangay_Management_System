@@ -6,9 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import customRequest from "@/services/customRequest";
 import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
-import ServiceRequestTable from "@/components/custom/ServiceReqTable";
 import AddEvent from "@/components/custom/AddEvents";
 import EventCard from "@/app/shared/components/event-card";
+import EventParticipantTable from "@/components/custom/EventReqTable";
 
 const filterOptions = [
   "All Categories",
@@ -20,13 +20,7 @@ const filterOptions = [
   "Fiesta & Celebration",
 ];
 
-const statusFilterOptions = [
-  "All status",
-  "approved",
-  "completed",
-  "pending",
-  "rescheduled",
-];
+const statusFilterOptions = ["All status", "pending", "completed", "cancelled"];
 
 const ManageEvents = () => {
   const [open, setOpen] = useState(false);
@@ -42,7 +36,7 @@ const ManageEvents = () => {
     queryFn: () =>
       customRequest({
         path: `/api/brgy-events/${activeTab}?search=${debouncedSearchQuery}&category=${category}${
-          statusFilter !== "All status" ? `&status=${statusFilter}` : ""
+          statusFilter !== "All status" ? `&status=${statusFilter.toLowerCase()}` : ""
         }`,
         attributes: {
           method: "GET",
@@ -87,7 +81,7 @@ const ManageEvents = () => {
       >
         <TabsList className="rounded-sm bg-muted">
           <TabsTrigger
-            value="request/services"
+            value="request/retrieve"
             className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <GitPullRequest className="mr-2 h-4 w-4" />
@@ -113,11 +107,11 @@ const ManageEvents = () => {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
-              showStatus={activeTab === "request/services"}
+              showStatus={activeTab === "request/retrieve"}
             />
           </div>
 
-          <TabsContent value="request/services">
+          <TabsContent value="request/retrieve">
             <div className="flex flex-col bg-card px-2 rounded-md w-full mt-3">
               <span className="text-2xl font-extrabold text-card-foreground">
                 Service Appointments
@@ -126,9 +120,9 @@ const ManageEvents = () => {
                 View and manage resident service appointments
               </span>
               {data && (
-                <ServiceRequestTable
+                <EventParticipantTable
                   refetch={refetch}
-                  requests={data?.response}
+                  participants={data?.response}
                 />
               )}
             </div>
