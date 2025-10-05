@@ -12,12 +12,12 @@ import EventCard from "@/app/shared/components/event-card";
 
 const filterOptions = [
   "All Categories",
-  "Health Services",
-  "Community Programs",
-  "Legal Services",
-  "Social Services",
-  "Education",
-  "Other",
+  "Sports Athletic",
+  "Beauty Pageants",
+  "Entertainment",
+  "Competitions",
+  "Community Events",
+  "Fiesta & Celebration",
 ];
 
 const statusFilterOptions = [

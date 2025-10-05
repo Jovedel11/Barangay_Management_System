@@ -72,11 +72,9 @@ const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
       console.log("Request Body: ", req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log(errors);
         throw new Error("Docs : Invalid fields");
       }
       const data = matchedData(req);
-
       const { docs_id, ...updateFields } = data;
       Object.keys(updateFields).forEach((key) => {
         if (

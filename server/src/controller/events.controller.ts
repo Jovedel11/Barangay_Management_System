@@ -18,7 +18,7 @@ const createEvents = ({
         message: "Event successfully created",
       });
     } catch (error) {
-      console.log("Error in create docs:", error);
+      console.log("Error in creating event :", error);
       next(error);
     }
   };
@@ -31,7 +31,7 @@ const deleteEvents = ({
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        throw new Error("Book item: Invalid fields");
+        throw new Error("Event controller: Invalid fields");
       }
       const { event_id } = matchedData(req);
       const { deletedCount } = await CollectionModel.deleteOne({

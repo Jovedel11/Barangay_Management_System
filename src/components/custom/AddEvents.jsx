@@ -183,7 +183,7 @@ const AddEvent = ({
     onSuccess: ({ success }) => {
       if (success) {
         queryClient.invalidateQueries({
-          queryKey: ["events"],
+          queryKey: ["available/retrieve"],
         });
         handleOpenChange();
         return CustomToast({
@@ -210,15 +210,29 @@ const AddEvent = ({
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     try {
+      const phonePattern = /^(?:\+63|0)9\d{9}$/;
+      const isValidPhone = phonePattern.test(info.phoneNumber);
+      if (!isValidPhone)
+        return CustomToast({
+          description: "Invalid format of Phone Number",
+          status: "error"
+        });
+      const payload = {
+        ...info,
+        startDate: new Date(info.startDate).toISOString(),
+        endDate: new Date(info.endDate).toISOString(),
+      };
       submitMutation.mutate({
-        path: isEdit ? "/api/events/update" : "/api/events/insert",
+        path: isEdit
+          ? "/api/brgy-events/update/available"
+          : "/api/brgy-events/insert/available",
         attributes: {
           method: isEdit ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(
-            !isEdit ? info : { docs_id: data?._id, ...info }
+            !isEdit ? info : { docs_id: data?._id, ...payload }
           ),
           credentials: "include",
         },
@@ -518,4 +532,3 @@ const AddEvent = ({
 };
 
 export default AddEvent;
- 

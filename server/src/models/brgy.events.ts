@@ -18,6 +18,7 @@ export interface IEvent extends Document {
   activities?: string;
   categories?: string;
   featuredEvent: boolean;
+  isActive?: boolean;
 }
 
 const EventSchema = new Schema<IEvent>({
@@ -53,6 +54,7 @@ const EventSchema = new Schema<IEvent>({
   activities: { type: String },
   categories: { type: String },
   featuredEvent: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: false },
 });
 
 export const BrgyEvent = model<IEvent>("Event", EventSchema);
