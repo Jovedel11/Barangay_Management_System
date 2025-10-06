@@ -105,6 +105,9 @@ const updateServiceValidation = [
   body("status")
     .optional()
     .custom((value) => {
+      if (typeof value === "boolean") {
+        return true;
+      }
       if (typeof value === "string") {
         const allowed = ["confirmed", "pending", "completed", "rescheduled"];
         if (allowed.includes(value.toLowerCase())) {

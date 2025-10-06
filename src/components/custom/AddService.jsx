@@ -1,14 +1,14 @@
 import { Fragment, useCallback, useEffect, useState, useMemo } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from "@/core/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -209,21 +209,21 @@ const AddService = ({
   }, [info, submitMutation, isEdit, data]);
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] md:min-w-[35rem] max-h-[90vh] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col">
-        <DialogHeader className="text-left">
-          <DialogTitle className="font-inter">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent className="sm:max-w-[500px] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col gap-y-0">
+        <SheetHeader className="text-left">
+          <SheetTitle className="font-inter">
             {isEdit ? "Edit Service" : "Add New Service"}
-          </DialogTitle>
-          <DialogDescription className="text-sm">
+          </SheetTitle>
+          <SheetDescription className="text-sm">
             {isEdit
               ? "View or update service information"
               : "Add new service information"}
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="w-full flex flex-col gap-y-4">
+        <div className="w-full flex flex-col gap-y-4 px-5">
           <div className="flex gap-x-2">
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Service Name</span>
@@ -402,15 +402,15 @@ const AddService = ({
           </div>
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-x-2 mt-4">
-          <DialogClose asChild>
+        <SheetFooter className="flex flex-row justify-end gap-x-2 mt-auto">
+          <SheetClose asChild>
             <Button
               variant="outline"
               className="border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
             >
               Cancel
             </Button>
-          </DialogClose>
+          </SheetClose>
           <Button
             onClick={handleSubmit}
             disabled={isLoading || nothingChanged}
@@ -421,9 +421,9 @@ const AddService = ({
               ? `${isEdit ? "Updating..." : "Adding..."}`
               : `${isEdit ? "Update Service" : "Add Service"}`}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 };
 

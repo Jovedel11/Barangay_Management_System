@@ -7,8 +7,10 @@ const createService = ({
 }: Record<string, Model<any>>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log(req.body)
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log(errors)
         return res.status(400).json({ errors: errors.array() });
       }
       const data = matchedData(req);
