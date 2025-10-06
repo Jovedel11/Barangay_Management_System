@@ -45,7 +45,7 @@ export default function SearchComponent({
               className="pl-10 border border-slate-700 w-full mb-2 md:mb-0 md:max-w-[30rem] lg:max-w-[35rem]"
             />
           </div>
-          {(statusFilterOptions?.length > 0 && showStatus) && (
+          {statusFilterOptions?.length > 0 && showStatus && (
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px] border border-slate-700 mb-2 md:mb-0">
                 <SelectValue placeholder="All status" />
@@ -59,18 +59,20 @@ export default function SearchComponent({
               </SelectContent>
             </Select>
           )}
-          <Select value={category} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full sm:w-[180px] border border-slate-700">
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {filterOptions?.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {filterOptions?.length > 0 && (
+            <Select value={category} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-full sm:w-[180px] border border-slate-700">
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {filterOptions?.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
     </div>

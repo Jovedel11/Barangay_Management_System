@@ -3,13 +3,13 @@ import {
   createResidentValidation,
   updateResidentValidation,
   deleteResidentValidation,
+  processAccountValidation,
 } from "@/middleware/brgy.resident.middleware";
 import { createService } from "@/controller/brgy.services.controller";
 import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
-import { updateEventRequestValidation } from "@/middleware/brgy.event-request.middleware";
 import { BrgyResident } from "@/models/brgy.resident";
 import { AccountModel } from "@/models/user.model";
 import { deleteResidents } from "@/controller/resident.controller";
@@ -53,7 +53,7 @@ router.put(
 );
 router.put(
   "/update/system-user",
-  updateEventRequestValidation,
+  processAccountValidation,
   handleValidationErrors,
   updateDocs({ model: AccountModel })
 );

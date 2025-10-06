@@ -1,32 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/core/components/ui/button";
-import { Plus, UserRoundCheck, UserRoundPlus, Users } from "lucide-react";
+import { Plus, UserRoundCheck, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import customRequest from "@/services/customRequest";
 import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
-import ServiceCard from "@/app/shared/components/service-card";
 import ResidentTable from "@/components/custom/ResidentTable";
 import AddResident from "@/components/custom/AddResident";
+import AccountTable from "@/components/custom/AccountTable";
 
-const filterOptions = [
-  "All Categories",
-  "Health Services",
-  "Community Programs",
-  "Legal Services",
-  "Social Services",
-  "Education",
-  "Other",
-];
-
-const statusFilterOptions = [
-  "All status",
-  "approved",
-  "completed",
-  "pending",
-  "rescheduled",
-];
+const statusFilterOptions = ["All status", "approved", "pending", "rejected"];
 
 const ManageService = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,7 +24,7 @@ const ManageService = () => {
     queryKey: [activeTab, debouncedSearchQuery, category, statusFilter],
     queryFn: () =>
       customRequest({
-        path: `/api/brgy-residents/${activeTab}?search=${debouncedSearchQuery}&category=${category}${
+        path: `/api/brgy-residents/${activeTab}?search=${debouncedSearchQuery}${
           statusFilter !== "All status" ? `&status=${statusFilter}` : ""
         }`,
         attributes: {
@@ -72,7 +56,7 @@ const ManageService = () => {
           <AddResident>
             <Button className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="mr-0 md:mr-2 h-4 w-4" />
-              <span className="hidden md:block">Add Service</span>
+              <span className="hidden md:block">Add Resident</span>
             </Button>
           </AddResident>
         </div>
@@ -93,18 +77,11 @@ const ManageService = () => {
             Residents
           </TabsTrigger>
           <TabsTrigger
-            value="available/services"
+            value="system-user/retrieve"
             className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <UserRoundCheck className="mr-2 h-4 w-4" />
             System Users
-          </TabsTrigger>
-          <TabsTrigger
-            value="available/services"
-            className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <UserRoundPlus className="mr-2 h-4 w-4" />
-            Pending
           </TabsTrigger>
         </TabsList>
 
@@ -115,11 +92,11 @@ const ManageService = () => {
               setSearchQuery={setSearchQuery}
               category={category}
               setCategory={setCategory}
-              filterOptions={filterOptions}
+              filterOptions={[]}
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               statusFilterOptions={statusFilterOptions}
-              showStatus={activeTab === "request/services"}
+              showStatus={activeTab === "system-user/retrieve"}
             />
           </div>
 
@@ -137,18 +114,18 @@ const ManageService = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="available/services">
+          <TabsContent value="system-user/retrieve">
             <div className="flex flex-col bg-card px-2 rounded-md w-full mt-3">
               <span className="text-2xl font-extrabold text-card-foreground">
-                Barangay Services
+                System Users
               </span>
               <span className="text-muted-foreground mb-5">
-                Manage available services and their details
+                Manage approved and pending system users
               </span>
-              <div className="grid grid-col-1 md:grid-cols-3 gap-3">
+              <div className="w-full">
                 {isLoading ? (
                   <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    <div className="animate-pulse">Loading services...</div>
+                    <div className="animate-pulse">Loading users...</div>
                   </div>
                 ) : error ? (
                   <div className="col-span-3 text-center text-destructive py-8">
@@ -159,13 +136,9 @@ const ManageService = () => {
                     No services found
                   </div>
                 ) : (
-                  documents?.map((service) => (
-                    <ServiceCard
-                      key={service._id}
-                      service={service}
-                      refetch={refetch}
-                    />
-                  ))
+                  <div className="w-full p-0">
+                    <AccountTable residents={documents} refetch={refetch} />
+                  </div>
                 )}
               </div>
             </div>

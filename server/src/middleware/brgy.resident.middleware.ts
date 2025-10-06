@@ -241,16 +241,28 @@ const handleValidationErrors = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array()); 
+    console.log(errors.array());
     console.log("Error in resident validation");
     return res.status(400).json({ errors: errors.array() });
   }
   next();
 };
 
+const processAccountValidation = [
+  body("status")
+    .isString()
+    .isIn(["approved", "rejected"])
+    .withMessage("Status must be either 'approved' or 'rejected'"),
+  body("docs_id")
+    .notEmpty()
+    .withMessage("Account ID cannot be empty")
+    .isMongoId()
+    .withMessage("Account ID must be a valid MongoDB ID"),
+];
 export {
   updateResidentValidation,
   createResidentValidation,
   handleValidationErrors,
   deleteResidentValidation,
+  processAccountValidation,
 };
