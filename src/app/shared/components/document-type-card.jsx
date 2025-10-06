@@ -22,7 +22,7 @@ import AddDocument from "@/components/custom/AddDocument";
 import { useCallback, useState } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
-import ViewModal from "@/components/custom/ViewModal";
+import ViewDocs from "@/components/custom/ViewDocs";
 
 const DocumentTypeCard = ({
   documentType,
@@ -135,7 +135,7 @@ const DocumentTypeCard = ({
           isEdit={true}
           data={documentType}
         />
-        <ViewModal
+        <ViewDocs
           open={openViewModal}
           handleOpenChange={handleViewModal}
           data={documentType}

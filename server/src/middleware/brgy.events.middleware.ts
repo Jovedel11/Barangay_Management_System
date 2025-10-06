@@ -107,12 +107,7 @@ const updateEventValidation = [
     .trim()
     .isIn(STATUS_ENUM)
     .withMessage(`Status must be one of: ${STATUS_ENUM.join(", ")}`),
-  body("prizesAwards")
-    .optional()
-    .isString()
-    .trim()
-    .notEmpty()
-    .withMessage("Prizes/Awards cannot be empty"),
+  body("prizesAwards").optional().isString().trim(),
   body("requirements")
     .optional()
     .isString()
@@ -125,12 +120,8 @@ const updateEventValidation = [
     .trim()
     .notEmpty()
     .withMessage("Activities cannot be empty"),
-  body("categories")
-    .optional()
-    .isString()
-    .trim()
-    .notEmpty()
-    .withMessage("Categories cannot be empty"),
+  body("categories").optional().isString().trim(),
+  body("isActive").optional().isBoolean(),
   body("featuredEvent")
     .optional()
     .isBoolean()
@@ -154,6 +145,7 @@ const updateEventValidation = [
       "activities",
       "categories",
       "featuredEvent",
+      "isActive",
     ];
     const hasUpdateField = updateFields.some(
       (field) => value[field] !== undefined

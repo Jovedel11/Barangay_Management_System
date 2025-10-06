@@ -23,8 +23,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import AddEvent from "@/components/custom/AddEvents";
+import { useCallback, useState } from "react";
+import ViewEvent from "@/components/custom/ViewEvent";
+import { CustomToast } from "@/components/custom/CustomToast";
+import customRequest from "@/services/customRequest";
 
 const EventCard = ({ event, refetch, className = "" }) => {
+  const [openEdit, setOpenEdit] = useState(false);
   const getEventStatusBadge = (status, date) => {
     const eventDate = new Date(date);
     const today = new Date();
@@ -103,6 +109,54 @@ const EventCard = ({ event, refetch, className = "" }) => {
     );
   };
 
+  const editOpenChange = () => setOpenEdit((state) => !state);
+
+  const handleUpdate = useCallback(
+    async ({ docs_id, isActive, isDelete = false }) => {
+      try {
+        const response = await customRequest({
+          path: `/api/brgy-events/${isDelete ? "delete" : "update"}/available`,
+          attributes: {
+            method: isDelete ? "DELETE" : "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...(isDelete
+                ? { event_id: docs_id }
+                : { docs_id, isActive: !isActive }),
+            }),
+            credentials: "include",
+          },
+        });
+
+        if (response?.success) {
+          CustomToast({
+            description: !isDelete
+              ? "Successfully updated!"
+              : "Successfully deleted!",
+            status: "success",
+          });
+          refetch();
+        } else {
+          CustomToast({
+            description: !isDelete
+              ? "Failed to update"
+              : "Failed to delete the event",
+            status: "error",
+          });
+        }
+      } catch (error) {
+        console.error("Error submitting:", error);
+        CustomToast({
+          description: "Something went wrong",
+          status: "error",
+        });
+      }
+    },
+    [refetch]
+  );
+
   return (
     <Card
       className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
@@ -125,6 +179,11 @@ const EventCard = ({ event, refetch, className = "" }) => {
                     <Badge className="bg-accent/10 text-accent border-accent/30">
                       <Star className="h-3 w-3 mr-1" />
                       Featured
+                    </Badge>
+                  )}
+                  {window.location.pathname.includes("admin") && (
+                    <Badge className="border border-rose-700 bg-rose-50 text-rose-800 dark:bg-rose-800/60 dark:text-rose-200 flex items-center gap-x-1">
+                      {event?.isActive ? "Active" : "Inactive"}
                     </Badge>
                   )}
                 </div>
@@ -217,45 +276,61 @@ const EventCard = ({ event, refetch, className = "" }) => {
             </span>
           </div>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-primary/30 text-primary hover:bg-primary/10"
-              onClick={() => {}}
+            <AddEvent
+              data={event}
+              open={openEdit}
+              handleOpenChange={editOpenChange}
+              isEdit={true}
             >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
+            </AddEvent>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline" className="px-2">
                   <MoreHorizontal className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-42">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => {}}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="p-0"
+                >
+                  <ViewEvent data={event}>
+                    <Button
+                      variant="ghost"
+                      size="noSize"
+                      className="p-2 w-full justify-start"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </ViewEvent>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>
-                  <Users className="h-4 w-4 mr-2" />
-                  View Registrations
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>
-                  <Star className="h-4 w-4 mr-2" />
-                  {event.featuredEvent
-                    ? "Remove from Featured"
-                    : "Mark as Featured"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleUpdate({
+                      docs_id: event._id,
+                      isActive: event?.isActive ?? false,
+                    })
+                  }
+                >
                   <Archive className="h-4 w-4 mr-2" />
-                  {event.isActive ? "Deactivate" : "Activate"}
+                  {event?.isActive ? "Deactivate" : "Activate"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive"
-                  onClick={() => {}}
+                  onClick={() =>
+                    handleUpdate({ docs_id: event._id, isDelete: true })
+                  }
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Event

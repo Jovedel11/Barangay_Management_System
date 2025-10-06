@@ -159,8 +159,6 @@ const updateDocsValidation = [
     .optional()
     .isBoolean()
     .withMessage("isActive must be boolean"),
-
-  // Add status field validation for DocsModel
   body("status")
     .optional()
     .custom((value) => {
