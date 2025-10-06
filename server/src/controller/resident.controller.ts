@@ -2,47 +2,45 @@ import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 
-const createService = ({
+const createResidents = ({
   model: CollectionModel,
 }: Record<string, Model<any>>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body)
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log(errors)
         return res.status(400).json({ errors: errors.array() });
       }
       const data = matchedData(req);
-      const service = await CollectionModel.create({ ...data });
-      service.save();
+      const resident = await CollectionModel.create({ ...data });
+      resident.save();
       return res.status(201).json({
-        message: "Document successfully created",
+        message: "Resident successfully created",
       });
     } catch (error) {
-      console.log("Error in create docs:", error);
+      console.log("Error in creating event :", error);
       next(error);
     }
   };
 };
 
-const deleteService = ({
+const deleteResidents = ({
   model: CollectionModel,
 }: Record<string, Model<any>>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        throw new Error("Book item: Invalid fields");
+        throw new Error("Resident controller: Invalid fields");
       }
-      const { service_id } = matchedData(req);
+      const { resident_id } = matchedData(req);
       const { deletedCount } = await CollectionModel.deleteOne({
-        _id: service_id,
+        _id: resident_id,
       });
       if (deletedCount === 0) {
-        return res.status(404).json({ message: "Item not found" });
+        return res.status(404).json({ message: "Resident not found" });
       }
-      return res.status(200).json({ message: "Item successfully deleted" });
+      return res.status(200).json({ message: "Resident successfully deleted" });
     } catch (error) {
       console.log(error);
       next(error);
@@ -50,4 +48,4 @@ const deleteService = ({
   };
 };
 
-export { createService, deleteService };
+export { createResidents, deleteResidents };
