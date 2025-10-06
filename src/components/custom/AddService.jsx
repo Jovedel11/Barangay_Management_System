@@ -186,6 +186,13 @@ const AddService = ({
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     try {
+      const phonePattern = /^(?:\+63|0)9\d{9}$/;
+      const isValidPhone = phonePattern.test(info.phone);
+      if (!isValidPhone)
+        return CustomToast({
+          description: "Invalid format of Phone Number",
+          status: "error",
+        });
       submitMutation.mutate({
         path: isEdit
           ? "/api/brgy-services/update/available"

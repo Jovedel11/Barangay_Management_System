@@ -14,6 +14,7 @@ import docsRouter from "@/routers/docs.router";
 import borrowItemsRouter from "@/routers/borrow.items.router";
 import brgyServiceRouter from "@/routers/brgy.services.router";
 import brgyEventRouter from "@/routers/brgy.event.router";
+import brgyResidentsRouter from "@/routers/brgy.resident.router";
 const app = express();
 
 app.use(express.json());
@@ -48,6 +49,7 @@ app.use("/api/borrow-item", borrowItemsRouter);
 app.use("/api/brgy-docs", docsRouter);
 app.use("/api/brgy-services", brgyServiceRouter);
 app.use("/api/brgy-events", brgyEventRouter);
+app.use("/api/brgy-residents", brgyResidentsRouter);
 
 app.use(errorHandler);
 
