@@ -188,18 +188,6 @@ const ServiceCard = ({ service, className = "", refetch }) => {
             <span className="text-muted-foreground">Cost:</span>
             <span className={getCostColor(service.cost)}>{service.cost}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Active Appointments:</span>
-            <span className="font-medium text-warning">
-              {service.activeAppointments}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Completed (Month):</span>
-            <span className="font-medium text-success">
-              {service.completedThisMonth}
-            </span>
-          </div>
         </div>
         <ViewServiceDialog
           data={service}

@@ -7,7 +7,6 @@ const store = new MongoDBSessionStore({
   uri: process.env.MONGODB_URI ?? "mongodb://localhost:27017/development",
   collection: "sessions",
 });
-//change the path according to your .env file or your local mongodb server
 
 const ConnectDB = async (): Promise<void> => {
   try {

@@ -214,9 +214,13 @@ const AddResident = ({
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-[500px] w-full md:max-w-[28rem] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col gap-y-0">
         <SheetHeader className="text-left">
-          <SheetTitle className="font-inter">Edit Resident</SheetTitle>
+          <SheetTitle className="font-inter">
+            {isEdit ? "Edit Resident" : "Add Resident"}
+          </SheetTitle>
           <SheetDescription className="text-sm">
-            Update resident information
+            {isEdit
+              ? "Update resident information"
+              : "Add new resident information"}
           </SheetDescription>
         </SheetHeader>
 

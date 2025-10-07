@@ -9,12 +9,13 @@ const isDeployed = process.env.NODE_ENV === "production";
 import passport from "passport";
 import "@/config/passport.strat"; // Ensure passport strategies are configured
 import errorHandler from "@/middleware/error.middleware";
-// import authRouter from "@/routers/auth.router";
+import authRouter from "@/routers/auth.router";
 import docsRouter from "@/routers/docs.router";
 import borrowItemsRouter from "@/routers/borrow.items.router";
 import brgyServiceRouter from "@/routers/brgy.services.router";
 import brgyEventRouter from "@/routers/brgy.event.router";
 import brgyResidentsRouter from "@/routers/brgy.resident.router";
+import dashboardRouter from "@/routers/dashboard.router";
 const app = express();
 
 app.use(express.json());
@@ -44,12 +45,13 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use("/api/auth", authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/borrow-item", borrowItemsRouter);
 app.use("/api/brgy-docs", docsRouter);
 app.use("/api/brgy-services", brgyServiceRouter);
 app.use("/api/brgy-events", brgyEventRouter);
 app.use("/api/brgy-residents", brgyResidentsRouter);
+app.use("/api/admin/dashboard", dashboardRouter);
 
 app.use(errorHandler);
 
