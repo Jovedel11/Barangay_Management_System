@@ -13,6 +13,7 @@ import { updateDocs } from "@/controller/brgy.docs.controller";
 import { BrgyResident } from "@/models/brgy.resident";
 import { AccountModel } from "@/models/user.model";
 import { deleteResidents } from "@/controller/resident.controller";
+import { updateAccountValidation } from "@/middleware/account.update.middleware";
 const router = Router();
 
 const retrieveSystemResident = createSearchController(BrgyResident, [
@@ -30,14 +31,7 @@ const retrieveSystemResident = createSearchController(BrgyResident, [
   "familyMember",
 ]);
 
-const retrieveSystemUser = createSearchController(AccountModel, [
-  "first_name",
-  "last_name",
-  "email",
-  "role",
-  "status",
-  "phone_number",
-]);
+const retrieveSystemUser = createSearchController(AccountModel, ["role"]);
 
 router.get(
   "/system-resident/retrieve",
@@ -50,6 +44,12 @@ router.put(
   updateResidentValidation,
   handleValidationErrors,
   updateDocs({ model: BrgyResident })
+);
+router.put(
+  "/update/account",
+  updateAccountValidation,
+  handleValidationErrors,
+  updateDocs({ model: AccountModel })
 );
 router.put(
   "/update/system-user",

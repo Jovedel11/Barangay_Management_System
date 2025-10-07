@@ -32,10 +32,33 @@ const accountSchema = new Schema<IAccount>(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
-    phone_number: { type: String, default: "Phone is not provided", unique: true },
+    phone_number: {
+      type: String,
+      default: "Phone is not provided",
+      unique: true,
+    },
   },
   { timestamps: true }
 );
+
+accountSchema.pre("updateOne", async function (next) {
+  let update = this.getUpdate() as any;
+
+  // If the update uses $set
+  if (update.$set && update.$set.password) {
+    const hashed = await bcrypt.hash(update.$set.password, 10);
+    update.$set.password = hashed;
+  }
+
+  // If the update sets password directly
+  if (update.password) {
+    const hashed = await bcrypt.hash(update.password, 10);
+    update.password = hashed;
+  }
+
+  this.setUpdate(update);
+  next();
+});
 
 //Custom Method
 accountSchema.methods.validatePassword = async function <T extends string>(
