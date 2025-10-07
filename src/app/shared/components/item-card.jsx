@@ -152,19 +152,9 @@ const ItemCard = ({ item, className = "", refetch }) => {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Borrowed:</span>
-            <span className="font-medium text-accent">{item?.borrowed}</span>
-          </div>
-          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Fee:</span>
             <span className="font-medium text-primary">
               {item?.borrowingFee}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Active Bookings:</span>
-            <span className="font-medium text-warning">
-              {item?.activeBookings}
             </span>
           </div>
           {item?.overdueBookings > 0 && (
