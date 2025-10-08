@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Button } from "@/core/components/ui/button";
-import { Plus } from "lucide-react";
 import SearchComponent from "@/components/custom/SearchData";
 import ItemCard from "@/app/private/components/borrow-item/ItemCard";
-import ItemBookingTable from "@/components/custom/ItemBookingTable";
 import useDebounce from "@/app/shared/hooks/useDebounce";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
+import { BookingCard } from "../components/borrow-item/MyBookings";
 
 const filterOptions = [
   "All Categories",
@@ -63,7 +61,7 @@ const ManageBorrowItems = () => {
               />
 
               {/* Items Grid */}
-              <div className="mt-6">
+              <div className="mt-6 max-h-[70rem] overflow-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <span className="text-slate-500">Loading items...</span>
@@ -81,7 +79,7 @@ const ManageBorrowItems = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {documents.map((item, index) => (
-                      <ItemCard key={index} item={item} refetch={refetch}/>
+                      <ItemCard key={index} item={item} refetch={refetch} />
                     ))}
                   </div>
                 )}
@@ -89,14 +87,9 @@ const ManageBorrowItems = () => {
             </div>
           </div>
         </div>
-        <div className="w-full flex mt-5 min-h-80 dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md p-6">
-          <div className="w-full flex flex-col">
-            <span className="text-2xl font-extrabold dark:text-slate-200">
-              Booked Items
-            </span>
-            <span className="text-slate-500">
-              manage your booked item
-            </span>
+        <div className="w-full flex mt-5 min-h-80 dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md pb-5">
+          <div className="w-full flex flex-col max-h-[70rem] overflow-auto">
+            <BookingCard />
           </div>
         </div>
       </div>

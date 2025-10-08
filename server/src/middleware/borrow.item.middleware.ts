@@ -180,7 +180,7 @@ const updateBorrowRequestValidation = [
     .optional()
     .isString()
     .withMessage("Status must be a string")
-    .isIn(["pending", "approved", "rejected", "completed"])
+    .isIn(["pending", "approved", "rejected", "returned"])
     .withMessage(
       "Status must be one of: pending, approved, rejected, completed"
     ),
