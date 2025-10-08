@@ -52,19 +52,19 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     const currentDate = new Date();
     const returnDate = new Date(booking.returnDate);
 
-    if (booking.status === "completed") {
-      return { label: "Completed", variant: "default" };
+    if (booking.status === "returned") {
+      return { label: "Returned" };
     }
 
     if (booking.status === "approved" && currentDate > returnDate) {
-      return { label: "Overdue", variant: "destructive" };
+      return { label: "Overdue" };
     }
 
     if (booking.status === "approved") {
-      return { label: "Approved", variant: "default" };
+      return { label: "Approved" };
     }
 
-    return { label: "Pending Approval", variant: "secondary" };
+    return { label: "Pending" };
   };
 
   const getDeliveryMethod = (booking) => {
@@ -232,7 +232,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusInfo.variant}>
+                        <Badge variant={statusInfo?.label?.toLowerCase()}>
                           {statusInfo.label}
                         </Badge>
                       </TableCell>

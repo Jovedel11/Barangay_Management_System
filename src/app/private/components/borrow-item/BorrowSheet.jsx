@@ -8,12 +8,10 @@ import {
   SheetFooter,
   SheetClose,
 } from "@/core/components/ui/sheet";
-import { RadioGroup, RadioGroupItem } from "@/core/components/ui/radio-group";
 import { Label } from "@/core/components/ui/label";
 import { Input } from "@/core/components/ui/input";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/core/components/ui/badge";
-import { Checkbox } from "@/core/components/ui/checkbox";
 import {
   Armchair,
   Laptop,
@@ -25,26 +23,21 @@ import {
   Info,
   Plus,
 } from "lucide-react";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "@/components/custom/CustomToast";
 
 const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
   const [bookingForm, setBookingForm] = useState({
+    name: "",
+    category: "",
     quantity: 1,
     borrowDate: "",
     returnDate: "",
     purpose: "",
     eventLocation: "",
     contactNumber: "",
-    deliveryMethod: "pickup", // pickup or delivery
-    specialRequirements: {
-      isPregnant: false,
-    },
+    deliveryMethod: "",
   });
-
-  // Mock user profile - replace with actual user data
-  const userProfile = {
-    isSenior: false,
-    gender: "female",
-  };
 
   const getCategoryIcon = (category) => {
     const iconMap = {
@@ -72,23 +65,23 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
 
   const handleChange = useCallback((e) => {
     const { id, value } = e.target;
-    setBookingForm((prevState) => ({
-      ...prevState,
+    setBookingForm((prev) => ({
+      ...prev,
       [id]: value,
     }));
   }, []);
 
-  const handleCheckboxChange = useCallback((field, checked) => {
-    setBookingForm((prevState) => ({
-      ...prevState,
-      specialRequirements: {
-        ...prevState.specialRequirements,
-        [field]: checked,
-      },
-    }));
-  }, []);
-
   const nothingChanged = useMemo(() => {
+    const anyEmpty =
+      !bookingForm.name.trim() ||
+      !bookingForm.quantity === 0 ||
+      !bookingForm.borrowDate.trim() ||
+      !bookingForm.returnDate ||
+      !bookingForm.purpose ||
+      !bookingForm.eventLocation.trim() ||
+      !bookingForm.deliveryMethod.trim();
+
+    if (anyEmpty) return true;
     return (
       bookingForm.quantity === 1 &&
       !bookingForm.borrowDate &&
@@ -102,25 +95,71 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
   useEffect(() => {
     if (selectedItem) {
       setBookingForm({
+        name: selectedItem?.name ?? "",
+        category: selectedItem?.category ?? "",
         quantity: 1,
-        borrowDate: "",
+        borrowDate: new Date().toISOString().split("T")[0],
         returnDate: "",
         purpose: "",
         eventLocation: "",
         contactNumber: "",
-        deliveryMethod: "pickup",
-        specialRequirements: {
-          isPregnant: false,
-        },
+        deliveryMethod: selectedItem?.deliveryAvailable ? "delivery" : "pickup",
       });
     }
   }, [selectedItem]);
 
   const Icon = selectedItem ? getCategoryIcon(selectedItem.category) : Wrench;
 
+  const handleSubmit = useCallback(async () => {
+    try {
+      if (!bookingForm.borrowDate || !bookingForm.returnDate) {
+        return CustomToast({
+          description: "Borrow date and Return date are required",
+          status: "error",
+        });
+      }
+      const payload = {
+        user: "68de36ea114288009c8ead8b",
+        ...bookingForm,
+        borrowDate: new Date(bookingForm.borrowDate).toISOString(),
+        returnDate: new Date(bookingForm.returnDate).toISOString(),
+      };
+      console.log(payload);
+      const result = await customRequest({
+        path: "/api/borrow-item/request/insert",
+        attributes: {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...payload }),
+          credentials: "include",
+        },
+      });
+      if (result?.success) {
+        refetch();
+        CustomToast({
+          description: "Item successfully booked",
+          status: "success",
+        });
+        return onOpenChange();
+      }
+      CustomToast({
+        description: "Item booking failed",
+        status: "error",
+      });
+    } catch (error) {
+      console.error("Error submitting:", error);
+      CustomToast({
+        description: "Something went wrong",
+        status: "error",
+      });
+    }
+  }, [bookingForm, refetch, onOpenChange]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-[500px] md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
+      <SheetContent className="sm:max-w-[500px] w-full md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
         {selectedItem && (
           <>
             <SheetHeader className="text-left">
@@ -134,7 +173,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
             </SheetHeader>
 
             <div className="w-full flex flex-col gap-y-4 px-4">
-              {/* Item Info Header */}
+              {/* Item Info */}
               <div className="p-3 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Item Details</span>
@@ -145,7 +184,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 </p>
               </div>
 
-              {/* Quantity and Availability */}
+              {/* Quantity */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="w-full flex flex-col gap-y-1">
                   <Label htmlFor="quantity">Quantity</Label>
@@ -154,7 +193,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                     type="number"
                     min="1"
                     max={selectedItem?.available}
-                    value={bookingForm?.quantity}
+                    value={bookingForm.quantity}
                     onChange={handleChange}
                   />
                 </div>
@@ -173,7 +212,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                   <Input
                     id="borrowDate"
                     type="date"
-                    value={bookingForm?.borrowDate}
+                    value={bookingForm.borrowDate}
                     onChange={handleChange}
                   />
                 </div>
@@ -182,7 +221,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                   <Input
                     id="returnDate"
                     type="date"
-                    value={bookingForm?.returnDate}
+                    value={bookingForm.returnDate}
                     onChange={handleChange}
                   />
                 </div>
@@ -194,7 +233,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 <Input
                   id="purpose"
                   placeholder="e.g., Birthday party, Wedding, Meeting"
-                  value={bookingForm?.purpose}
+                  value={bookingForm.purpose}
                   onChange={handleChange}
                 />
               </div>
@@ -205,7 +244,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 <Input
                   id="eventLocation"
                   placeholder="Complete address"
-                  value={bookingForm?.eventLocation}
+                  value={bookingForm.eventLocation}
                   onChange={handleChange}
                 />
               </div>
@@ -216,56 +255,74 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 <Input
                   id="contactNumber"
                   placeholder="09XXXXXXXXX"
-                  value={bookingForm?.contactNumber}
+                  value={bookingForm.contactNumber}
                   onChange={handleChange}
                 />
               </div>
 
-              {/* Collection Method Selection */}
+              {/* Collection Method */}
               {selectedItem?.deliveryAvailable && (
                 <div className="w-full flex flex-col gap-y-3">
                   <Label>Collection Method</Label>
-                  <RadioGroup
-                    value={bookingForm?.deliveryMethod}
-                    onValueChange={(value) =>
-                      setBookingForm({
-                        ...bookingForm,
-                        deliveryMethod: value,
-                      })
-                    }
-                    className="flex flex-col space-y-2"
-                  >
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/30">
-                      <RadioGroupItem value="pickup" id="pickup" />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor="pickup"
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <Home className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col space-y-2">
+                    {/* Pickup Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setBookingForm((prev) => ({
+                          ...prev,
+                          deliveryMethod:
+                            prev.deliveryMethod === "pickup" ? "" : "pickup",
+                        }))
+                      }
+                      className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
+                        bookingForm.deliveryMethod === "pickup"
+                          ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
+                          : "border-muted bg-transparent"
+                      }`}
+                    >
+                      <Home className="h-4 w-4 text-primary" />
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">
                           Walk-in Pickup at Barangay Office
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
+                        </span>
+                        <p className="text-xs text-muted-foreground">
                           Pay cash and collect at barangay hall
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/30">
-                      <RadioGroupItem value="delivery" id="delivery" />
-                      <div className="flex-1">
-                        <Label
-                          htmlFor="delivery"
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <Truck className="h-4 w-4 text-accent" />
+                    </Button>
+
+                    {/* Delivery Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setBookingForm((prev) => ({
+                          ...prev,
+                          deliveryMethod:
+                            prev.deliveryMethod === "delivery"
+                              ? ""
+                              : "delivery",
+                        }))
+                      }
+                      className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
+                        bookingForm.deliveryMethod === "delivery"
+                          ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
+                          : "border-muted bg-transparent"
+                      }`}
+                    >
+                      <Truck className="h-4 w-4 text-accent" />
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">
                           Home Delivery
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
+                        </span>
+                        <p className="text-xs text-muted-foreground">
                           Cash on delivery (COD) payment
                         </p>
                       </div>
-                    </div>
-                  </RadioGroup>
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -282,7 +339,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                   </div>
                 )}
 
-              {/* Payment Information */}
+              {/* Payment Info */}
               <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
                 <div className="flex items-start gap-2">
                   <Wallet className="h-4 w-4 text-yellow-600 mt-0.5" />
@@ -297,13 +354,9 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                       <p>
                         <strong>Payment:</strong> Cash only at barangay office
                       </p>
-                      {bookingForm?.deliveryMethod === "delivery" && (
+                      {bookingForm.deliveryMethod === "delivery" && (
                         <p>
                           <strong>Delivery:</strong>{" "}
-                          {userProfile?.isSenior ||
-                          bookingForm?.specialRequirements?.isPregnant
-                            ? "Free COD"
-                            : "COD with delivery fee"}
                         </p>
                       )}
                       <p>
@@ -315,7 +368,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 </div>
               </div>
 
-              {/* Important Notes */}
+              {/* Notes */}
               {selectedItem?.notes && selectedItem?.notes !== "N/A" && (
                 <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
                   <div className="flex items-start gap-2">
@@ -344,7 +397,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
               </SheetClose>
               <Button
                 className="rounded-sm transition-all active:scale-95"
-                onClick={() => {}}
+                onClick={handleSubmit}
                 disabled={nothingChanged || selectedItem?.available === 0}
               >
                 <Plus className="h-4 w-4 mr-2" />

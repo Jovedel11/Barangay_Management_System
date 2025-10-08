@@ -20,7 +20,7 @@ const filterOptions = [
   "Tools & Equipment",
 ];
 
-const statusFilterOptions = ["All status", "approved", "completed", "pending"];
+const statusFilterOptions = ["All status", "approved", "returned", "pending"];
 
 const ManageDocuments = () => {
   const [open, setOpen] = useState(false);

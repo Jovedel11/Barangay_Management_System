@@ -1,8 +1,8 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
   "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
@@ -17,28 +17,32 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        returned:
+          "bg-blue-50 border border-blue-500 dark:border-blue-700 dark:bg-blue-800/20 text-blue-500",
+        overdue:
+          "bg-red-50 border border-red-500 dark:border-red-700 dark:bg-red-800/20 text-red-500",
+        approved:
+          "bg-green-50 border border-green-500 dark:border-green-700 dark:bg-green-800/20 text-green-500",
+        pending:
+          "bg-amber-50 border border-amber-500 dark:border-amber-700 dark:bg-amber-800/20 text-amber-500",
       },
     },
     defaultVariants: {
       variant: "default",
     },
   }
-)
+);
 
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}) {
-  const Comp = asChild ? Slot : "span"
+function Badge({ className, variant, asChild = false, ...props }) {
+  const Comp = asChild ? Slot : "span";
 
   return (
     <Comp
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}
-      {...props} />
+      {...props}
+    />
   );
 }
 
-export { Badge, badgeVariants }
+export { Badge, badgeVariants };

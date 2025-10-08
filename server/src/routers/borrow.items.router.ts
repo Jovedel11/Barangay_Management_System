@@ -64,7 +64,7 @@ router.put(
   updateDocs({ model: BorrowRequestModel })
 );
 router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
-router.post("/insert", itemBorrowValidation, bookItem); // Insert for booking request
+router.post("/request/insert", itemBorrowValidation, bookItem); // Insert for booking request
 router.post("/available/insert", borrowableItemValidation, addAvailableBooking); // Insert for available items
 
 export default router;
