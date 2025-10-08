@@ -90,7 +90,7 @@ export function AppSidebar(props) {
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary">
                   <img
-                    src="image/favicon.svg"
+                    src="/image/brgy.png"
                     alt="Barangay Kaypian Logo"
                     className="w-6 h-6 object-contain"
                   />

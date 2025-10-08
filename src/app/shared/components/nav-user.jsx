@@ -33,9 +33,11 @@ export function NavUser({ user, className }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
+              <Avatar className="h-8 w-8 rounded-lg border border-border bg-muted">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg bg-muted text-muted-foreground">
+                  CN
+                </AvatarFallback>
               </Avatar>
               <div
                 className={cn(
