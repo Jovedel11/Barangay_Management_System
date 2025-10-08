@@ -4,8 +4,8 @@ import { Schema, model } from "mongoose";
 type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
   user: Schema.Types.ObjectId;
   name: string;
-  borrowDate: T;
-  returnDate: T;
+  borrowDate: Date;
+  returnDate: Date;
   eventLocation: T;
   contactNumber: T;
   //specialRequirements: Partial<Record<string, boolean>>;
@@ -33,12 +33,12 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   name: { type: String, required: true },
   quantity: { type: Number, required: true },
-  borrowDate: { type: String, required: true },
-  returnDate: { type: String, required: true },
+  borrowDate: { type: Date, required: true },
+  returnDate: { type: Date, required: true },
   purpose: { type: String, required: true },
   eventLocation: { type: String, required: true },
   contactNumber: { type: String, required: true },
-  deliveryMethod: { type: String, required: true },
+  deliveryMethod: { type: String, required: false },
   category: { type: String, required: true },
   /*specialRequirements: {
     isSenior: { type: Boolean, required: false, default: false },

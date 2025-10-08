@@ -24,12 +24,33 @@ const itemBorrowValidation = [
     .exists()
     .withMessage("Borrow date is required.")
     .notEmpty()
-    .withMessage("Borrow date cannot be empty."),
+    .withMessage("Borrow date cannot be empty.")
+    .isISO8601()
+    .withMessage("Borrow date must be a valid ISO date string")
+    .custom((value) => {
+      const borrowDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (borrowDate < today) {
+        throw new Error("Borrow date cannot be in the past");
+      }
+      return true;
+    }),
   body("returnDate")
     .exists()
     .withMessage("Return date is required.")
     .notEmpty()
-    .withMessage("Return date cannot be empty."),
+    .withMessage("Return date cannot be empty.")
+    .isISO8601()
+    .withMessage("Return date must be a valid ISO date string")
+    .custom((value, { req }) => {
+      const returnDate = new Date(value);
+      const borrowDate = new Date(req.body.borrowDate);
+      if (returnDate <= borrowDate) {
+        throw new Error("Return date must be after the borrow date");
+      }
+      return true;
+    }),
   body("purpose")
     .exists()
     .withMessage("Purpose is required.")
