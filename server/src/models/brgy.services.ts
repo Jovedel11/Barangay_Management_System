@@ -38,8 +38,9 @@ const serviceRequestSchema = new Schema<IServiceRequest>(
     category: { type: String, required: true },
     status: {
       type: String,
-      required: true,
+      required: false,
       enum: ["confirmed", "pending", "completed", "rescheduled"],
+      default: "pending",
     },
     details: { type: String, required: true },
     specialNote: { type: String, required: false },

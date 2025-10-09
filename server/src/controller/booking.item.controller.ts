@@ -130,10 +130,12 @@ const createSearchController = (
           errors: errors.array(),
         });
       }
-      const { search, category, status } = matchedData(req, {
+      const { search, category, status, userID } = matchedData(req, {
         locations: ["query"],
       });
-      console.log(search, category, status);
+      console.log("Collection Model: ", CollectionModel);
+      console.log("Has user: ", value);
+      console.log("User ID: ", userID);
       const result = await FilterCollection({
         search,
         category,
@@ -141,6 +143,7 @@ const createSearchController = (
         model: CollectionModel,
         hasUser: value,
         data: fieldsToSearch,
+        userID,
       });
       if (result?.error) throw result.error;
       if (result?.notFound) {

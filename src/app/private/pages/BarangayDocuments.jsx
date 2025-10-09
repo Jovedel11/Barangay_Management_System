@@ -31,8 +31,6 @@ const ManageBorrowItems = () => {
         },
       }),
     enabled: debouncedSearchQuery !== undefined,
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false,
   });
 
   const documents = Array.isArray(data?.response) ? data.response : [];
@@ -44,7 +42,7 @@ const ManageBorrowItems = () => {
         Request documents online • Pay and collect at barangay office
       </span>
       <div className="flex flex-col md:flex-row gap-x-2">
-        <div className="w-full md:min-w-[48rem] flex mt-5 min-h-80 dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md p-6">
+        <div className="w-full md:min-w-[48rem] flex mt-5  dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md p-6">
           <div className="w-full flex flex-col">
             <span className="text-2xl font-extrabold dark:text-slate-200">
               Available Documents
@@ -62,7 +60,7 @@ const ManageBorrowItems = () => {
               />
 
               {/* Items Grid */}
-              <div className="mt-6 max-h-[70rem] overflow-auto">
+              <div className="mt-6 max-h-[50rem] overflow-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <span className="text-slate-500">Loading items...</span>

@@ -29,6 +29,7 @@ export const serviceRequestValidation: ValidationChain[] = [
     .notEmpty()
     .withMessage("Category field cannot be empty"),
   body("status")
+    .optional()
     .isString()
     .withMessage("Status must be a string")
     .notEmpty()
@@ -40,6 +41,10 @@ export const serviceRequestValidation: ValidationChain[] = [
     .withMessage("Details must be a string")
     .notEmpty()
     .withMessage("Details field cannot be empty"),
+  body("specialNote")
+    .optional()
+    .isString()
+    .withMessage("Special Note must be a string"),
 ];
 
 const updateServiceValidation = [

@@ -1,4 +1,5 @@
 import type { Model } from "mongoose";
+import { Types } from "mongoose";
 
 type Filter = {
   search?: string;
@@ -6,8 +7,9 @@ type Filter = {
   category?: string;
   status?: string;
   data: string[];
-  hasUser?: boolean; 
+  hasUser?: boolean;
   userModel?: string;
+  userID?: string; // 👈 new param
 };
 
 type FilterResponse = {
@@ -19,6 +21,7 @@ type FilterResponse = {
 const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
   try {
     if (!params) throw new Error("Params are empty");
+
     const {
       search,
       model: CollectionModel,
@@ -27,26 +30,12 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
       data,
       hasUser = false,
       userModel = "accounts",
+      userID,
     } = params;
+
     if (!data) throw new Error("Data is empty");
 
     const pipeline: any[] = [];
-    const matchStage: any = {};
-    if (search?.trim()) {
-      const searchRegex = { $regex: search.trim(), $options: "i" };
-      matchStage.$or = data.map((key) => ({
-        [key]: searchRegex,
-      }));
-    }
-    if (category && category.trim() !== "" && category !== "All Categories") {
-      matchStage.category = { $regex: `^${category}$`, $options: "i" };
-    }
-
-    if (status && status.trim() !== "") {
-      matchStage.status = { $regex: `^${status}$`, $options: "i" };
-    }
-
-    pipeline.push({ $match: matchStage });
     if (hasUser) {
       pipeline.push(
         {
@@ -74,15 +63,42 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
           },
         },
         {
-          $project: {
-            userData: 0,
-          },
+          $project: { userData: 0 },
         }
       );
     }
+    const matchStage: any = {};
+    if (search?.trim()) {
+      const searchRegex = { $regex: search.trim(), $options: "i" };
+      const searchConditions = data.map((key) => ({ [key]: searchRegex }));
 
+      if (hasUser) {
+        searchConditions.push(
+          { "user.firstName": searchRegex },
+          { "user.lastName": searchRegex },
+          { "user.email": searchRegex }
+        );
+      }
+
+      matchStage.$or = searchConditions;
+    }
+
+    // Filter by category
+    if (category && category.trim() !== "" && category !== "All Categories") {
+      matchStage.category = { $regex: `^${category}$`, $options: "i" };
+    }
+
+    // Filter by status
+    if (status && status.trim() !== "") {
+      matchStage.status = { $regex: `^${status}$`, $options: "i" };
+    }
+    if (userID && Types.ObjectId.isValid(userID)) {
+      console.log("Filtered by User ID");
+      matchStage["user._id"] = new Types.ObjectId(userID);
+    }
+
+    pipeline.push({ $match: matchStage });
     const filteredData = await CollectionModel.aggregate(pipeline);
-    console.log(filteredData);
 
     if (!filteredData || filteredData.length === 0) {
       return { notFound: true };
@@ -90,7 +106,7 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
 
     return { filteredData };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return { error: error as Error };
   }
 };

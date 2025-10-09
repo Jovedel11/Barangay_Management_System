@@ -16,6 +16,7 @@ const searchItemValidation = [
     .trim()
     .isString()
     .withMessage("Status must be a string"),
+  query("userID").optional().isMongoId().withMessage("Invalid type of ID"),
 ];
 
 export default searchItemValidation;

@@ -31,7 +31,7 @@ const DocCard = ({ doc, refetch }) => {
 
   const handleSheet = () => setSheet((state) => !state);
   return (
-    <Card className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30">
+    <Card className="border border-border bg-background/50 hover:shadow-sm transition-all duration-200 hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 min-w-0">
