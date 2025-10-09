@@ -19,8 +19,10 @@ import customRequest from "@/services/customRequest";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const BookingCard = () => {
+  const { user } = useAuth();
   const {
     data,
     isLoading: bookingsLoading,
@@ -29,7 +31,7 @@ const BookingCard = () => {
     queryKey: ["my-bookings"],
     queryFn: () =>
       customRequest({
-        path: "/api/borrow-item/request/items",
+        path: `/api/borrow-item/request/items?userID=${user._id}`,
         attributes: {
           method: "GET",
           credentials: "include",

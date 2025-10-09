@@ -36,8 +36,6 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
     if (!data) throw new Error("Data is empty");
 
     const pipeline: any[] = [];
-
-    // --- 1️⃣ Lookup user if enabled ---
     if (hasUser) {
       pipeline.push(
         {
@@ -69,11 +67,7 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
         }
       );
     }
-
-    // --- 2️⃣ Build match conditions ---
     const matchStage: any = {};
-
-    // Search text (includes user fields if hasUser)
     if (search?.trim()) {
       const searchRegex = { $regex: search.trim(), $options: "i" };
       const searchConditions = data.map((key) => ({ [key]: searchRegex }));
@@ -98,15 +92,12 @@ const FilterCollection = async (params: Filter): Promise<FilterResponse> => {
     if (status && status.trim() !== "") {
       matchStage.status = { $regex: `^${status}$`, $options: "i" };
     }
-
-    // 👇 3️⃣ Filter by user ID (optional)
     if (userID && Types.ObjectId.isValid(userID)) {
+      console.log("Filtered by User ID");
       matchStage["user._id"] = new Types.ObjectId(userID);
     }
 
     pipeline.push({ $match: matchStage });
-
-    // --- 4️⃣ Execute the aggregation ---
     const filteredData = await CollectionModel.aggregate(pipeline);
 
     if (!filteredData || filteredData.length === 0) {

@@ -21,13 +21,15 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const DocsRequest = () => {
+  const { user } = useAuth();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["my-bookings"],
     queryFn: () =>
       customRequest({
-        path: "/api/brgy-docs/get-request",
+        path: `/api/brgy-docs/get-request?userID=${user._id}`,
         attributes: {
           method: "GET",
           credentials: "include",

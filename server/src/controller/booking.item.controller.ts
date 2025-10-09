@@ -135,6 +135,7 @@ const createSearchController = (
       });
       console.log("Collection Model: ", CollectionModel);
       console.log("Has user: ", value);
+      console.log("User ID: ", userID);
       const result = await FilterCollection({
         search,
         category,

@@ -19,13 +19,15 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const ServiceRequests = () => {
+  const { user } = useAuth();
   const { data, isLoading: requestsLoading } = useQuery({
     queryKey: ["my-service-requests"],
     queryFn: () =>
       customRequest({
-        path: "/api/brgy-services/request/services?userID=68de36ea114288009c8ead8b", // Replace with your actual endpoint
+        path: `/api/brgy-services/request/services?userID=${user._id}`, // Replace with your actual endpoint
         attributes: {
           method: "GET",
           credentials: "include",
