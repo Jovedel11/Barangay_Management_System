@@ -5,7 +5,7 @@ import { Router } from "express";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
 import { BrgyEvent, EventRequest } from "@/models/brgy.events";
-import { deleteEvents } from "@/controller/events.controller";
+import { deleteEvents, getFeaturedEvent } from "@/controller/events.controller";
 import {
   createEventValidation,
   deleteEventValidation,
@@ -48,6 +48,7 @@ const retrievEventReq = createSearchController(EventRequest, [
 
 router.get("/available/retrieve", searchItemValidation, retrieveAllEvents); // Retrieve (admin)
 router.get("/request/retrieve", searchItemValidation, retrievEventReq); // Retrieve (resident)
+router.get("/featured/retrieve", getFeaturedEvent); // Retrieve featured (resident)
 router.put(
   "/update/available",
   updateEventValidation,

@@ -1,3 +1,4 @@
+import { BrgyEvent } from "@/models/brgy.events";
 import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
@@ -48,4 +49,21 @@ const deleteEvents = ({
   };
 };
 
-export { createEvents, deleteEvents };
+const getFeaturedEvent = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await BrgyEvent.find({ featuredEvent: true });
+    if (!result) {
+      return res.status(404).json({ message: "Error finding featured event" });
+    }
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export { createEvents, deleteEvents, getFeaturedEvent };
