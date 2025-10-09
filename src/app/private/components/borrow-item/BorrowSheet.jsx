@@ -25,8 +25,10 @@ import {
 } from "lucide-react";
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "@/components/custom/CustomToast";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
+  const { user } = useAuth(); // Retreiving the User when they successfully login
   const [bookingForm, setBookingForm] = useState({
     name: "",
     category: "",
@@ -119,7 +121,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         });
       }
       const payload = {
-        user: "68de36ea114288009c8ead8b",
+        user: user._id,
         ...bookingForm,
         borrowDate: new Date(bookingForm.borrowDate).toISOString(),
         returnDate: new Date(bookingForm.returnDate).toISOString(),
@@ -149,13 +151,14 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         status: "error",
       });
     } catch (error) {
+      console.log(user._id);
       console.error("Error submitting:", error);
       CustomToast({
         description: "Something went wrong",
         status: "error",
       });
     }
-  }, [bookingForm, refetch, onOpenChange]);
+  }, [bookingForm, refetch, onOpenChange, user]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

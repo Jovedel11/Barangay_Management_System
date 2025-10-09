@@ -17,8 +17,10 @@ import { Wallet, Plus, Home, Truck, FileCheck } from "lucide-react";
 import { useMemo } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
+  const { user } = useAuth();
   const [requestForm, setRequestForm] = useState({
     quantity: 1,
     purpose: "",
@@ -95,7 +97,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
           status: "error",
         });
       const payload = {
-        user: "68de36ea114288009c8ead8b",
+        user: user._id,
         ...requestForm,
       };
       console.log(payload);
@@ -129,7 +131,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
         status: "error",
       });
     }
-  }, [requestForm, refetch, onOpenChange]);
+  }, [requestForm, refetch, onOpenChange, user]);
 
   const DocIcon = FileCheck;
   useEffect(() => {

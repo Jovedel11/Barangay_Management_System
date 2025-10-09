@@ -61,7 +61,7 @@ const BarangayServices = () => {
               />
 
               {/* Items Grid */}
-              <div className="mt-6 max-h-[50rem] overflow-auto">
+              <div className="mt-6 max-h-[40rem] overflow-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <span className="text-slate-500">Loading items...</span>
@@ -87,7 +87,7 @@ const BarangayServices = () => {
             </div>
           </div>
         </div>
-        <div className="w-full flex mt-5 min-h-80 dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md pb-5">
+        <div className="w-full flex mt-5 dark:border dark:border-slate-700 dark:bg-slate-800 shadow-sm bg-white rounded-md pb-5">
           <div className="w-full flex flex-col max-h-[50rem] overflow-auto">
             <ServiceRequests />
           </div>

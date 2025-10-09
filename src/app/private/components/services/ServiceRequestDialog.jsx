@@ -14,8 +14,10 @@ import { Plus, X } from "lucide-react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const ServiceRequestDialog = ({ open, onOpenChange, selectedService }) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [requestForm, setRequestForm] = useState({
     details: "",
@@ -43,7 +45,7 @@ const ServiceRequestDialog = ({ open, onOpenChange, selectedService }) => {
         category: selectedService.category,
         service: selectedService.name,
         details: requestForm.details,
-        user: "68de36ea114288009c8ead8b",
+        user: user._id,
       };
       console.log(payload);
       const result = await customRequest({
@@ -83,7 +85,7 @@ const ServiceRequestDialog = ({ open, onOpenChange, selectedService }) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [requestForm, selectedService, onOpenChange, queryClient]);
+  }, [requestForm, selectedService, onOpenChange, queryClient, user]);
 
   if (!selectedService) return null;
 
