@@ -35,7 +35,7 @@ const ItemCard = ({ item, refetch }) => {
   const Icon = getCategoryIcon(item.category);
   const onBorrow = () => setOpenBorrow((set) => !set);
   return (
-    <Card className="border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30">
+    <Card className="border bg-background/50 border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3">

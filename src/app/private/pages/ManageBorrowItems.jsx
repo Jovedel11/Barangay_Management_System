@@ -30,8 +30,6 @@ const ManageBorrowItems = () => {
         },
       }),
     enabled: debouncedSearchQuery !== undefined,
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false,
   });
 
   const documents = Array.isArray(data?.response) ? data.response : [];
