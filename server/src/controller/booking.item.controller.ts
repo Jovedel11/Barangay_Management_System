@@ -130,7 +130,7 @@ const createSearchController = (
           errors: errors.array(),
         });
       }
-      const { search, category, status } = matchedData(req, {
+      const { search, category, status, userID } = matchedData(req, {
         locations: ["query"],
       });
       console.log("Collection Model: ", CollectionModel);
@@ -142,6 +142,7 @@ const createSearchController = (
         model: CollectionModel,
         hasUser: value,
         data: fieldsToSearch,
+        userID,
       });
       if (result?.error) throw result.error;
       if (result?.notFound) {

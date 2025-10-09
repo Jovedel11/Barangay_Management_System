@@ -25,7 +25,7 @@ const ServiceRequests = () => {
     queryKey: ["my-service-requests"],
     queryFn: () =>
       customRequest({
-        path: "/api/brgy-services/request/services", // Replace with your actual endpoint
+        path: "/api/brgy-services/request/services?userID=68de36ea114288009c8ead8b", // Replace with your actual endpoint
         attributes: {
           method: "GET",
           credentials: "include",
