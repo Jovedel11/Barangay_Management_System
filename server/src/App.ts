@@ -51,7 +51,7 @@ app.use("/api/brgy-docs", docsRouter);
 app.use("/api/brgy-services", brgyServiceRouter);
 app.use("/api/brgy-events", brgyEventRouter);
 app.use("/api/brgy-residents", brgyResidentsRouter);
-app.use("/api/admin/dashboard", dashboardRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 app.use(errorHandler);
 
