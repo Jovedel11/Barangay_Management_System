@@ -1,0 +1,434 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Pink, Beige & White Theme - Single Mode */
+  --background: #FEFBF8;                    /* Warm off-white */
+  --foreground: #4A2C2A;                    /* Dark warm brown */
+  --card: #FFFFFF;                          /* Pure white cards */
+  --card-foreground: #4A2C2A;               /* Dark brown text */
+  --popover: #FFFFFF;                       /* Clean white */
+  --popover-foreground: #4A2C2A;            /* Dark brown text */
+  --primary: #B91C7C;                       /* Rich dark pink */
+  --primary-foreground: #FFFFFF;            /* White text on pink */
+  --secondary: #F3E8D0;                     /* Light warm beige */
+  --secondary-foreground: #6B4423;          /* Medium brown text */
+  --muted: #F8F1E8;                         /* Very light beige */
+  --muted-foreground: #8B5A3C;              /* Warm brown text */
+  --accent: #D946EF;                        /* Bright pink accent */
+  --accent-foreground: #FFFFFF;             /* White text on accent */
+  --destructive: #DC2626;                   /* Standard red */
+  --destructive-foreground: #FFFFFF;        /* White text */
+  --success: #059669;                       /* Green success */
+  --success-foreground: #FFFFFF;            /* White text */
+  --warning: #D97706;                       /* Warm amber */
+  --warning-foreground: #FFFFFF;            /* White text */
+  --border: #E8D5C4;                        /* Soft beige border */
+  --input: #FFFFFF;                         /* White inputs */
+  --ring: #B91C7C;                          /* Pink focus ring */
+
+  /* Chart Colors - Pink & Beige Harmony */
+  --chart-1: #B91C7C;                       /* Dark pink */
+  --chart-2: #D946EF;                       /* Bright pink */
+  --chart-3: #E4A853;                       /* Golden beige */
+  --chart-4: #8B5A3C;                       /* Warm brown */
+  --chart-5: #F472B6;                       /* Light pink */
+
+  /* Sidebar - Pink Theme */
+  --sidebar: #A3185B;                       /* Deep pink sidebar */
+  --sidebar-foreground: #FFFFFF;            /* White sidebar text */
+  --sidebar-primary: #E4A853;               /* Golden beige primary */
+  --sidebar-primary-foreground: #4A2C2A;    /* Dark text */
+  --sidebar-accent: #F472B6;                /* Light pink accent */
+  --sidebar-accent-foreground: #4A2C2A;     /* Dark text */
+  --sidebar-border: #C2185B;                /* Pink border */
+  --sidebar-ring: #E4A853;                  /* Golden ring */
+}
+
+@layer base {
+  /* Global Layout Variables */
+  :root {
+    --header-height: 4rem;
+    --sidebar-width: 17rem;
+    --content-max-width: 85rem;
+    --content-padding: 1.5rem;
+    --nav-height: 3.5rem;
+
+    /* Brand Colors - Pink, Beige & White */
+    --brand-pink: #B91C7C;                  /* Primary dark pink */
+    --brand-light-pink: #F472B6;            /* Light pink */
+    --brand-beige: #E4A853;                 /* Golden beige */
+    --brand-light-beige: #F3E8D0;           /* Light beige */
+    --brand-white: #FFFFFF;                 /* Pure white */
+    --brand-warm-white: #FEFBF8;            /* Warm off-white */
+    --brand-brown: #4A2C2A;                 /* Dark warm brown */
+
+    /* Extended Pink Palette */
+    --pink-50: #FEF7FF;
+    --pink-100: #FCE7F3;
+    --pink-200: #FBCFE8;
+    --pink-300: #F9A8D4;
+    --pink-400: #F472B6;
+    --pink-500: #EC4899;
+    --pink-600: #DB2777;
+    --pink-700: #B91C7C;
+    --pink-800: #A3185B;
+    --pink-900: #831843;
+
+    /* Extended Beige Palette */
+    --beige-50: #FEFBF8;
+    --beige-100: #F8F1E8;
+    --beige-200: #F3E8D0;
+    --beige-300: #E8D5C4;
+    --beige-400: #D4A574;
+    --beige-500: #E4A853;
+    --beige-600: #C19A6B;
+    --beige-700: #8B5A3C;
+    --beige-800: #6B4423;
+    --beige-900: #4A2C2A;
+
+    /* Brown/Text Palette */
+    --brown-50: #FEFBF8;
+    --brown-100: #F8F1E8;
+    --brown-200: #E8D5C4;
+    --brown-300: #D4A574;
+    --brown-400: #C19A6B;
+    --brown-500: #8B5A3C;
+    --brown-600: #6B4423;
+    --brown-700: #4A2C2A;
+    --brown-800: #3D2318;
+    --brown-900: #2D1A0F;
+
+    /* Status Colors */
+    --success: #059669;
+    --warning: #D97706;
+    --error: #DC2626;
+    --info: #2563EB;
+
+    /* Enhanced Shadows with Pink Tint */
+    --shadow-sm: 0 1px 2px 0 rgb(185 28 124 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(185 28 124 / 0.1), 0 2px 4px -2px rgb(185 28 124 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(185 28 124 / 0.1), 0 4px 6px -4px rgb(185 28 124 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(185 28 124 / 0.1), 0 8px 10px -6px rgb(185 28 124 / 0.1);
+    --shadow-pink: 0 4px 14px 0 rgb(185 28 124 / 0.15);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    line-height: 1.6;
+  }
+
+  /* Typography Enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+    color: var(--brand-brown);
+  }
+
+  /* Custom Scrollbar - Pink Theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--beige-100);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--pink-300);
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--pink-400);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--pink-300) var(--beige-100);
+  }
+}
+
+/* Enhanced Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateX(-16px); 
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-8px);
+  }
+  70% {
+    transform: translateY(-4px);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Animation Classes */
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite;
+}
+
+/* Glass Effect Utilities - Pink Tinted */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(185, 28, 124, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-pink {
+  background: rgba(249, 168, 212, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(185, 28, 124, 0.2);
+}
+
+.glass-beige {
+  background: rgba(243, 232, 208, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(228, 168, 83, 0.2);
+}
+
+/* Gradient Utilities - Pink & Beige */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--pink-600), var(--pink-700));
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--beige-200), var(--beige-300));
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
+}
+
+.gradient-warm {
+  background: linear-gradient(135deg, var(--beige-50), var(--pink-50));
+}
+
+.gradient-sidebar {
+  background: linear-gradient(135deg, var(--pink-800), var(--pink-700));
+}
+
+.gradient-card {
+  background: linear-gradient(145deg, #FFFFFF, var(--beige-50));
+}
+
+/* Button Variants - Pink Theme */
+.btn-pink {
+  background: var(--pink-700);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-pink:hover {
+  background: var(--pink-800);
+  box-shadow: var(--shadow-pink);
+  transform: translateY(-1px);
+}
+
+.btn-beige {
+  background: var(--beige-400);
+  color: var(--brown-700);
+  transition: all 0.2s ease;
+}
+
+.btn-beige:hover {
+  background: var(--beige-500);
+  transform: translateY(-1px);
+}
+
+/* Card Variants */
+.card-pink {
+  background: linear-gradient(145deg, #FFFFFF, var(--pink-50));
+  border: 1px solid var(--pink-200);
+  box-shadow: var(--shadow-md);
+}
+
+.card-beige {
+  background: linear-gradient(145deg, var(--beige-50), #FFFFFF);
+  border: 1px solid var(--beige-200);
+  box-shadow: var(--shadow-md);
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  :root {
+    --content-padding: 1rem;
+    --sidebar-width: 100%;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: var(--brown-800);
+    --ring: var(--pink-800);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .glass-effect,
+  .glass-pink,
+  .glass-beige {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
