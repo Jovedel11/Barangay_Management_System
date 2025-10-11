@@ -29,10 +29,9 @@ const getNotif = async (req: Request, res: Response, next: NextFunction) => {
 
     const { user_id } = matchedData(req);
     const [notifs, notifCount] = await Promise.all([
-      NotifModel.find({ user_id }).sort({ createdAt: -1 }),
+      NotifModel.find({ user: user_id }).sort({ createdAt: -1 }),
       NotifModel.countDocuments({ user: user_id, isSeen: false }),
     ]);
-
     if (!notifs || notifs.length === 0) {
       return res.status(404).json({ message: "No notifications found" });
     }

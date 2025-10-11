@@ -53,7 +53,7 @@ app.use(
       httpOnly: isDeployed, //must be false in production
       secure: isDeployed, //HTTPS only in production
       sameSite: isDeployed ? "strict" : "lax", //strict only in production
-      maxAge: 1000 * 60 * 60 * 4,
+      maxAge: 1000 * 60 * 60 * 12,
     },
   })
 );
@@ -71,4 +71,4 @@ app.use("/api/notification", notifRouter);
 app.use(errorHandler);
 
 export default app;
-export { server };
+export { server, io };
