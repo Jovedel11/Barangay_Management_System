@@ -32,7 +32,7 @@ const AdminDashboard = () => {
     queryKey: ["admin-dashboard-stats"],
     queryFn: () =>
       customRequest({
-        path: `/api/admin/dashboard/stats`,
+        path: `/api/dashboard/admin/stats`,
         attributes: {
           method: "GET",
           credentials: "include",

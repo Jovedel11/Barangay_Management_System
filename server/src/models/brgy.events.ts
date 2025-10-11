@@ -93,7 +93,7 @@ const participantSchema: Schema = new Schema<IParticipant>(
     },
     status: {
       type: String,
-      required: true,
+      required: false,
       enum: ["pending", "completed", "cancelled"],
       default: "pending",
     },
