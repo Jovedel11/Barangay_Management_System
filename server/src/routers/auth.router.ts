@@ -12,6 +12,7 @@ const router = Router();
 router.get("/check-session", authSender);
 router.post("/register", validateRegistration, checkEmail, register);
 router.post("/login", login);
-router.post("/logout", logout);
+router.get("/logout", logout);
 router.post("/verify-otp", verifyOtp);
 export default router;
+ 

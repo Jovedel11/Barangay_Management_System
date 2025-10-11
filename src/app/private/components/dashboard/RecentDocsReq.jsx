@@ -23,8 +23,6 @@ const RecentDocsReq = () => {
         },
       }),
     enabled: !!user,
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false,
   });
   console.log("Request Data", data);
 

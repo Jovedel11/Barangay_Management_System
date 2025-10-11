@@ -20,9 +20,37 @@ import {
   useSidebar,
 } from "@/core/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { CustomToast } from "@/components/custom/CustomToast";
+import { useAuth } from "@/hooks/useAuthProvider";
+import customRequest from "@/services/customRequest";
+import { useNavigate } from "react-router-dom";
 
 export function NavUser({ user, className }) {
+  const navigate = useNavigate();
+  const { refetch } = useAuth();
   const { isMobile } = useSidebar();
+  const onLogout = async () => {
+    try {
+      const result = await customRequest({
+        path: "/api/auth/logout",
+        attributes: {
+          method: "GET",
+          credentials: "include",
+        },
+      });
+      if (result?.success) {
+        refetch();
+        return navigate("/login");
+      }
+      throw new Error();
+    } catch (error) {
+      console.log(error);
+      CustomToast({
+        description: "Something went wrong",
+        status: "error",
+      });
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -76,7 +104,9 @@ export function NavUser({ user, className }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
-              <button className="cursor-pointer">Log out</button>
+              <button className="cursor-pointer" onClick={onLogout}>
+                Log out
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

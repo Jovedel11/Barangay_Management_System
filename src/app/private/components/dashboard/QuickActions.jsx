@@ -76,7 +76,10 @@ const QuickActions = () => {
               className={`w-full justify-start h-auto p-4 ${action.hoverBg} border-0 transition-all duration-200`}
               asChild
             >
-              <Link to={action.path} className="flex items-start gap-3">
+              <Link
+                to={`/resident${action.path}`}
+                className="flex items-start gap-3"
+              >
                 <div
                   className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${action.bgColor} shadow-sm`}
                 >

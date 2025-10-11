@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useActionState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
@@ -35,12 +35,11 @@ import {
 import accLogin from "@/services/accLogin";
 import sendOtp from "@/services/sendOtp";
 import BarangayIllustration from "@/core/components/barangay-illustration";
-import {
-  getErrorMessage,
-  getNextStepMessage,
-} from "@/core/utils/login-message";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const Login = () => {
+  const { refetch } = useAuth();
+  const navigate = useNavigate();
   const {
     login,
     resendEmailConfirmation,
@@ -48,7 +47,7 @@ const Login = () => {
     loading: globalLoading,
   } = {
     login: (email, password) => accLogin(email, password),
-    resendEmailConfirmation: () => Promise.resolve({ success: true }),
+    resendEmailConfirmation: (email, password) => accLogin(email, password),
     verifyTwoFactor: (code) => sendOtp(code),
     loading: false,
   };
@@ -75,7 +74,14 @@ const Login = () => {
     }
 
     const result = await login(email, password);
-
+    if (!result.success) {
+      return {
+        success: false,
+        error: "PASSWORD_MISMATCH",
+        message: "Incorrect email or password",
+        nextStep: null,
+      };
+    }
     if (result.success && result.role === "admin") {
       setShow2FADialog(true);
       return {
@@ -87,14 +93,8 @@ const Login = () => {
         requires2FA: true,
       };
     }
-
-    return {
-      success: result.success,
-      error: result.error || null,
-      message: result.message || null,
-      canResendEmail: result.can_resend_email || false,
-      nextStep: result.next_step || null,
-    };
+    refetch();
+    return navigate("/resident/dashboard");
   }
 
   const [loginState, loginFormAction, isLoginPending] = useActionState(
@@ -127,7 +127,8 @@ const Login = () => {
       if (result.success) {
         setShow2FADialog(false);
         setTwoFactorCode("");
-        window.alert("Admin is successfully login");
+        refetch();
+        navigate("/admin/dashboard");
       } else {
         setTwoFactorError(result.message || "Invalid verification code");
       }
@@ -143,7 +144,8 @@ const Login = () => {
   async function resendEmailAction() {
     const result = await resendEmailConfirmation();
     if (result.success) {
-      alert("Verification email sent! Please check your inbox.");
+      refetch();
+      navigate("/admin/dashboard");
     } else {
       alert("Failed to send email. Please try again.");
     }
@@ -200,14 +202,12 @@ const Login = () => {
                         Sign In Failed
                       </AlertTitle>
                       <AlertDescription className="text-sm mt-1">
-                        {getErrorMessage(loginState.error)}
-
+                        Incorrect email or password
                         {loginState.nextStep && !loginState.requires2FA && (
                           <p className="text-primary font-medium mt-2">
-                            {getNextStepMessage(loginState.nextStep)}
+                            Incorrect email or password
                           </p>
                         )}
-
                         {loginState.canResendEmail && (
                           <Button
                             variant="link"

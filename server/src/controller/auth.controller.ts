@@ -57,11 +57,13 @@ const login = (req: Request, res: Response, next: NextFunction) => {
         if (user && !user.role) {
           return res.status(403).json({ success: false, role: null });
         }
+        console.log(user.role);
         if (user.role !== "admin") {
           return res.status(200).json({ success: true, role: user.role });
         }
         const result = await SendOtp(user as Record<string, string>);
-        if (result.success) return res.status(200).json({ success: true, role: user.role });
+        if (result.success)
+          return res.status(200).json({ success: true, role: user.role });
         next(result.error);
       });
     }
@@ -76,7 +78,7 @@ const logout = (req: Request, res: Response, next: NextFunction) => {
       return;
     }
     res.clearCookie("connect.sid");
-    res.status(200).send("Signout");
+    res.status(200).send({ message: "signout success"});
   });
 };
 
