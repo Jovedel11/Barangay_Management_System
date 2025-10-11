@@ -6,6 +6,9 @@ import {
 } from "@/models/borrow.items";
 import FilterCollection from "@/lib/search.data";
 import type { Model } from "mongoose";
+import NotifModel from "@/models/notification";
+import { sendNotification } from "@/config/socket.connection";
+import { io } from "@/App";
 
 // For Resident for passing booking form
 const bookItem = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,6 +20,20 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     const bookItem = await BorrowRequestModel.create({ ...item }); //for admin (book item)
     bookItem.save();
+    const targetUserId = "68de36fc114288009c8ead8e"; // Your test user ID
+    const notif = await NotifModel.create({
+      user: targetUserId,
+      title: item.name,
+      category: item.category,
+      link: "/resident/manage-borrow-items",
+    });
+    await notif.save();
+
+    console.log(
+      "Notification saved to database, sending socket notification..."
+    );
+    sendNotification(io, targetUserId, true);
+    console.log("Socket notification sent");
     return res.status(201).json({ message: "Item booked successfully!" });
   } catch (error) {
     console.log(error);

@@ -104,5 +104,5 @@ export function ResidentSidebar({ ...props }) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  );
+  ); 
 }

@@ -13,6 +13,7 @@ passport.use(
     async (email: string, password: string, done: Done) => {
       try {
         const user = await AccountModel.findOne({ email });
+        console.log(user);
         if (!user) throw new Error();
         const isCorrect = await user.validatePassword(password, email);
         console.log(isCorrect);

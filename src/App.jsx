@@ -8,13 +8,11 @@ import { AuthProvider } from "@/hooks/useAuthProvider";
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/resident/*" element={<ResidentRoute />} />
-          <Route path="/admin/*" element={<AdminRoute />} />
-          <Route path="/*" element={<PublicRoute />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/resident/*" element={<ResidentRoute />} />
+        <Route path="/admin/*" element={<AdminRoute />} />
+        <Route path="/*" element={<PublicRoute />} />
+      </Routes>
     </AuthProvider>
   );
 }

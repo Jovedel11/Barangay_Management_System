@@ -16,7 +16,21 @@ import brgyServiceRouter from "@/routers/brgy.services.router";
 import brgyEventRouter from "@/routers/brgy.event.router";
 import brgyResidentsRouter from "@/routers/brgy.resident.router";
 import dashboardRouter from "@/routers/dashboard.router";
+import http from "http";
+import { Server } from "socket.io";
+import { socketHandler } from "./config/socket.connection";
+import notifRouter from "./routers/notif.router";
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
+});
+socketHandler(io);
 
 app.use(express.json());
 app.use(morgan("dev"));
@@ -39,7 +53,7 @@ app.use(
       httpOnly: isDeployed, //must be false in production
       secure: isDeployed, //HTTPS only in production
       sameSite: isDeployed ? "strict" : "lax", //strict only in production
-      maxAge: 1000 * 60 * 60,
+      maxAge: 1000 * 60 * 60 * 12,
     },
   })
 );
@@ -52,7 +66,9 @@ app.use("/api/brgy-services", brgyServiceRouter);
 app.use("/api/brgy-events", brgyEventRouter);
 app.use("/api/brgy-residents", brgyResidentsRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/notification", notifRouter);
 
 app.use(errorHandler);
 
 export default app;
+export { server, io };

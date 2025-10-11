@@ -26,8 +26,10 @@ import {
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "@/components/custom/CustomToast";
 import { useAuth } from "@/hooks/useAuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
+  const queryClient = useQueryClient();
   const { user } = useAuth(); // Retreiving the User when they successfully login
   const [bookingForm, setBookingForm] = useState({
     name: "",
@@ -140,6 +142,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
       });
       if (result?.success) {
         refetch();
+        queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
         CustomToast({
           description: "Item successfully booked",
           status: "success",
@@ -158,7 +161,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         status: "error",
       });
     }
-  }, [bookingForm, refetch, onOpenChange, user]);
+  }, [bookingForm, refetch, onOpenChange, user, queryClient]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

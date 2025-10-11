@@ -1,11 +1,22 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const RolePath = useMemo(
+    () => ({
+      resident: () => navigate("/resident/dashboard"),
+      admin: () => navigate("/admin/dashboard"),
+      default: () => navigate("/login"),
+    }),
+    [navigate]
+  );
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["auth"],
@@ -22,9 +33,15 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!isLoading && data?.response?.user) {
-      setUser(data.response.user);
+      if (user) return;
+      const currentUser = data.response.user;
+      setUser(currentUser);
+
+      if (currentUser?.role && !location.pathname.includes("signup")) {
+        return RolePath[currentUser.role ?? "default"]();
+      }
     }
-  }, [data, isLoading]);
+  }, [data, isLoading, RolePath, location, user]);
 
   return (
     <AuthContext.Provider value={{ user, refetch, isLoading }}>

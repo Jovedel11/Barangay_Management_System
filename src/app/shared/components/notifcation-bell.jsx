@@ -5,94 +5,100 @@ import {
   Bell,
   BellRing,
   X,
-  Check,
-  Clock,
-  AlertTriangle,
+  Trash2,
   FileText,
   Package,
-  RefreshCw,
-  Settings,
-  Trash2,
-  Search,
+  Wrench,
+  Calendar,
 } from "lucide-react";
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { io } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuthProvider";
+import customRequest from "@/services/customRequest";
+import { useQuery } from "@tanstack/react-query";
+
+const socket = io("http://localhost:3000", {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  autoConnect: false, // Don't connect automatically
+});
 
 const NotificationBell = ({
   className = "",
   variant = "ghost",
   size = "icon",
 }) => {
-  const { theme } = useTheme();
-  const [notifications, setNotifications] = useState([]);
+  const { user, isLoading: userLoading } = useAuth();
+  useTheme();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, unread, read
-  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
 
-  // Mock data - Barangay Context
-  const mockNotifications = [
-    {
-      id: "1",
-      user_id: "resident_1",
-      type: "document_request",
-      title: "Barangay Clearance Approved",
-      message:
-        "Your request for Barangay Clearance has been approved. Please claim it at the Barangay Hall.",
-      is_read: false,
-      created_at: new Date(Date.now() - 30 * 60 * 1000),
-    },
-    {
-      id: "2",
-      user_id: "resident_1",
-      type: "item_booking",
-      title: "Chair & Table Request Pending",
-      message:
-        "Your request for 20 chairs and 5 tables is pending approval from the Barangay Office.",
-      is_read: false,
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    },
-    {
-      id: "3",
-      user_id: "resident_1",
-      type: "item_return",
-      title: "Return Reminder",
-      message:
-        "Reminder: Please return the borrowed sound system set by tomorrow.",
-      is_read: true,
-      created_at: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    },
-    {
-      id: "4",
-      user_id: "resident_1",
-      type: "announcement",
-      title: "Barangay Assembly",
-      message:
-        "Barangay-wide General Assembly will be held on Sunday, 9:00 AM at the Covered Court.",
-      is_read: false,
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-  ];
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["notifications", user?._id],
+    queryFn: () =>
+      customRequest({
+        path: `/api/notification/retrieve?user_id=${user._id}`,
+        attributes: {
+          method: "GET",
+          credentials: "include",
+        },
+      }),
+    enabled: !!user?._id,
+  });
 
-  // Load notifications
+  const notifications = Array.isArray(data?.response?.notifs)
+    ? data?.response?.notifs
+    : [];
+  const notifCount = data?.response?.notifCount || 0;
+
+  // Socket connection
   useEffect(() => {
-    const loadNotifications = async () => {
-      setIsLoading(true);
-      try {
-        // TODO: Replace with actual Supabase call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setNotifications(mockNotifications);
-      } catch (error) {
-        console.error("Error loading notifications:", error);
-      } finally {
-        setIsLoading(false);
+    if (!userLoading && user?._id) {
+      // Connect socket when we have a user
+      socket.connect();
+
+      socket.on("connect", () => {
+        console.log("Socket connected with ID:", socket.id);
+        socket.emit("join_room", user._id);
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+      });
+
+      socket.on("room_joined", (data) => {
+        console.log("Room joined confirmation:", data);
+      });
+
+      // Clean up function
+      return () => {
+        console.log("Cleaning up socket connection");
+        socket.off("connect");
+        socket.off("connect_error");
+        socket.off("room_joined");
+        socket.disconnect();
+      };
+    }
+  }, [user, userLoading]);
+
+  useEffect(() => {
+    const onInvalidate = (invalidate) => {
+      if (invalidate) {
+        console.log("Invalidate is true");
+        refetch();
       }
     };
-    loadNotifications();
-  }, []);
+    socket.on("NOTIF_UPDATE", onInvalidate);
+    return () => {
+      socket.off("NOTIF_UPDATE", onInvalidate);
+    };
+  }, [refetch]);
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -110,41 +116,58 @@ const NotificationBell = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Filter + Search
-  const filteredNotifications = notifications.filter((n) => {
-    const matchesFilter =
-      filter === "all" ||
-      (filter === "unread" && !n.is_read) ||
-      (filter === "read" && n.is_read);
-    const matchesSearch =
-      !searchQuery ||
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.message.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
-
-  // Unread count
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-
-  // Icon by type
-  const getNotificationIcon = (type) => {
-    const map = {
-      document_request: { icon: FileText, color: "text-primary" },
-      item_booking: { icon: Package, color: "text-warning" },
-      item_return: { icon: RefreshCw, color: "text-destructive" },
-      announcement: { icon: Settings, color: "text-info" },
+  // Get icon based on category
+  const getCategoryIcon = (category) => {
+    const iconMap = {
+      Service: { icon: Wrench, color: "text-blue-500" },
+      Item: { icon: Package, color: "text-amber-500" },
+      Documents: { icon: FileText, color: "text-green-500" },
+      Events: { icon: Calendar, color: "text-purple-500" },
     };
-    return map[type] || { icon: Bell, color: "text-muted-foreground" };
+    return iconMap[category] || { icon: Bell, color: "text-muted-foreground" };
   };
 
-  // Actions
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
+  // Mark notification as read
+  const markAsRead = async (notificationId, currentStatus) => {
+    if (currentStatus) return; // Already seen
+
+    try {
+      // TODO: Add API call to mark as read
+      // await customRequest({
+      //   path: `/api/notifications/${notificationId}/read`,
+      //   attributes: { method: "PATCH", credentials: "include" },
+      // });
+
+      // Refetch to update the list
+      refetch();
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
-  const deleteNotification = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+  // Delete notification
+  const deleteNotification = async (notificationId) => {
+    try {
+      await customRequest({
+        path: `/api/notifications?user_id=${notificationId}`,
+        attributes: {
+          method: "DELETE",
+          credentials: "include",
+        },
+      });
+
+      // Refetch to update the list
+      refetch();
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
+  };
+
+  // Handle notification click
+  const handleNotificationClick = (notification) => {
+    markAsRead(notification._id, notification.isSeen);
+    // Navigate to link if needed
+    // window.location.href = notification.link;
   };
 
   return (
@@ -157,12 +180,12 @@ const NotificationBell = ({
         className={`relative hover:bg-sidebar-accent transition-colors ${className}`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        {unreadCount > 0 ? (
+        {notifCount > 0 ? (
           <BellRing className="h-4 w-4 text-primary" />
         ) : (
           <Bell className="h-4 w-4" />
         )}
-        {unreadCount > 0 && (
+        {notifCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -170,7 +193,7 @@ const NotificationBell = ({
             className="absolute -top-1 -right-1"
           >
             <Badge className="h-5 w-5 p-0 text-xs bg-destructive text-white flex items-center justify-center">
-              {unreadCount}
+              {notifCount > 9 ? "9+" : notifCount}
             </Badge>
           </motion.div>
         )}
@@ -200,68 +223,53 @@ const NotificationBell = ({
               </Button>
             </div>
 
-            {/* Search */}
-            <div className="p-3 border-b border-border">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search notifications..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm bg-background border rounded-lg"
-                />
-              </div>
-            </div>
-
-            {/* List */}
+            {/* Notification List */}
             <div className="max-h-96 overflow-y-auto">
               {isLoading ? (
                 <p className="p-6 text-center text-muted-foreground text-sm">
                   Loading notifications...
                 </p>
-              ) : filteredNotifications.length === 0 ? (
+              ) : notifications.length === 0 ? (
                 <p className="p-6 text-center text-muted-foreground text-sm">
-                  No notifications found.
+                  No notifications yet.
                 </p>
               ) : (
-                filteredNotifications.map((n) => {
-                  const { icon: Icon, color } = getNotificationIcon(n.type);
+                notifications.map((notif) => {
+                  const { icon: Icon, color } = getCategoryIcon(notif.category);
                   return (
                     <div
-                      key={n.id}
-                      onClick={() => markAsRead(n.id)}
-                      className={`p-4 flex gap-3 hover:bg-muted/50 cursor-pointer ${
-                        !n.is_read ? "bg-primary/5" : ""
+                      key={notif._id}
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`p-4 flex gap-3 hover:bg-muted/50 cursor-pointer border-b border-border ${
+                        !notif.isSeen ? "bg-primary/5" : ""
                       }`}
                     >
-                      <Icon className={`h-5 w-5 mt-1 ${color}`} />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
+                      <div className="flex-shrink-0">
+                        <Icon className={`h-5 w-5 mt-1 ${color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
                           <h4
                             className={`font-medium text-sm ${
-                              !n.is_read
+                              !notif.isSeen
                                 ? "text-foreground"
                                 : "text-muted-foreground"
                             }`}
                           >
-                            {n.title}
+                            {notif.title}
                           </h4>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteNotification(n.id);
+                              deleteNotification(notif._id);
                             }}
-                            className="opacity-60 hover:opacity-100"
+                            className="opacity-60 hover:opacity-100 transition-opacity"
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {n.message}
-                        </p>
-                        <span className="text-[11px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(n.created_at), {
+                        <span className="text-[11px] text-muted-foreground block mt-1">
+                          {formatDistanceToNow(new Date(notif.createdAt), {
                             addSuffix: true,
                           })}
                         </span>
