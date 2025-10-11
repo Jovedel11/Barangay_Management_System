@@ -16,7 +16,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "resend": "^6.1.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "socket.io": "^4.8.1"
   },
   "name": "server",
   "version": "1.0.0",
@@ -41,6 +42,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
     "@types/sharp": "^0.31.1",
+    "@types/socket.io": "^3.0.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",

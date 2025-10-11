@@ -18,22 +18,37 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { Button } from "@/core/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { io } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuthProvider";
 
+const socket = io("http://localhost:3000", {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+});
 const NotificationBell = ({
   className = "",
   variant = "ghost",
   size = "icon",
 }) => {
+  const { user, isLoading: userLoading } = useAuth();
   const { theme } = useTheme();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, unread, read
+  const [filter, setFilter] = useState("all"); // all , unread, read
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
 
-  // Mock data - Barangay Context
+  useEffect(() => {
+    if (!userLoading) {
+      socket.on("connect", () => {
+        console.log("connect");
+        socket.emit("join_room", user?._id);
+      });
+    }
+    return () => socket.disconnect();
+  }, [user, userLoading]);
   const mockNotifications = [
     {
       id: "1",
@@ -213,7 +228,6 @@ const NotificationBell = ({
                 />
               </div>
             </div>
-
             {/* List */}
             <div className="max-h-96 overflow-y-auto">
               {isLoading ? (
