@@ -19,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/core/components/ui/sidebar";
+import Logo from "@/core/components/ui/logo";
 
 const data = {
   user: {
@@ -56,11 +57,6 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "/resident/settings",
-      icon: IconSettings,
-    },
-    {
       title: "Get Help",
       url: "/resident/help",
       icon: IconHelp,
@@ -77,11 +73,7 @@ export function ResidentSidebar({ ...props }) {
             <SidebarMenuButton size="lg" asChild>
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary">
-                  <img
-                    src="/image/brgy.png"
-                    alt="Barangay Kaypian Logo"
-                    className="w-6 h-6 object-contain"
-                  />
+                  <Logo to="resident/dashboard" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-sidebar-foreground">
@@ -104,5 +96,5 @@ export function ResidentSidebar({ ...props }) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  ); 
+  );
 }

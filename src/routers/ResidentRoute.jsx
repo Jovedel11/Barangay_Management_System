@@ -6,7 +6,6 @@ import BarangayDocuments from "@/app/private/pages/BarangayDocuments";
 import BarangayEvents from "@/app/private/pages/BarangayEvents";
 import BarangayServices from "@/app/private/pages/BarangayServices";
 import ResidentProfile from "@/app/private/pages/ResidentProfile";
-import ResidentSettings from "@/app/private/pages/ResidentSettings";
 import ResidentGetHelp from "@/app/private/pages/ResidentGetHelp";
 import { useAuth } from "@/hooks/useAuthProvider";
 import { useEffect } from "react";
@@ -34,7 +33,6 @@ const ResidentRoute = () => {
         <Route path="barangay-events" element={<BarangayEvents />} />
         <Route path="barangay-services" element={<BarangayServices />} />
         <Route path="profile" element={<ResidentProfile />} />
-        <Route path="settings" element={<ResidentSettings />} />
         <Route path="help" element={<ResidentGetHelp />} />
         <Route
           path="*"

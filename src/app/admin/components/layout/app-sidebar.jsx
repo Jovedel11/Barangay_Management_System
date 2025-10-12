@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/core/components/ui/sidebar";
 import { CalendarSync, HandPlatter, ScrollText, UserPen } from "lucide-react";
+import Logo from "@/core/components/ui/logo";
 
 const data = {
   user: {
@@ -89,11 +90,7 @@ export function AppSidebar(props) {
             <SidebarMenuButton size="lg" asChild>
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary">
-                  <img
-                    src="/image/brgy.png"
-                    alt="Barangay Kaypian Logo"
-                    className="w-6 h-6 object-contain"
-                  />
+                  <Logo to="admin/dashboard" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-sidebar-foreground">

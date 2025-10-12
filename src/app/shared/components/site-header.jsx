@@ -1,11 +1,9 @@
 import { SidebarIcon } from "lucide-react";
-import { SearchForm } from "@/app/shared/components/search-form";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/core/components/ui/breadcrumb";
 import { Button } from "@/core/components/ui/button";
@@ -13,9 +11,23 @@ import { Separator } from "@/core/components/ui/separator";
 import { useSidebar } from "@/core/components/ui/sidebar";
 import NotificationBell from "./notifcation-bell";
 import { ModeToggle } from "@/core/components/ui/mode-toggle";
+import { useAuth } from "@/hooks/useAuthProvider";
+import { useLocation } from "react-router-dom";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const pathSegments = location.pathname.split("/").filter(Boolean);
+  const lastSegment = pathSegments.pop() || "dashboard";
+  const pageTitle = lastSegment
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  const resident = user?.role === "resident";
+  const admin = user?.role === "admin";
 
   return (
     <header className="sticky top-0 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -37,26 +49,26 @@ export function SiteHeader() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink
-                href="/patient/dashboard"
+                href={
+                  resident
+                    ? `/resident/${lastSegment}`
+                    : admin
+                    ? `/admin/${lastSegment}`
+                    : "/"
+                }
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Dashboard
+                {pageTitle}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="text-foreground font-medium">
-                Overview
-              </BreadcrumbPage>
-            </BreadcrumbItem>
+            <BreadcrumbItem></BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
         {/* Right Side Actions */}
         <div className="ml-auto flex items-center gap-2">
-          {/* Notification Bell */}
           <NotificationBell />
-
           <ModeToggle />
         </div>
       </div>

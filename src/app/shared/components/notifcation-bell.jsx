@@ -18,6 +18,7 @@ import { io } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuthProvider";
 import customRequest from "@/services/customRequest";
 import { useQuery } from "@tanstack/react-query";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const socket = io("http://localhost:3000", {
   withCredentials: true,
@@ -34,6 +35,7 @@ const NotificationBell = ({
   size = "icon",
 }) => {
   const { user, isLoading: userLoading } = useAuth();
+  const isMobile = useIsMobile();
   useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -172,7 +174,6 @@ const NotificationBell = ({
 
   return (
     <div className="relative">
-      {/* Bell Button */}
       <Button
         ref={bellRef}
         variant={variant}
@@ -199,7 +200,6 @@ const NotificationBell = ({
         )}
       </Button>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -208,31 +208,53 @@ const NotificationBell = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.1 }}
-            className="absolute right-0 mt-2 w-96 z-50 bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
+            className={`
+              absolute z-50 mt-2 bg-card border border-border rounded-xl shadow-2xl overflow-hidden
+              ${isMobile ? "right-0 w-72" : "right-0 w-96"}
+            `}
           >
-            {/* Header */}
-            <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-              <h3 className="font-semibold">Notifications</h3>
+            <div
+              className={`p-3 ${
+                isMobile ? "" : "p-4"
+              } border-b border-border bg-muted/30 flex justify-between items-center`}
+            >
+              <h3
+                className={`font-semibold ${
+                  isMobile ? "text-sm" : "text-base"
+                }`}
+              >
+                Notifications
+              </h3>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="h-6 w-6 shrink-0"
                 onClick={() => setIsOpen(false)}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
               </Button>
             </div>
 
-            {/* Notification List */}
-            <div className="max-h-96 overflow-y-auto">
+            <div
+              className={`overflow-y-auto ${
+                isMobile ? "max-h-64" : "max-h-96"
+              }`}
+            >
               {isLoading ? (
-                <p className="p-6 text-center text-muted-foreground text-sm">
-                  Loading notifications...
-                </p>
+                <div className={`${isMobile ? "p-4" : "p-6"} text-center`}>
+                  <p className="text-muted-foreground text-xs">Loading...</p>
+                </div>
               ) : notifications.length === 0 ? (
-                <p className="p-6 text-center text-muted-foreground text-sm">
-                  No notifications yet.
-                </p>
+                <div className={`${isMobile ? "p-4" : "p-6"} text-center`}>
+                  <Bell
+                    className={`${
+                      isMobile ? "h-6 w-6" : "h-8 w-8"
+                    } mx-auto mb-2 text-muted-foreground/50`}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    No notifications yet.
+                  </p>
+                </div>
               ) : (
                 notifications.map((notif) => {
                   const { icon: Icon, color } = getCategoryIcon(notif.category);
@@ -240,21 +262,32 @@ const NotificationBell = ({
                     <div
                       key={notif._id}
                       onClick={() => handleNotificationClick(notif)}
-                      className={`p-4 flex gap-3 hover:bg-muted/50 cursor-pointer border-b border-border ${
-                        !notif.isSeen ? "bg-primary/5" : ""
-                      }`}
+                      className={`
+                        ${
+                          isMobile ? "p-2" : "p-4"
+                        } flex gap-2 hover:bg-muted/50 cursor-pointer border-b border-border transition-colors
+                        ${!notif.isSeen ? "bg-primary/5" : ""}
+                      `}
                     >
                       <div className="flex-shrink-0">
-                        <Icon className={`h-5 w-5 mt-1 ${color}`} />
+                        <Icon
+                          className={`${
+                            isMobile ? "h-3 w-3 mt-0.5" : "h-5 w-5 mt-1"
+                          } ${color}`}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
+                        <div className="flex justify-between items-start gap-1">
                           <h4
-                            className={`font-medium text-sm ${
-                              !notif.isSeen
-                                ? "text-foreground"
-                                : "text-muted-foreground"
-                            }`}
+                            className={`
+                              font-medium leading-tight pr-1
+                              ${isMobile ? "text-xs" : "text-sm"}
+                              ${
+                                !notif.isSeen
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            `}
                           >
                             {notif.title}
                           </h4>
@@ -263,12 +296,20 @@ const NotificationBell = ({
                               e.stopPropagation();
                               deleteNotification(notif._id);
                             }}
-                            className="opacity-60 hover:opacity-100 transition-opacity"
+                            className="opacity-60 hover:opacity-100 transition-opacity shrink-0"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2
+                              className={`${
+                                isMobile ? "h-3 w-3" : "h-4 w-4"
+                              } text-destructive`}
+                            />
                           </button>
                         </div>
-                        <span className="text-[11px] text-muted-foreground block mt-1">
+                        <span
+                          className={`${
+                            isMobile ? "text-[9px]" : "text-[11px]"
+                          } text-muted-foreground block mt-0.5`}
+                        >
                           {formatDistanceToNow(new Date(notif.createdAt), {
                             addSuffix: true,
                           })}
