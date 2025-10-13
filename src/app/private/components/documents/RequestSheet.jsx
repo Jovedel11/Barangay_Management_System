@@ -100,6 +100,8 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         });
       const payload = {
         user: user._id,
+        name: selectedDocument.name,
+        category: selectedDocument.category,
         ...requestForm,
       };
       console.log(payload);
@@ -133,7 +135,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         status: "error",
       });
     }
-  }, [requestForm, onOpenChange, user, queryClient]);
+  }, [requestForm, onOpenChange, user, queryClient, selectedDocument]);
 
   const DocIcon = FileCheck;
   useEffect(() => {

@@ -66,7 +66,8 @@ const requestDocsValidation = [
     .isString()
     .withMessage("Specific details must be a string.")
     .trim(),
-
+  requiredString("name", "Name is required."),
+  requiredString("category", "Category is required."),
   requiredBoolean("isPregnant", "Pregnancy status is required."),
 ];
 

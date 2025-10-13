@@ -60,7 +60,7 @@ router.post(
 router.post(
   "/insert/request",
   serviceRequestValidation,
-  createService({ model: ServiceRequest })
+  createService({ model: ServiceRequest, sendNotif: true })
 );
 router.delete(
   "/delete/available",

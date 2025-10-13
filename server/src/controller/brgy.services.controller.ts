@@ -1,21 +1,37 @@
+import ProccessNotif from "@/lib/process.notif";
 import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 
+type Create = {
+  model: Model<any>;
+  sendNotif?: boolean;
+};
 const createService = ({
   model: CollectionModel,
-}: Record<string, Model<any>>) => {
+  sendNotif = false,
+}: Create) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body)
+      console.log(req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log(errors)
+        console.log(errors);
         return res.status(400).json({ errors: errors.array() });
       }
       const data = matchedData(req);
       const service = await CollectionModel.create({ ...data });
       service.save();
+      if (sendNotif) {
+        const result = await ProccessNotif({
+          resident_id: data.user,
+          data_name: data.service,
+          data_category: data.category,
+          details: "has booked a service",
+          link: "/admin/manage-services",
+        });
+        if (!result?.success) throw new Error("Error in processing notif");
+      }
       return res.status(201).json({
         message: "Document successfully created",
       });
