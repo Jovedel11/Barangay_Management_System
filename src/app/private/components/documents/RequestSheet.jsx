@@ -18,9 +18,11 @@ import { useMemo } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
 import { useAuth } from "@/hooks/useAuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
-const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
+const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [requestForm, setRequestForm] = useState({
     quantity: 1,
     purpose: "",
@@ -113,7 +115,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
         },
       });
       if (result?.success) {
-        refetch();
+        queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
         CustomToast({
           description: "Document successfully booked",
           status: "success",
@@ -131,7 +133,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
         status: "error",
       });
     }
-  }, [requestForm, refetch, onOpenChange, user]);
+  }, [requestForm, onOpenChange, user, queryClient]);
 
   const DocIcon = FileCheck;
   useEffect(() => {
@@ -151,8 +153,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument, refetch }) => {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-[500px] w-full md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
         <SheetHeader className="text-left">
-          <SheetTitle className="flex items-center gap-2 font-inter">
-            <DocIcon className="h-5 w-5 text-primary" />
+          <SheetTitle className="flex items-center gap-2 font-inter text-xl">
             Request {selectedDocument.name}
           </SheetTitle>
           <SheetDescription className="text-sm">

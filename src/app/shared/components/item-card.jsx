@@ -120,7 +120,7 @@ const ItemCard = ({ item, className = "", refetch }) => {
 
   return (
     <Card
-      className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
+      className={`border bg-background/50 border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
@@ -178,7 +178,7 @@ const ItemCard = ({ item, className = "", refetch }) => {
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
+              className="flex-1 dark:border-slate-700 text-primary hover:bg-primary/10"
             >
               <Edit className="h-3 w-3 mr-1" />
               Edit
@@ -186,7 +186,7 @@ const ItemCard = ({ item, className = "", refetch }) => {
           </ItemDialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="px-2">
+              <Button size="sm" variant="outline" className="px-2 dark:border-slate-700">
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>

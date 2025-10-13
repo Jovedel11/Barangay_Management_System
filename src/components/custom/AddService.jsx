@@ -218,9 +218,9 @@ const AddService = ({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col gap-y-0">
+      <SheetContent className="sm:max-w-[500px] w-full md:max-w-[25rem] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col gap-y-0">
         <SheetHeader className="text-left">
-          <SheetTitle className="font-inter">
+          <SheetTitle className="font-inter text-xl">
             {isEdit ? "Edit Service" : "Add New Service"}
           </SheetTitle>
           <SheetDescription className="text-sm">

@@ -102,11 +102,9 @@ export function NavUser({ user, className }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onLogout}>
               <LogOut />
-              <button className="cursor-pointer" onClick={onLogout}>
-                Log out
-              </button>
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
