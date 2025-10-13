@@ -4,6 +4,7 @@ import {
   createNotif,
   getNotif,
   deleteNotif,
+  markAsRead,
 } from "@/controller/notif.controller";
 const notifRouter = Router();
 notifRouter.post(
@@ -22,10 +23,14 @@ notifRouter.get(
   [query("user_id").isMongoId().withMessage("Invalid user ID format")],
   getNotif
 );
-
+notifRouter.put(
+  "/update",
+  [body("user_id").isMongoId().withMessage("Invalid user ID format")],
+  markAsRead
+);
 notifRouter.delete(
   "/delete",
-  [query("user_id").isMongoId().withMessage("Invalid user ID format")],
+  [body("notif_id").isMongoId().withMessage("Invalid notif ID format")],
   deleteNotif
 );
 

@@ -4,6 +4,7 @@ type Notif = {
   user: Schema.Types.ObjectId;
   title: string;
   category: string;
+  details: string;
   link: string;
   isSeen?: string;
 };
@@ -14,7 +15,7 @@ const notifSchema = new Schema<Notif>(
     title: { type: String, required: true },
     category: { type: String, required: true },
     link: { type: String, required: true },
-    /*details: { type: String, required: true }*/
+    details: { type: String, required: true },
     isSeen: { type: String, required: false, default: false },
   },
   {

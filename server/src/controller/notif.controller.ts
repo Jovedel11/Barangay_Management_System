@@ -45,17 +45,18 @@ const getNotif = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteNotif = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log(req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(errors);
       return res
         .status(400)
-        .json({ message: "Check the User ID type or if it's not missing" });
+        .json({ message: "Check the Notif ID type or if it's not missing" });
     }
 
-    const { user_id } = matchedData(req);
-
-    const deleted = await NotifModel.deleteOne({ user_id });
-
+    const { notif_id } = matchedData(req);
+    console.log("Notif ID in notif controller : ", notif_id);
+    const deleted = await NotifModel.deleteOne({ _id: notif_id });
     if (deleted.deletedCount === 0) {
       return res
         .status(404)
@@ -69,4 +70,31 @@ const deleteNotif = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getNotif, deleteNotif, createNotif };
+const markAsRead = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log(errors);
+      return res
+        .status(400)
+        .json({ message: "Check the Notif ID type or if it's not missing" });
+    }
+    const { user_id } = matchedData(req);
+    const updated = await NotifModel.updateMany(
+      { user: user_id },
+      { $set: { isSeen: true } }
+    );
+    if (updated.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "No notifications found to update" });
+    }
+
+    res.status(200).json({ message: "Notifications updated successfully" });
+  } catch (error) {
+    console.error("Error updating notifications:", error);
+    next(error);
+  }
+};
+
+export { getNotif, deleteNotif, createNotif, markAsRead };

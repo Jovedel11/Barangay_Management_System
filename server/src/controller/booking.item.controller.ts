@@ -9,6 +9,7 @@ import type { Model } from "mongoose";
 import NotifModel from "@/models/notification";
 import { sendNotification } from "@/config/socket.connection";
 import { io } from "@/App";
+import { AccountModel } from "@/models/user.model";
 
 // For Resident for passing booking form
 const bookItem = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,19 +21,27 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     const bookItem = await BorrowRequestModel.create({ ...item }); //for admin (book item)
     bookItem.save();
-    const targetUserId = "68de36fc114288009c8ead8e"; // Your test user ID
-    const notif = await NotifModel.create({
-      user: targetUserId,
+    const admin = await AccountModel.findOne({ role: "admin" }).select("_id");
+    const resident = await AccountModel.findOne(
+      { _id: item.user },
+      { first_name: 1, last_name: 1 }
+    );
+    console.log("Title :", item);
+    if (!admin || !resident) throw new Error("No admin and User found");
+    const notifDocs = {
+      user: admin._id,
       title: item.name,
       category: item.category,
-      link: "/resident/manage-borrow-items",
-    });
-    await notif.save();
+      details: `${resident.first_name} ${resident.last_name} has requested an item`,
+      link: "/admin/manage-items",
+    };
+    await NotifModel.insertMany(notifDocs);
 
     console.log(
       "Notification saved to database, sending socket notification..."
     );
-    sendNotification(io, targetUserId, true);
+    console.log("User ID here: ", typeof (admin._id as string).toString());
+    sendNotification(io, (admin._id as string).toString(), true);
     console.log("Socket notification sent");
     return res.status(201).json({ message: "Item booked successfully!" });
   } catch (error) {
