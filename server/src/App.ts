@@ -28,13 +28,11 @@ const server = http.createServer(app);
 
 // Socket.io - also needs conditional CORS
 const io = new Server(server, {
-  cors: isDeployed
-    ? undefined // No CORS needed in production
-    : {
-        origin: process.env.FRONT_END_URL,
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true,
-      },
+  cors: {
+    origin: process.env.FRONT_END_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
 });
 socketHandler(io);
 
