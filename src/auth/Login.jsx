@@ -74,6 +74,14 @@ const Login = () => {
     }
 
     const result = await login(email, password);
+    if (!result.success && result.status === "rejected") {
+      return {
+        success: false,
+        error: "REJECTED",
+        message: "Your account request has been declined by the administrator.",
+        nextStep: null,
+      };
+    }
     if (!result.success && result.status === "pending") {
       return {
         success: false,
@@ -212,6 +220,8 @@ const Login = () => {
                       </AlertTitle>
                       <AlertDescription className="text-sm mt-1">
                         {loginState.error === "PENDING"
+                          ? loginState.message
+                          : loginState.error === "REJECTED"
                           ? loginState.message
                           : "Incorrect email or password"}
                         {loginState.nextStep && !loginState.requires2FA && (

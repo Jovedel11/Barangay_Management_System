@@ -62,6 +62,11 @@ const login = (req: Request, res: Response, next: NextFunction) => {
             .status(403)
             .json({ success: false, role: null, status: "pending" });
         }
+        if (user.role !== "admin" && user.status === "rejected") {
+          return res
+            .status(403)
+            .json({ success: false, role: null, status: "rejected" });
+        }
         if (user.role !== "admin") {
           return res.status(200).json({ success: true, role: user.role });
         }
