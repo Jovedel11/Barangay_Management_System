@@ -3,12 +3,15 @@ import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 import ProccessNotif from "@/lib/process.notif";
+import { BorrowableItemsModel } from "@/models/borrow.items";
 
 type Update = {
   model: Model<any>;
   sendNotif?: boolean;
   detailsToSend?: string;
   linkToSend?: string;
+  isItem?: boolean;
+  sendToResident?: boolean;
 };
 
 // Send docs request (resident)
@@ -88,6 +91,8 @@ const updateDocs = ({
   sendNotif = false,
   detailsToSend = "has processed your document",
   linkToSend,
+  isItem = false,
+  sendToResident = true,
 }: Update) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -129,9 +134,22 @@ const updateDocs = ({
           data_category: data.category,
           details: detailsToSend,
           link: linkToSend,
-          sendToResident: true,
+          sendToResident,
         });
         if (!result?.success) throw new Error("Error in processing notif");
+      }
+      if (isItem && data.status === "returned") {
+        const update_result = await BorrowableItemsModel.updateOne(
+          {
+            _id: data.main_item,
+          },
+          {
+            $inc: { available: data.quantity },
+          }
+        );
+        if (update_result.modifiedCount === 0) {
+          throw new Error("Failed to update item");
+        }
       }
       return res.status(200).json({
         success: true,

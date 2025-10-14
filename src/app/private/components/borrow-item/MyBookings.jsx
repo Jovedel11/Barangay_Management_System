@@ -16,12 +16,13 @@ import {
   XCircle,
 } from "lucide-react";
 import customRequest from "@/services/customRequest";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import { useAuth } from "@/hooks/useAuthProvider";
 
 const BookingCard = () => {
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const {
     data,
@@ -43,10 +44,10 @@ const BookingCard = () => {
   const bookings = Array.isArray(data?.response) ? data.response : [];
 
   const onUpdateReq = useCallback(
-    async (booking_id) => {
+    async (booking_id, main_item, quantity) => {
       try {
         const result = await customRequest({
-          path: "/api/borrow-item/update/item-request",
+          path: "/api/borrow-item/mark-as-returned",
           attributes: {
             method: "PUT",
             headers: {
@@ -55,12 +56,15 @@ const BookingCard = () => {
             body: JSON.stringify({
               docs_id: booking_id,
               status: "returned",
+              main_item,
+              quantity,
             }),
             credentials: "include",
           },
         });
         if (result?.success) {
           refetch();
+          queryClient.invalidateQueries({ queryKey: ["available-items"] });
           return CustomToast({
             description: "Booking request successfully updated!",
             status: "error",
@@ -78,7 +82,7 @@ const BookingCard = () => {
         });
       }
     },
-    [refetch]
+    [refetch, queryClient]
   );
 
   const getDeliveryStatusBadge = (method) => {
@@ -277,7 +281,13 @@ const BookingCard = () => {
                         <Button
                           size="sm"
                           className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
-                          onClick={() => onUpdateReq(booking._id)}
+                          onClick={() =>
+                            onUpdateReq(
+                              booking._id,
+                              booking.main_item,
+                              booking.quantity
+                            )
+                          }
                         >
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Mark as Returned

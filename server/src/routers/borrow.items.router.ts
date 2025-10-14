@@ -66,6 +66,19 @@ router.put(
     sendNotif: true,
     detailsToSend: "has processed your item",
     linkToSend: "/resident/manage-borrow-items",
+    isItem: true,
+  })
+);
+router.put(
+  "/mark-as-returned",
+  updateBorrowRequestValidation,
+  updateDocs({
+    model: BorrowRequestModel,
+    sendNotif: true,
+    detailsToSend: "has returned an item",
+    linkToSend: "/resident/manage-borrow-items",
+    isItem: true,
+    sendToResident: false,
   })
 );
 router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)

@@ -185,6 +185,10 @@ const updateBorrowRequestValidation = [
     .withMessage(
       "Status must be one of: pending, approved, rejected, completed"
     ),
+  body("quantity").isNumeric().withMessage("Quantity must be a number"),
+  body("main_item")
+    .isMongoId()
+    .withMessage("Main item must be a valid mongo ID"),
   body().custom((value) => {
     const updateFields = ["status"];
     const hasUpdateField = updateFields.some(

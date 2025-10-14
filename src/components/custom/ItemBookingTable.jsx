@@ -114,8 +114,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     },
     onSuccess: ({ success }) => {
       if (success) {
+        refetch();
         queryClient.invalidateQueries({
-          queryKey: ["request/items"],
+          queryKey: ["available/items"],
         });
         return CustomToast({
           description: "Booking status has been updated!",
@@ -161,6 +162,8 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
             body: JSON.stringify({
               docs_id: booking._id,
               status: newStatus,
+              main_item: booking.main_item,
+              quantity: booking.quantity,
             }),
             credentials: "include",
           },

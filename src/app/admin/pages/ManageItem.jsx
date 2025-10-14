@@ -24,7 +24,7 @@ const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
-  const [activeTab, setActiveTab] = useState("available/items");
+  const [activeTab, setActiveTab] = useState("request/items");
   const [statusFilter, setStatusFilter] = useState("All status");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
@@ -72,7 +72,7 @@ const ManageDocuments = () => {
       </div>
 
       <Tabs
-        defaultValue="request"
+        defaultValue="request/items"
         value={activeTab}
         onValueChange={(value) => setActiveTab(value)}
         className="w-full mt-5"
