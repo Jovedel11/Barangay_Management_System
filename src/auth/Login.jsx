@@ -75,6 +75,7 @@ const Login = () => {
 
     const result = await login(email, password);
     if (!result.success && result.status === "rejected") {
+      console.log("Rejected executes");
       return {
         success: false,
         error: "REJECTED",
@@ -83,6 +84,7 @@ const Login = () => {
       };
     }
     if (!result.success && result.status === "pending") {
+      console.log("Pending executes");
       return {
         success: false,
         error: "PENDING",
@@ -92,6 +94,7 @@ const Login = () => {
       };
     }
     if (!result.success) {
+      console.log("Password mismatch executes");
       return {
         success: false,
         error: "PASSWORD_MISMATCH",
