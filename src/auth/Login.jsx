@@ -74,6 +74,15 @@ const Login = () => {
     }
 
     const result = await login(email, password);
+    if (!result.success && result.status === "pending") {
+      return {
+        success: false,
+        error: "PENDING",
+        message:
+          "Your account is pending approval. You’ll be able to access your account once an administrator approves your registration.",
+        nextStep: null,
+      };
+    }
     if (!result.success) {
       return {
         success: false,
@@ -202,7 +211,9 @@ const Login = () => {
                         Sign In Failed
                       </AlertTitle>
                       <AlertDescription className="text-sm mt-1">
-                        Incorrect email or password
+                        {loginState.error === "PENDING"
+                          ? loginState.message
+                          : "Incorrect email or password"}
                         {loginState.nextStep && !loginState.requires2FA && (
                           <p className="text-primary font-medium mt-2">
                             Incorrect email or password

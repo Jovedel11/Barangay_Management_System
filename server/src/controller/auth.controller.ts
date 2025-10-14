@@ -57,7 +57,11 @@ const login = (req: Request, res: Response, next: NextFunction) => {
         if (user && !user.role) {
           return res.status(403).json({ success: false, role: null });
         }
-        console.log(user.role);
+        if (user.role !== "admin" && user.status === "pending") {
+          return res
+            .status(403)
+            .json({ success: false, role: null, status: "pending" });
+        }
         if (user.role !== "admin") {
           return res.status(200).json({ success: true, role: user.role });
         }
@@ -78,7 +82,7 @@ const logout = (req: Request, res: Response, next: NextFunction) => {
       return;
     }
     res.clearCookie("connect.sid");
-    res.status(200).send({ message: "signout success"});
+    res.status(200).send({ message: "signout success" });
   });
 };
 
@@ -110,6 +114,5 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
 
 export { register, login, authSender, logout, verifyOtp };
