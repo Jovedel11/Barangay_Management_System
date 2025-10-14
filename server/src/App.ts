@@ -52,9 +52,9 @@ app.use(
     saveUninitialized: false,
     store: store,
     cookie: {
-      httpOnly: isDeployed, //must be false in production
+      httpOnly: true, //must be false in production
       secure: isDeployed, //HTTPS only in production
-      sameSite: isDeployed ? "strict" : "lax", //strict only in production
+      sameSite: "lax", //strict only in production
       maxAge: 1000 * 60 * 60 * 12,
     },
   })
