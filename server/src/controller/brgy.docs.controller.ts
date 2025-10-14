@@ -3,6 +3,16 @@ import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 import ProccessNotif from "@/lib/process.notif";
+import { BorrowableItemsModel } from "@/models/borrow.items";
+
+type Update = {
+  model: Model<any>;
+  sendNotif?: boolean;
+  detailsToSend?: string;
+  linkToSend?: string;
+  isItem?: boolean;
+  sendToResident?: boolean;
+};
 
 // Send docs request (resident)
 const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
@@ -76,7 +86,14 @@ const deleteDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
 };
 
 // Updating Docs (reusable)
-const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
+const updateDocs = ({
+  model: CollectionModel,
+  sendNotif = false,
+  detailsToSend = "has processed your document",
+  linkToSend,
+  isItem = false,
+  sendToResident = true,
+}: Update) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       console.log("Request Body: ", req.body);
@@ -109,7 +126,31 @@ const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
           .status(400)
           .json({ success: false, message: "No changes made to the document" });
       }
-
+      if (sendNotif && linkToSend) {
+        const data = await CollectionModel.findById(docs_id);
+        const result = await ProccessNotif({
+          resident_id: data.user,
+          data_name: data.name ?? data.service,
+          data_category: data.category,
+          details: detailsToSend,
+          link: linkToSend,
+          sendToResident,
+        });
+        if (!result?.success) throw new Error("Error in processing notif");
+      }
+      if (isItem && data.status === "returned") {
+        const update_result = await BorrowableItemsModel.updateOne(
+          {
+            _id: data.main_item,
+          },
+          {
+            $inc: { available: data.quantity },
+          }
+        );
+        if (update_result.modifiedCount === 0) {
+          throw new Error("Failed to update item");
+        }
+      }
       return res.status(200).json({
         success: true,
         message: "Document successfully updated",

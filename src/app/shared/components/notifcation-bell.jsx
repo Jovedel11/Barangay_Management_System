@@ -21,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CustomToast } from "@/components/custom/CustomToast";
 
-const socket = io("http://localhost:3000", {
+const socket = io(import.meta.env.VITE_SOCKET_URL, {
   withCredentials: true,
   transports: ["websocket", "polling"],
   reconnectionAttempts: 5,
@@ -158,7 +158,7 @@ const NotificationBell = ({
   );
 
   // Delete notification
-  const deleteNotification = async () => {
+  const deleteNotification = async (notif_id) => {
     try {
       const result = await customRequest({
         path: "/api/notification/delete",
@@ -168,7 +168,7 @@ const NotificationBell = ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ user_id: user._id }),
+          body: JSON.stringify({ notif_id }),
         },
       });
       if (result?.success) {

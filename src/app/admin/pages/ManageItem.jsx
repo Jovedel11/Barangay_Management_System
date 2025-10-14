@@ -4,11 +4,9 @@ import { Button } from "@/core/components/ui/button";
 import { CheckCircle, GitPullRequest, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ItemDialog from "@/components/custom/ItemDialog";
-import DocumentTypeCard from "@/app/shared/components/document-type-card";
 import customRequest from "@/services/customRequest";
 import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
-import DocumentRequestsTable from "@/components/custom/DocReqTable";
 import ItemCard from "@/app/shared/components/item-card";
 import ItemBookingTable from "@/components/custom/ItemBookingTable";
 
@@ -26,7 +24,7 @@ const ManageDocuments = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
-  const [activeTab, setActiveTab] = useState("available/items");
+  const [activeTab, setActiveTab] = useState("request/items");
   const [statusFilter, setStatusFilter] = useState("All status");
 
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
@@ -74,7 +72,7 @@ const ManageDocuments = () => {
       </div>
 
       <Tabs
-        defaultValue="request"
+        defaultValue="request/items"
         value={activeTab}
         onValueChange={(value) => setActiveTab(value)}
         className="w-full mt-5"

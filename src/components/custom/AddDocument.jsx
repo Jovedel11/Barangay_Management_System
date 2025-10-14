@@ -199,7 +199,7 @@ const AddDocument = ({
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-[500px] md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
         <SheetHeader className="text-left">
-          <SheetTitle className="font-inter">
+          <SheetTitle className="font-inter text-xl">
             {isEdit ? "Edit Available Documents" : "Add Available Document"}
           </SheetTitle>
           <SheetDescription className="text-sm">

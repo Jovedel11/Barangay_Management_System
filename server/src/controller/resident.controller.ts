@@ -1,3 +1,4 @@
+import { AccountModel } from "@/models/user.model";
 import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
@@ -48,4 +49,19 @@ const deleteResidents = ({
   };
 };
 
-export { createResidents, deleteResidents };
+const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { user_id } = matchedData(req);
+    const resident = await AccountModel.findById({ _id: user_id });
+    return res.status(201).json([resident]);
+  } catch (error) {
+    console.log("Error in creating event :", error);
+    next(error);
+  }
+};
+
+export { createResidents, deleteResidents, getProfile };

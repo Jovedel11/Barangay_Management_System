@@ -45,59 +45,6 @@ import { Separator } from "@/core/components/ui/separator";
 export default function ResidentGetHelp() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
-
-  // System features and services
-  const systemFeatures = [
-    {
-      icon: FileText,
-      title: "Document Requests",
-      description: "Request official barangay documents",
-      services: [
-        "Barangay Clearance",
-        "Residency Certificate",
-        "Certificate of Indigency",
-        "Business Permit",
-        "Building Permit",
-      ],
-    },
-    {
-      icon: Package,
-      title: "Equipment Borrowing",
-      description: "Reserve barangay equipment and facilities",
-      services: [
-        "Sound System",
-        "Tables & Chairs",
-        "Event Tents",
-        "Basketball Equipment",
-        "Projector & Screen",
-      ],
-    },
-    {
-      icon: Calendar,
-      title: "Community Events",
-      description: "View and participate in barangay activities",
-      services: [
-        "Liga ng mga Barangay Basketball Tournament",
-        "Pista ng Barangay",
-        "Miss Barangay Kaypian",
-        "Medical Missions",
-        "Skills Training Programs",
-      ],
-    },
-    {
-      icon: IconMedicalCross,
-      title: "Health Services",
-      description: "Access health and medical services",
-      services: [
-        "Free Medical Check-up",
-        "Anti-Rabies Vaccination",
-        "Senior Citizen Health Check",
-        "Blood Pressure Monitoring",
-        "Health Education Programs",
-      ],
-    },
-  ];
-
   // FAQ Data
   const faqData = [
     {
@@ -323,52 +270,6 @@ export default function ResidentGetHelp() {
             </TabsList>
           </div>
 
-          {/* Quick Access - System Features */}
-          <TabsContent value="all" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {systemFeatures.map((feature, index) => (
-                <Card
-                  key={index}
-                  className="bg-card border-border hover:shadow-lg transition-all duration-200"
-                >
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <feature.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {feature.title}
-                        </CardTitle>
-                      </div>
-                    </div>
-                    <CardDescription>{feature.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-foreground">
-                        Available Services:
-                      </h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {feature.services.slice(0, 3).map((service, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-success" />
-                            {service}
-                          </li>
-                        ))}
-                        {feature.services.length > 3 && (
-                          <li className="text-xs text-muted-foreground">
-                            +{feature.services.length - 3} more services
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
           {/* FAQ Sections */}
           <div className="space-y-6">
             {filteredFAQs.map((category) => (
@@ -469,13 +370,6 @@ export default function ResidentGetHelp() {
                   </div>
                 </div>
               </div>
-
-              <Separator />
-
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Visit Our Office
-              </Button>
             </CardContent>
           </Card>
 
@@ -533,32 +427,6 @@ export default function ResidentGetHelp() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Additional Help */}
-        <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-          <CardContent className="p-6 text-center">
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              Still Need Help?
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Can't find what you're looking for? Our team is here to assist you
-              with any questions or concerns.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                className="border-primary/30 text-primary hover:bg-primary/10"
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Send us a Message
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Phone className="h-4 w-4 mr-2" />
-                Call the Office
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* System Information */}
         <div className="text-center py-4 text-sm text-muted-foreground">

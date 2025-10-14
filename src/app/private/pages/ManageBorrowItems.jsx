@@ -20,7 +20,7 @@ const ManageBorrowItems = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [debouncedSearchQuery, category],
+    queryKey: ["available-items", debouncedSearchQuery, category],
     queryFn: () =>
       customRequest({
         path: `/api/borrow-item/available/items?search=${debouncedSearchQuery}&category=${category}`,
@@ -76,9 +76,12 @@ const ManageBorrowItems = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {documents.map((item, index) => (
-                      <ItemCard key={index} item={item} refetch={refetch} />
-                    ))}
+                    {documents.map((item, index) => {
+                      if (!item.status) return null;
+                      return (
+                        <ItemCard key={index} item={item} refetch={refetch} />
+                      );
+                    })}
                   </div>
                 )}
               </div>

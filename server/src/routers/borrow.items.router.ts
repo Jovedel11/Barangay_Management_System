@@ -61,7 +61,25 @@ router.put(
 router.put(
   "/update/item-request",
   updateBorrowRequestValidation,
-  updateDocs({ model: BorrowRequestModel })
+  updateDocs({
+    model: BorrowRequestModel,
+    sendNotif: true,
+    detailsToSend: "has processed your item",
+    linkToSend: "/resident/manage-borrow-items",
+    isItem: true,
+  })
+);
+router.put(
+  "/mark-as-returned",
+  updateBorrowRequestValidation,
+  updateDocs({
+    model: BorrowRequestModel,
+    sendNotif: true,
+    detailsToSend: "has returned an item",
+    linkToSend: "/admin/manage-items",
+    isItem: true,
+    sendToResident: false,
+  })
 );
 router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
 router.post("/request/insert", itemBorrowValidation, bookItem); // Insert for booking request

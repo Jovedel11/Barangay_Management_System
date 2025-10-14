@@ -8,16 +8,32 @@ import FilterCollection from "@/lib/search.data";
 import type { Model } from "mongoose";
 import ProccessNotif from "@/lib/process.notif";
 
+/* I will use session here from mongoose
+ * its purpose is to uncocommit the transactions if one of them fails
+ * It is useful when dealing multiple transaction
+ */
+
 // For Resident for passing booking form
 const bookItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(errors);
       throw new Error("Book item: Invalid fields");
     }
     const item = matchedData(req);
-    const bookItem = await BorrowRequestModel.create({ ...item }); //for admin (book item)
-    bookItem.save();
+    await BorrowRequestModel.create({ ...item });
+    console.log("Main item :", item.main_item);
+    const update_result = await BorrowableItemsModel.updateOne(
+      {
+        _id: item.main_item,
+      },
+      {
+        $inc: { available: -item.quantity },
+      }
+    );
+    console.log(update_result);
+    if (update_result.modifiedCount === 0) throw new Error("Not enough stack");
     const result = await ProccessNotif({
       resident_id: item.user,
       data_name: item.name,

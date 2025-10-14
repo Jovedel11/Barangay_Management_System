@@ -107,54 +107,63 @@ export default function AccountTable({ residents = [], refetch }) {
                 </TableCell>
               </TableRow>
             ) : (
-              residents.map((resident, index) => (
-                <TableRow
-                  key={index}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/30"
-                >
-                  <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                    {resident.first_name} {resident.last_name}
-                  </TableCell>
-                  <TableCell>{resident.email}</TableCell>
-                  <TableCell>{resident.phone_number}</TableCell>
-                  <TableCell className="capitalize">{resident.role}</TableCell>
-                  <TableCell className="capitalize">
-                    {resident.status}
-                  </TableCell>
-                  <TableCell>{formatDate(resident.createdAt)}</TableCell>
-                  <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            handleAction("approve", resident._id);
-                          }}
-                        >
-                          <CheckCircle />
-                          Approve User
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            handleAction("reject", resident._id);
-                          }}
-                        >
-                          <XCircle />
-                          Reject User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
+              residents?.map((resident, index) => {
+                if (resident.role === "admin") return null;
+                return (
+                  <TableRow
+                    key={index}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                  >
+                    <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                      {resident.first_name} {resident.last_name}
+                    </TableCell>
+                    <TableCell>{resident.email}</TableCell>
+                    <TableCell>{resident.phone_number}</TableCell>
+                    <TableCell className="capitalize">
+                      {resident.role}
+                    </TableCell>
+                    <TableCell className="capitalize">
+                      {resident.status}
+                    </TableCell>
+                    <TableCell>{formatDate(resident.createdAt)}</TableCell>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleAction("approve", resident._id);
+                            }}
+                          >
+                            <CheckCircle />
+                            Approve User
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleAction("reject", resident._id);
+                            }}
+                          >
+                            <XCircle />
+                            Reject User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useActionState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
@@ -44,70 +43,145 @@ const Login = () => {
     login,
     resendEmailConfirmation,
     verifyTwoFactor,
-    loading: globalLoading,
   } = {
     login: (email, password) => accLogin(email, password),
     resendEmailConfirmation: (email, password) => accLogin(email, password),
     verifyTwoFactor: (code) => sendOtp(code),
-    loading: false,
   };
 
+  // Login state
+  const [loginState, setLoginState] = useState({
+    success: false,
+    error: null,
+    message: null,
+    canResendEmail: false,
+    nextStep: null,
+    requires2FA: false,
+  });
+  const [isLoginPending, setIsLoginPending] = useState(false);
+
+  // 2FA state
   const [show2FADialog, setShow2FADialog] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Login action
-  async function loginAction(prevState, formData) {
+  // Login handler
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
     const email = formData.get("email");
     const password = formData.get("password");
 
     if (!email || !password) {
-      return {
+      setLoginState({
         success: false,
         error: "MISSING_CREDENTIALS",
         message: "Please enter both email and password",
         canResendEmail: false,
         nextStep: null,
-      };
+        requires2FA: false,
+      });
+      return;
     }
 
-    const result = await login(email, password);
-    if (!result.success) {
-      return {
-        success: false,
-        error: "PASSWORD_MISMATCH",
-        message: "Incorrect email or password",
-        nextStep: null,
-      };
-    }
-    if (result.success && result.role === "admin") {
-      setShow2FADialog(true);
-      return {
-        success: false,
-        error: null,
-        message: "Two-factor authentication required",
-        canResendEmail: false,
-        nextStep: "two_factor_auth",
-        requires2FA: true,
-      };
-    }
-    refetch();
-    return navigate("/resident/dashboard");
-  }
-
-  const [loginState, loginFormAction, isLoginPending] = useActionState(
-    loginAction,
-    {
+    setIsLoginPending(true);
+    setLoginState({
       success: false,
       error: null,
       message: null,
       canResendEmail: false,
       nextStep: null,
       requires2FA: false,
+    });
+
+    try {
+      const result = await login(email, password);
+      console.log("Login result:", result);
+      
+      const status = result.status?.toLowerCase();
+
+      if (!result.success && status === "rejected") {
+        setLoginState({
+          success: false,
+          error: "REJECTED",
+          message: "Your account request has been declined by the administrator.",
+          nextStep: null,
+          canResendEmail: false,
+          requires2FA: false,
+        });
+        setIsLoginPending(false);
+        return;
+      }
+
+      if (!result.success && status === "pending") {
+        setLoginState({
+          success: false,
+          error: "PENDING",
+          message: "Your account is pending approval. You'll be able to access your account once an administrator approves your registration.",
+          nextStep: null,
+          canResendEmail: false,
+          requires2FA: false,
+        });
+        setIsLoginPending(false);
+        return;
+      }
+
+      if (!result.success) {
+        console.log("Password mismatch executes");
+        setLoginState({
+          success: false,
+          error: "PASSWORD_MISMATCH",
+          message: "Incorrect email or password",
+          nextStep: null,
+          canResendEmail: false,
+          requires2FA: false,
+        });
+        setIsLoginPending(false);
+        return;
+      }
+
+      if (result.success && result.role === "admin") {
+        setShow2FADialog(true);
+        setLoginState({
+          success: false,
+          error: null,
+          message: "Two-factor authentication required",
+          canResendEmail: false,
+          nextStep: "two_factor_auth",
+          requires2FA: true,
+        });
+        setIsLoginPending(false);
+        return;
+      }
+
+      // Success - resident login
+      setLoginState({
+        success: true,
+        error: null,
+        message: "Login successful!",
+        canResendEmail: false,
+        nextStep: null,
+        requires2FA: false,
+      });
+      await refetch();
+      navigate("/resident/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginState({
+        success: false,
+        error: "UNKNOWN_ERROR",
+        message: "An unexpected error occurred. Please try again.",
+        nextStep: null,
+        canResendEmail: false,
+        requires2FA: false,
+      });
+    } finally {
+      setIsLoginPending(false);
     }
-  );
+  };
 
   // 2FA verification
   const handle2FAVerification = async () => {
@@ -127,7 +201,7 @@ const Login = () => {
       if (result.success) {
         setShow2FADialog(false);
         setTwoFactorCode("");
-        refetch();
+        await refetch();
         navigate("/admin/dashboard");
       } else {
         setTwoFactorError(result.message || "Invalid verification code");
@@ -141,17 +215,20 @@ const Login = () => {
   };
 
   // Resend email action
-  async function resendEmailAction() {
-    const result = await resendEmailConfirmation();
-    if (result.success) {
-      refetch();
-      navigate("/admin/dashboard");
-    } else {
+  const resendEmailAction = async () => {
+    try {
+      const result = await resendEmailConfirmation();
+      if (result.success) {
+        await refetch();
+        navigate("/admin/dashboard");
+      } else {
+        alert("Failed to send email. Please try again.");
+      }
+    } catch (error) {
+      console.error("Resend email error:", error);
       alert("Failed to send email. Please try again.");
     }
-  }
-
-  const isLoading = isLoginPending || globalLoading;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/50">
@@ -202,7 +279,21 @@ const Login = () => {
                         Sign In Failed
                       </AlertTitle>
                       <AlertDescription className="text-sm mt-1">
-                        Incorrect email or password
+                        {loginState.error === "PENDING" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "REJECTED" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "PASSWORD_MISMATCH" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "MISSING_CREDENTIALS" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "UNKNOWN_ERROR" && (
+                          <span>{loginState.message}</span>
+                        )}
                         {loginState.nextStep && !loginState.requires2FA && (
                           <p className="text-primary font-medium mt-2">
                             Incorrect email or password
@@ -212,7 +303,7 @@ const Login = () => {
                           <Button
                             variant="link"
                             onClick={resendEmailAction}
-                            disabled={isLoading}
+                            disabled={isLoginPending}
                             className="p-0 h-auto text-primary hover:text-primary/80 text-sm mt-2"
                           >
                             Resend verification email
@@ -239,7 +330,7 @@ const Login = () => {
                   )}
 
                   {/* Login Form */}
-                  <form action={loginFormAction} className="space-y-4">
+                  <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
                       <Label
                         htmlFor="email"
@@ -256,7 +347,7 @@ const Login = () => {
                           placeholder="Enter your email"
                           className="pl-10 h-10 border-slate-300 focus:border-primary focus:ring-primary/20"
                           required
-                          disabled={isLoading}
+                          disabled={isLoginPending}
                         />
                       </div>
                     </div>
@@ -277,7 +368,7 @@ const Login = () => {
                           placeholder="Enter your password"
                           className="pl-10 pr-10 h-10 border-slate-300 focus:border-primary focus:ring-primary/20"
                           required
-                          disabled={isLoading}
+                          disabled={isLoginPending}
                         />
                         <Button
                           type="button"
@@ -297,10 +388,10 @@ const Login = () => {
 
                     <Button
                       type="submit"
-                      disabled={isLoading}
+                      disabled={isLoginPending}
                       className="w-full h-10 bg-primary hover:bg-primary/90 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200"
                     >
-                      {isLoading ? (
+                      {isLoginPending ? (
                         <div className="flex items-center gap-2">
                           <RefreshCw className="w-4 h-4 animate-spin" />
                           <span>Signing in...</span>
@@ -318,13 +409,6 @@ const Login = () => {
 
                   {/* Footer Links */}
                   <div className="space-y-3 text-center">
-                    <Link
-                      to="/forgot-password"
-                      className="block text-primary hover:text-primary/80 text-sm font-medium transition-colors"
-                    >
-                      Forgot your password?
-                    </Link>
-
                     <p className="text-sm text-slate-600">
                       Don't have an account?{" "}
                       <Link

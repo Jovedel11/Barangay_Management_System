@@ -45,7 +45,6 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
     const anyEmpty =
       !requestForm.purpose.trim() ||
       !requestForm.quantity === 0 ||
-      !requestForm.specificDetails.trim() ||
       !requestForm.contactNumber ||
       !requestForm.deliveryMethod.trim();
 
@@ -53,7 +52,6 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
     return (
       requestForm.quantity === 1 &&
       !requestForm.purpose.trim() &&
-      !requestForm.specificDetails.trim() &&
       !requestForm.contactNumber &&
       !requestForm.specificDetails.trim()
     );

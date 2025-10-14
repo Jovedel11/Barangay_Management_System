@@ -4,5 +4,7 @@ declare namespace NodeJS {
     SECRET_KEY: string;
     NODE_ENV?: "development" | "production";
     RESEND_API_KEY?: string;
+    MONGODB_URI?: string;
+    FRONT_END_URL?: string;
   }
 }

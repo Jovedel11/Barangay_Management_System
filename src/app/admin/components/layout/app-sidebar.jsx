@@ -21,67 +21,69 @@ import {
 } from "@/core/components/ui/sidebar";
 import { CalendarSync, HandPlatter, ScrollText, UserPen } from "lucide-react";
 import Logo from "@/core/components/ui/logo";
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "admin@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/admin/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "Manage Items",
-      url: "/admin/manage-items",
-      icon: IconListDetails,
-    },
-    {
-      title: "Manage Documents",
-      url: "/admin/manage-documents",
-      icon: IconFolder,
-    },
-    {
-      title: "Manage Services",
-      url: "/admin/manage-services",
-      icon: HandPlatter,
-    },
-    {
-      title: "Manage Events",
-      url: "/admin/manage-events",
-      icon: CalendarSync,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/admin/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "/admin/get-help",
-      icon: IconHelp,
-    },
-  ],
-  documents: [
-    {
-      name: "Users List",
-      url: "/admin/manage-users",
-      icon: ScrollText,
-    },
-    {
-      name: "Profile",
-      url: "/admin/manage-users/profile",
-      icon: UserPen,
-    },
-  ],
-};
+import { useAuth } from "@/hooks/useAuthProvider";
 
 export function AppSidebar(props) {
+  const { user } = useAuth();
+  const data = {
+    user: {
+      name: `${user?.first_name ?? "User not found"} ${user?.last_name ?? ""}`,
+      email: user?.email ?? "No email set",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/admin/dashboard",
+        icon: IconDashboard,
+      },
+      {
+        title: "Manage Items",
+        url: "/admin/manage-items",
+        icon: IconListDetails,
+      },
+      {
+        title: "Manage Documents",
+        url: "/admin/manage-documents",
+        icon: IconFolder,
+      },
+      {
+        title: "Manage Services",
+        url: "/admin/manage-services",
+        icon: HandPlatter,
+      },
+      {
+        title: "Manage Events",
+        url: "/admin/manage-events",
+        icon: CalendarSync,
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Settings",
+        url: "/admin/settings",
+        icon: IconSettings,
+      },
+      {
+        title: "Get Help",
+        url: "/admin/get-help",
+        icon: IconHelp,
+      },
+    ],
+    documents: [
+      {
+        name: "Users List",
+        url: "/admin/manage-users",
+        icon: ScrollText,
+      },
+      {
+        name: "Profile",
+        url: "/admin/manage-users/profile",
+        icon: UserPen,
+      },
+    ],
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
