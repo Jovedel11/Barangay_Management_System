@@ -122,8 +122,54 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
           status: "error",
         });
       }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const borrowDate = new Date(bookingForm.borrowDate);
+      const returnDate = new Date(bookingForm.returnDate);
+      const diffInTime = returnDate.getTime() - borrowDate.getTime();
+      const diffInDays = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
+      if (diffInDays > selectedItem.maxBorrowDays) {
+        return CustomToast({
+          description: `Return date must not be longer than ${
+            selectedItem.maxBorrowDays
+          } ${
+            selectedItem.maxBorrowDays === 1 ? "day" : "days"
+          } from borrow date.`,
+          status: "error",
+        });
+      }
+
+      if (borrowDate < today) {
+        return CustomToast({
+          description: "Borrow date cannot be in the past",
+          status: "error",
+        });
+      }
+
+      if (returnDate < today) {
+        return CustomToast({
+          description: "Return date cannot be in the past",
+          status: "error",
+        });
+      }
+
+      if (returnDate <= borrowDate) {
+        return CustomToast({
+          description: "Return date must be after the borrow date",
+          status: "error",
+        });
+      }
+
+      if (bookingForm.quantity > selectedItem.available) {
+        return CustomToast({
+          description: "Your request exceeded the available items",
+          status: "error",
+        });
+      }
       const payload = {
         user: user._id,
+        main_item: selectedItem._id,
         ...bookingForm,
         borrowDate: new Date(bookingForm.borrowDate).toISOString(),
         returnDate: new Date(bookingForm.returnDate).toISOString(),
@@ -161,7 +207,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         status: "error",
       });
     }
-  }, [bookingForm, refetch, onOpenChange, user, queryClient]);
+  }, [bookingForm, refetch, onOpenChange, user, queryClient, selectedItem]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

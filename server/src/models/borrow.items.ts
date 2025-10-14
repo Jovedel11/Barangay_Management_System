@@ -11,6 +11,7 @@ type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
   //specialRequirements: Partial<Record<string, boolean>>;
   status?: string;
   category: string;
+  main_item: Schema.Types.ObjectId;
 };
 
 type IBorrowableItem<T extends string> = {
@@ -46,6 +47,7 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
     isPregnant: { type: Boolean, required: false, default: false },
   },*/
   status: { type: String, required: false, default: "pending" },
+  main_item: { type: String, required: true },
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({

@@ -4,11 +4,9 @@ import { Button } from "@/core/components/ui/button";
 import { CheckCircle, GitPullRequest, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ItemDialog from "@/components/custom/ItemDialog";
-import DocumentTypeCard from "@/app/shared/components/document-type-card";
 import customRequest from "@/services/customRequest";
 import SearchComponent from "@/components/custom/SearchData";
 import useDebounce from "@/app/shared/hooks/useDebounce";
-import DocumentRequestsTable from "@/components/custom/DocReqTable";
 import ItemCard from "@/app/shared/components/item-card";
 import ItemBookingTable from "@/components/custom/ItemBookingTable";
 

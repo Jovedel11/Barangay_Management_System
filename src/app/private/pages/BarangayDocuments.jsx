@@ -77,9 +77,12 @@ const ManageBorrowItems = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {documents.map((doc, index) => (
-                      <DocCard key={index} doc={doc} refetch={refetch} />
-                    ))}
+                    {documents.map((doc, index) => {
+                      if (!doc.isActive) return null;
+                      return (
+                        <DocCard key={index} doc={doc} refetch={refetch} />
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -55,8 +55,14 @@ const ItemCard = ({ item, refetch }) => {
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Available:</span>
-            <span className="font-medium text-green-600">
-              {item?.available} / {item?.total} units
+            <span
+              className={`font-medium ${
+                item?.available === 0 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {item?.available === 0
+                ? "Not Available"
+                : `${item?.available} / ${item?.total} units`}
             </span>
           </div>
           <div className="flex justify-between text-sm">

@@ -129,7 +129,9 @@ const ItemCard = ({ item, className = "", refetch }) => {
               <WarehouseIcon className="h-5 w-5 text-primary" />
             </div>
             <div className="truncate w-24 md:w-32">
-              <h4 className="font-medium text-foreground truncate">{item?.name}</h4>
+              <h4 className="font-medium text-foreground truncate">
+                {item?.name}
+              </h4>
               <p className="text-sm text-muted-foreground capitalize">
                 {item?.category}
               </p>
@@ -147,8 +149,14 @@ const ItemCard = ({ item, className = "", refetch }) => {
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Available:</span>
-            <span className="font-medium text-success">
-              {item?.available}/{item?.total}
+            <span
+              className={`font-medium ${
+                item?.available === 0 ? "text-destructive" : "text-success"
+              }`}
+            >
+              {item?.available === 0
+                ? "Not Available"
+                : `${item?.available}/${item?.total}`}
             </span>
           </div>
           <div className="flex justify-between text-sm">
@@ -186,7 +194,11 @@ const ItemCard = ({ item, className = "", refetch }) => {
           </ItemDialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="px-2 dark:border-slate-700">
+              <Button
+                size="sm"
+                variant="outline"
+                className="px-2 dark:border-slate-700"
+              >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
