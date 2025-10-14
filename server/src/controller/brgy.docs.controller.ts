@@ -125,7 +125,7 @@ const updateDocs = ({
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
           resident_id: data.user,
-          data_name: data.name,
+          data_name: data.name ?? data.service,
           data_category: data.category,
           details: detailsToSend,
           link: linkToSend,

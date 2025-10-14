@@ -49,7 +49,12 @@ router.put(
 router.put(
   "/update/request",
   updateServiceValidation,
-  updateDocs({ model: ServiceRequest })
+  updateDocs({
+    model: ServiceRequest,
+    sendNotif: true,
+    detailsToSend: "has processed your service request",
+    linkToSend: "/resident/barangay-services",
+  })
 ); // Update (request)
 router.post(
   "/insert/available",
