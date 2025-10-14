@@ -4,16 +4,13 @@ import session from "express-session";
 
 const MongoDBSessionStore = MongoDBStore(session);
 const store = new MongoDBSessionStore({
-  uri: process.env.MONGODB_URI ?? "mongodb://localhost:27017/development",
+  uri: process.env.MONGODB_URI as string,
   collection: "sessions",
 });
 
 const ConnectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(
-      process.env.MONGODB_URI ||
-        ("mongodb://localhost:27017/development" as string)
-    );
+    await mongoose.connect(process.env.MONGODB_URI as string);
     console.log("Database connected successfully");
   } catch (error) {
     console.error("Database connection error:", error);

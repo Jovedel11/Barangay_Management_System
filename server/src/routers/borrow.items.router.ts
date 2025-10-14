@@ -76,7 +76,7 @@ router.put(
     model: BorrowRequestModel,
     sendNotif: true,
     detailsToSend: "has returned an item",
-    linkToSend: "/resident/manage-borrow-items",
+    linkToSend: "/admin/manage-items",
     isItem: true,
     sendToResident: false,
   })
