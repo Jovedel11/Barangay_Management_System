@@ -219,11 +219,15 @@ const Login = () => {
                         Sign In Failed
                       </AlertTitle>
                       <AlertDescription className="text-sm mt-1">
-                        {loginState.error === "PENDING"
-                          ? loginState.message
-                          : loginState.error === "REJECTED"
-                          ? loginState.message
-                          : "Incorrect email or password"}
+                        {loginState.error === "PENDING" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "REJECTED" && (
+                          <span>{loginState.message}</span>
+                        )}
+                        {loginState.error === "PASSWORD_MISMATCH" && (
+                          <span>{loginState.message}</span>
+                        )}
                         {loginState.nextStep && !loginState.requires2FA && (
                           <p className="text-primary font-medium mt-2">
                             Incorrect email or password
