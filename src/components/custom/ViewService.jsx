@@ -1,18 +1,18 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from "@/core/components/ui/sheet";
 import { Button } from "@/core/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Clock, MapPin, Phone, DollarSign } from "lucide-react";
+import { Check, X, Clock, MapPin, Phone } from "lucide-react";
 
-const ViewServiceDialog = ({ children, open, handleOpenChange, data }) => {
+const ViewServiceSheet = ({ children, open, handleOpenChange, data }) => {
   if (!data) return null;
 
   const InfoRow = ({ label, value, fullWidth = false, icon: Icon }) => (
@@ -81,17 +81,17 @@ const ViewServiceDialog = ({ children, open, handleOpenChange, data }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] md:min-w-[35rem] max-h-[90vh] overflow-y-auto font-inter dark:bg-slate-900 flex flex-col">
-        <DialogHeader className="text-left">
-          <DialogTitle className="font-inter text-xl">{data.name}</DialogTitle>
-          <DialogDescription className="text-sm">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent className="w-full md:max-w-[25rem] gap-y-0 overflow-y-auto font-inter dark:bg-slate-900 flex flex-col border-l border-slate-200 dark:border-slate-700">
+        <SheetHeader className="text-left">
+          <SheetTitle className="font-inter text-xl">{data.name}</SheetTitle>
+          <SheetDescription className="text-sm">
             View service details and information
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="w-full flex flex-col gap-y-6">
+        <div className="w-full flex flex-col gap-y-6 px-4">
           <div className="flex gap-x-2 flex-wrap">
             <Badge className={getCategoryColor(data.category)}>
               {data.category}
@@ -124,7 +124,7 @@ const ViewServiceDialog = ({ children, open, handleOpenChange, data }) => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <InfoRow label="Cost" value={data.cost} icon={DollarSign} />
+            <InfoRow label="Cost" value={data.cost} />
             <InfoRow label="Available Slots" value={data.slots} />
           </div>
 
@@ -159,19 +159,19 @@ const ViewServiceDialog = ({ children, open, handleOpenChange, data }) => {
           </div>
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-x-2 mt-4">
-          <DialogClose asChild>
+        <SheetFooter className="flex flex-row justify-end gap-x-2">
+          <SheetClose asChild>
             <Button
               variant="outline"
               className="border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
             >
               Close
             </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 };
 
-export default ViewServiceDialog;
+export default ViewServiceSheet;

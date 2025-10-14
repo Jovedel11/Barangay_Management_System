@@ -99,7 +99,7 @@ export default function ProcessBookingDialog({
           <DialogTitle>
             {participant?.paymentStatus === "not paid"
               ? "Process Booking"
-              : "Edit Booking"}
+              : "Update Booking"}
           </DialogTitle>
           <DialogDescription>
             Update the payment status and add processing notes

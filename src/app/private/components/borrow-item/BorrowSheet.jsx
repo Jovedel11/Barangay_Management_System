@@ -169,8 +169,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         {selectedItem && (
           <>
             <SheetHeader className="text-left">
-              <SheetTitle className="flex items-center gap-2 font-inter">
-                <Icon className="h-5 w-5 text-primary" />
+              <SheetTitle className="flex items-center gap-2 font-inter text-xl">
                 Book {selectedItem?.name}
               </SheetTitle>
               <SheetDescription className="text-sm">

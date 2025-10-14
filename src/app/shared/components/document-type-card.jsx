@@ -75,7 +75,7 @@ const DocumentTypeCard = ({
   };
   return (
     <Card
-      className={`border border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
+      className={`border bg-background/50 border-border hover:shadow-sm transition-all duration-200 hover:border-primary/30 ${className}`}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
@@ -132,7 +132,7 @@ const DocumentTypeCard = ({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-primary/30 text-primary cursor-pointer hover:text-slate-400"
+            className="flex-1 dark:border-slate-700 text-primary cursor-pointer hover:text-slate-400"
             onClick={() => setOpenViewModal(true)}
           >
             <Eye className="h-3 w-3 mr-1" />
@@ -140,7 +140,7 @@ const DocumentTypeCard = ({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="px-2">
+              <Button size="sm" variant="outline" className="px-2 dark:border-slate-700">
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>

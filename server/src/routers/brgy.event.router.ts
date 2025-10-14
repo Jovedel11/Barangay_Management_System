@@ -1,5 +1,5 @@
 import { handleValidationErrors } from "@/middleware/brgy.services.middleware";
-import { createService } from "@/controller/brgy.services.controller";
+import { createEvents } from "@/controller/events.controller";
 import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import searchItemValidation from "@/middleware/search.middleware";
@@ -63,13 +63,13 @@ router.post(
   "/insert/available",
   createEventValidation,
   handleValidationErrors,
-  createService({ model: BrgyEvent })
+  createEvents({ model: BrgyEvent })
 ); // Create new event
 router.post(
   "/insert/request",
   createEventRequestValidation,
   handleValidationErrors,
-  createService({ model: EventRequest })
+  createEvents({ model: EventRequest, sendNotif: true })
 );
 router.delete(
   "/delete/available",

@@ -14,8 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Bell, Plus } from "lucide-react";
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "@/components/custom/CustomToast";
+import { useAuth } from "@/hooks/useAuthProvider";
 
 const RegistrationSheet = ({ selectedEvent, open, onOpenChange }) => {
+  const { user } = useAuth();
   const [registrationForm, setRegistrationForm] = useState({
     teamMemberParticipant: "",
     specialRequirements: "",
@@ -49,6 +51,7 @@ const RegistrationSheet = ({ selectedEvent, open, onOpenChange }) => {
           status: "error",
         });
       const payload = {
+        user: user._id,
         eventTitle: selectedEvent?.eventTitle,
         dateOfEvent: selectedEvent?.startDate,
         category: selectedEvent?.category,

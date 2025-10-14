@@ -25,7 +25,7 @@ const getCategoryIcon = (category) => {
   return iconMap[category] || Folder;
 };
 
-const DocCard = ({ doc, refetch }) => {
+const DocCard = ({ doc }) => {
   const [openSheet, setSheet] = useState(false);
   const IconComponent = getCategoryIcon(doc?.category);
 
@@ -81,7 +81,6 @@ const DocCard = ({ doc, refetch }) => {
             selectedDocument={doc}
             open={openSheet}
             onOpenChange={handleSheet}
-            refetch={refetch}
           />
           <Button
             size="sm"

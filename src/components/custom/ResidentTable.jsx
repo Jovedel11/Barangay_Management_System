@@ -1,4 +1,19 @@
-import { Eye, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import {
+  Eye,
+  MoreHorizontal,
+  Trash2,
+  Edit,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Users,
+  Calendar,
+  Briefcase,
+  Heart,
+  Check,
+  X,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +38,8 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetFooter,
+  SheetClose,
 } from "@/core/components/ui/sheet";
 import { useState } from "react";
 import customRequest from "@/services/customRequest";
@@ -45,6 +63,7 @@ export default function ResidentTable({ residents = [], refetch }) {
   };
 
   const handleEditClose = () => setOpenEdit(false);
+
   const handleDelete = async (residentId) => {
     try {
       if (!residentId) throw new Error();
@@ -111,6 +130,37 @@ export default function ResidentTable({ residents = [], refetch }) {
     }
     return age;
   };
+
+  const InfoRow = ({ label, value, fullWidth = false, icon: Icon }) => (
+    <div className={`flex flex-col gap-y-1 ${fullWidth ? "col-span-2" : ""}`}>
+      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+        {Icon && <Icon className="w-3 h-3" />}
+        {label}
+      </span>
+      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+        {value || "N/A"}
+      </span>
+    </div>
+  );
+
+  const BooleanBadge = ({ label, value }) => (
+    <div className="flex items-center gap-x-2">
+      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        {label}:
+      </span>
+      {value ? (
+        <Badge className="flex items-center gap-x-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800">
+          <Check className="w-3 h-3" />
+          Yes
+        </Badge>
+      ) : (
+        <Badge className="flex items-center gap-x-1 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700">
+          <X className="w-3 h-3" />
+          No
+        </Badge>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -243,6 +293,7 @@ export default function ResidentTable({ residents = [], refetch }) {
           </Table>
         </div>
       </div>
+
       <AddResident
         refetch={refetch}
         data={residentToEdit}
@@ -251,204 +302,152 @@ export default function ResidentTable({ residents = [], refetch }) {
         handleOpenChange={handleEditClose}
         setOpenChange={setOpenEdit}
       />
+
       <Sheet open={isViewSheetOpen} onOpenChange={setIsViewSheetOpen}>
-        <SheetContent className="w-full md:max-w-[28rem] sm:max-w-xl overflow-y-auto gap-0">
-          <SheetHeader className="space-y-3 pb-6 border-b dark:border-slate-800">
-            <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+        <SheetContent className="w-full md:max-w-[25rem] gap-y-0 overflow-y-auto font-inter dark:bg-slate-900 flex flex-col border-l border-slate-200 dark:border-slate-700">
+          <SheetHeader className="text-left">
+            <SheetTitle className="font-inter text-xl">
               Resident Details
             </SheetTitle>
-            <SheetDescription className="text-slate-600 dark:text-slate-400">
-              View complete information about this resident
+            <SheetDescription className="text-sm">
+              View complete resident information
             </SheetDescription>
           </SheetHeader>
 
           {selectedResident && (
-            <div className="space-y-6 py-6 px-4">
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Personal Information
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Full Name
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedResident?.firstName} {selectedResident?.lastName}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Date of Birth
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {formatDate(selectedResident?.dateOfBirth)}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Age
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {calculateAge(selectedResident?.dateOfBirth)} years old
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Gender
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {selectedResident?.gender}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Civil Status
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 capitalize">
-                        {selectedResident?.civilStatus}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Occupation
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.occupation}
-                    </p>
-                  </div>
-                </div>
+            <div className="w-full flex flex-col gap-y-6 px-4">
+              {/* Personal Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Full Name"
+                  value={`${selectedResident?.firstName} ${selectedResident?.lastName}`}
+                  icon={User}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Date of Birth"
+                  value={formatDate(selectedResident?.dateOfBirth)}
+                  icon={Calendar}
+                />
+                <InfoRow
+                  label="Age"
+                  value={`${calculateAge(
+                    selectedResident?.dateOfBirth
+                  )} years old`}
+                />
+                <InfoRow label="Gender" value={selectedResident?.gender} />
+                <InfoRow
+                  label="Civil Status"
+                  value={selectedResident?.civilStatus}
+                  fullWidth
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Contact Information
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Email Address
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.email}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Phone Number
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.phoneNumber}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Complete Address
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.completeAddress}
-                    </p>
-                  </div>
-                </div>
+              {/* Occupation */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Occupation"
+                  value={selectedResident?.occupation}
+                  icon={Briefcase}
+                  fullWidth
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Emergency Contact
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Contact Person
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.emergencyContact}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Contact Number
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.emergencyPhone}
-                    </p>
-                  </div>
-                </div>
+              {/* Contact Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Email Address"
+                  value={selectedResident?.email}
+                  icon={Mail}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Phone Number"
+                  value={selectedResident?.phoneNumber}
+                  icon={Phone}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Complete Address"
+                  value={selectedResident?.completeAddress}
+                  icon={MapPin}
+                  fullWidth
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
+              {/* Emergency Contact */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Emergency Contact Person"
+                  value={selectedResident?.emergencyContact}
+                  icon={User}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Emergency Contact Number"
+                  value={selectedResident?.emergencyPhone}
+                  icon={Phone}
+                  fullWidth
+                />
+              </div>
+
+              {/* Family Information */}
+              {selectedResident?.familyMember && (
+                <div className="flex flex-col gap-y-1">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+                    <Users className="w-3 h-3" />
+                    Family Members
+                  </span>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    {selectedResident?.familyMember}
+                  </p>
+                </div>
+              )}
+
+              {/* Status Information */}
+              <div className="flex flex-col gap-y-2 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                   Additional Information
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Family Members
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {selectedResident?.familyMember}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Registered Voter
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {selectedResident?.isRegisteredVoter ? "Yes" : "No"}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Senior Citizen
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {selectedResident?.isSenior ? "Yes" : "No"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        PWD
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {selectedResident?.isPwd ? "Yes" : "No"}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                        Pregnant
-                      </h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {selectedResident?.isPregnant ? "Yes" : "No"}
-                      </p>
-                    </div>
-                  </div>
+                </span>
+                <div className="space-y-2">
+                  <BooleanBadge
+                    label="Registered Voter"
+                    value={selectedResident?.isRegisteredVoter}
+                  />
+                  <BooleanBadge
+                    label="Senior Citizen"
+                    value={selectedResident?.isSenior}
+                  />
+                  <BooleanBadge label="PWD" value={selectedResident?.isPwd} />
+                  <BooleanBadge
+                    label="Pregnant"
+                    value={selectedResident?.isPregnant}
+                  />
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Record Information
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Created At
-                    </h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDateTime(selectedResident?.createdAt)}
-                    </p>
-                  </div>
-                </div>
+              {/* Record Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Created At"
+                  value={formatDateTime(selectedResident?.createdAt)}
+                  icon={Calendar}
+                  fullWidth
+                />
               </div>
             </div>
           )}
+
+          <SheetFooter className="flex flex-row justify-end gap-x-2">
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                className="border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
+              >
+                Close
+              </Button>
+            </SheetClose>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </>

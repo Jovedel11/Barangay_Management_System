@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/core/contexts/ThemeProvider";
 import {
@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuthProvider";
 import customRequest from "@/services/customRequest";
 import { useQuery } from "@tanstack/react-query";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { CustomToast } from "@/components/custom/CustomToast";
 
 const socket = io("http://localhost:3000", {
   withCredentials: true,
@@ -26,7 +27,7 @@ const socket = io("http://localhost:3000", {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  autoConnect: false, // Don't connect automatically
+  autoConnect: false,
 });
 
 const NotificationBell = ({
@@ -62,7 +63,6 @@ const NotificationBell = ({
   // Socket connection
   useEffect(() => {
     if (!userLoading && user?._id) {
-      // Connect socket when we have a user
       socket.connect();
 
       socket.on("connect", () => {
@@ -78,7 +78,6 @@ const NotificationBell = ({
         console.log("Room joined confirmation:", data);
       });
 
-      // Clean up function
       return () => {
         console.log("Cleaning up socket connection");
         socket.off("connect");
@@ -123,6 +122,7 @@ const NotificationBell = ({
     const iconMap = {
       Service: { icon: Wrench, color: "text-blue-500" },
       Item: { icon: Package, color: "text-amber-500" },
+      Furniture: { icon: Package, color: "text-orange-500" },
       Documents: { icon: FileText, color: "text-green-500" },
       Events: { icon: Calendar, color: "text-purple-500" },
     };
@@ -130,36 +130,58 @@ const NotificationBell = ({
   };
 
   // Mark notification as read
-  const markAsRead = async (notificationId, currentStatus) => {
-    if (currentStatus) return; // Already seen
+  const markAsRead = useCallback(
+    async (notificationId, currentStatus) => {
+      if (currentStatus) return;
 
-    try {
-      // TODO: Add API call to mark as read
-      // await customRequest({
-      //   path: `/api/notifications/${notificationId}/read`,
-      //   attributes: { method: "PATCH", credentials: "include" },
-      // });
-
-      // Refetch to update the list
-      refetch();
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
+      try {
+        const result = await customRequest({
+          path: "/api/notification/update",
+          attributes: {
+            method: "PUT",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({ user_id: user._id }),
+            credentials: "include",
+          },
+        });
+        if (!result.success) {
+          throw new Error();
+        }
+        refetch();
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    },
+    [refetch, user]
+  );
 
   // Delete notification
-  const deleteNotification = async (notificationId) => {
+  const deleteNotification = async () => {
     try {
-      await customRequest({
-        path: `/api/notifications?user_id=${notificationId}`,
+      const result = await customRequest({
+        path: "/api/notification/delete",
         attributes: {
           method: "DELETE",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: user._id }),
         },
       });
-
-      // Refetch to update the list
-      refetch();
+      if (result?.success) {
+        CustomToast({
+          description: "Notification has been deleted",
+          status: "success",
+        });
+        return refetch();
+      }
+      CustomToast({
+        description: "Failed to delete notification",
+        status: "error",
+      });
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
@@ -167,10 +189,16 @@ const NotificationBell = ({
 
   // Handle notification click
   const handleNotificationClick = (notification) => {
-    markAsRead(notification._id, notification.isSeen);
-    // Navigate to link if needed
-    // window.location.href = notification.link;
+    if (notification.link) {
+      window.location.href = notification.link;
+    }
   };
+
+  useEffect(() => {
+    if (!userLoading && user && isOpen) {
+      markAsRead();
+    }
+  }, [user, userLoading, markAsRead, isOpen]);
 
   return (
     <div className="relative">
@@ -216,7 +244,7 @@ const NotificationBell = ({
             <div
               className={`p-3 ${
                 isMobile ? "" : "p-4"
-              } border-b border-border bg-muted/30 flex justify-between items-center`}
+              } border-b border-border bg-muted flex justify-between items-center`}
             >
               <h3
                 className={`font-semibold ${
@@ -265,8 +293,8 @@ const NotificationBell = ({
                       className={`
                         ${
                           isMobile ? "p-2" : "p-4"
-                        } flex gap-2 hover:bg-muted/50 cursor-pointer border-b border-border transition-colors
-                        ${!notif.isSeen ? "bg-primary/5" : ""}
+                        } flex gap-2 hover:bg-muted cursor-pointer border-b border-border transition-colors
+                        ${!notif.isSeen ? "bg-primary/10" : "bg-background"}
                       `}
                     >
                       <div className="flex-shrink-0">
@@ -277,10 +305,10 @@ const NotificationBell = ({
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-1">
+                        <div className="flex justify-between items-start gap-2 mb-1">
                           <h4
                             className={`
-                              font-medium leading-tight pr-1
+                              font-medium leading-tight
                               ${isMobile ? "text-xs" : "text-sm"}
                               ${
                                 !notif.isSeen
@@ -305,15 +333,35 @@ const NotificationBell = ({
                             />
                           </button>
                         </div>
-                        <span
+                        <p
                           className={`${
-                            isMobile ? "text-[9px]" : "text-[11px]"
-                          } text-muted-foreground block mt-0.5`}
+                            isMobile ? "text-[10px]" : "text-xs"
+                          } text-muted-foreground mb-1`}
                         >
-                          {formatDistanceToNow(new Date(notif.createdAt), {
-                            addSuffix: true,
-                          })}
-                        </span>
+                          {notif.details}
+                        </p>
+                        <div className="flex justify-between items-center">
+                          <span
+                            className={`${
+                              isMobile ? "text-[9px]" : "text-[11px]"
+                            } text-muted-foreground`}
+                          >
+                            {formatDistanceToNow(new Date(notif.createdAt), {
+                              addSuffix: true,
+                            })}
+                          </span>
+                          <span
+                            className={`${
+                              isMobile ? "text-[9px]" : "text-xs"
+                            } px-2 py-0.5 rounded-full ${
+                              !notif.isSeen
+                                ? "bg-primary/20 text-primary"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {notif?.category ?? "No category"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );

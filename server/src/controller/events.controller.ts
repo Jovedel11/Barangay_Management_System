@@ -1,11 +1,18 @@
+import ProccessNotif from "@/lib/process.notif";
 import { BrgyEvent } from "@/models/brgy.events";
 import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 
+type Create = {
+  model: Model<any>;
+  sendNotif?: boolean;
+};
+
 const createEvents = ({
   model: CollectionModel,
-}: Record<string, Model<any>>) => {
+  sendNotif = false,
+}: Create) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
@@ -15,6 +22,17 @@ const createEvents = ({
       const data = matchedData(req);
       const event = await CollectionModel.create({ ...data });
       event.save();
+      console.log("Dataaaaaa ", data);
+      if (sendNotif) {
+        const result = await ProccessNotif({
+          resident_id: data.user,
+          data_name: data.eventTitle,
+          data_category: data.category,
+          details: "has booked an event service",
+          link: "/admin/manage-events",
+        });
+        if (!result?.success) throw new Error("Error in processing notif");
+      }
       return res.status(201).json({
         message: "Event successfully created",
       });

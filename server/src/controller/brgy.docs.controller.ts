@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
+import ProccessNotif from "@/lib/process.notif";
 
 // Send docs request (resident)
 const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,6 +16,15 @@ const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
     }
     const data = matchedData(req);
     const docs = await DocsModel.create({ ...data }); // Requires user ID to reference the account collection
+    docs.save();
+    const result = await ProccessNotif({
+      resident_id: data.user,
+      data_name: data.name,
+      data_category: data.category,
+      details: "has requested a documents",
+      link: "/admin/manage-documents",
+    });
+    if (!result?.success) throw new Error("Error in processing notif");
     console.log(data);
     return res
       .status(201)

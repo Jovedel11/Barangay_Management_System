@@ -99,6 +99,7 @@ const updateEventRequestValidation = [
 ];
 
 const createEventRequestValidation = [
+  body("user").isMongoId().notEmpty().withMessage("User ID is required"),
   body("eventTitle")
     .exists()
     .withMessage("Event title is required")

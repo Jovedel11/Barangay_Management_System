@@ -9,13 +9,15 @@ const AuthProvider = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const RolePath = useMemo(
+
+  const publicRoutes = useMemo(() => ["/login", "/signup"], []);
+
+  const roleBasePaths = useMemo(
     () => ({
-      resident: () => navigate("/resident/dashboard"),
-      admin: () => navigate("/admin/dashboard"),
-      default: () => navigate("/login"),
+      resident: "/resident",
+      admin: "/admin",
     }),
-    [navigate]
+    []
   );
 
   const { data, isLoading, refetch } = useQuery({
@@ -29,19 +31,51 @@ const AuthProvider = ({ children }) => {
         },
       }),
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
   useEffect(() => {
-    if (!isLoading && data?.response?.user) {
-      if (user) return;
-      const currentUser = data.response.user;
-      setUser(currentUser);
+    if (isLoading) return;
 
-      if (currentUser?.role && !location.pathname.includes("signup")) {
-        return RolePath[currentUser.role ?? "default"]();
+    const currentPath = location.pathname;
+    const currentUser = data?.response?.user;
+    if (currentUser && !user) {
+      setUser(currentUser);
+    } else if (!currentUser && user) {
+      setUser(null);
+    }
+    if (!currentUser) {
+      if (
+        !publicRoutes.includes(currentPath) &&
+        !currentPath.includes("/signup")
+      ) {
+        navigate("/login", { replace: true });
+      }
+    } else {
+      const userRole = currentUser.role;
+      const userBasePath = roleBasePaths[userRole];
+      if (publicRoutes.includes(currentPath)) {
+        navigate(`${userBasePath}/dashboard`, { replace: true });
+        return;
+      }
+      if (userRole === "admin" && currentPath.startsWith("/resident")) {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (userRole === "resident" && currentPath.startsWith("/admin")) {
+        navigate("/resident/dashboard", { replace: true });
+      }
+      if (currentPath === "/" || currentPath === "") {
+        navigate(`${userBasePath}/dashboard`, { replace: true });
       }
     }
-  }, [data, isLoading, RolePath, location, user]);
+  }, [
+    data,
+    isLoading,
+    location.pathname,
+    navigate,
+    publicRoutes,
+    roleBasePaths,
+    user,
+  ]);
 
   return (
     <AuthContext.Provider value={{ user, refetch, isLoading }}>

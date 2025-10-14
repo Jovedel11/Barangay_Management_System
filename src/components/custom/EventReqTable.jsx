@@ -1,4 +1,4 @@
-import { Eye, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { Eye, MoreHorizontal, Trash2, Edit, User, Phone, Calendar, Tag, Clock, FileText } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,14 +18,14 @@ import {
 } from "@/core/components/ui/dropdown-menu";
 import { Button } from "@/core/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetClose,
+} from "@/core/components/ui/sheet";
 import { useState } from "react";
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "./CustomToast";
@@ -33,31 +33,31 @@ import ProcessBookingDialog from "@/components/custom/ProcessBooking";
 
 export default function EventParticipantTable({ participants = [], refetch }) {
   const [selectedParticipant, setSelectedParticipant] = useState(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
   const [isProcessOpen, setIsProcessOpen] = useState(false);
   const [processParticipant, setProcessParticipant] = useState(null);
 
   const handleViewDetails = (participant) => {
     setSelectedParticipant(participant);
-    setIsViewDialogOpen(true);
+    setIsViewSheetOpen(true);
   };
 
   const getStatusBadgeStyle = (status) => {
     const styles = {
-      pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-      completed: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
-      cancelled: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+      pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+      completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+      cancelled: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
     };
-    return styles[status] || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300";
+    return styles[status] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700";
   };
 
   const getPaymentBadgeStyle = (paymentStatus) => {
     const styles = {
-      paid: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
-      refunded: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-      "not paid": "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+      paid: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+      refunded: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+      "not paid": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800",
     };
-    return styles[paymentStatus] || "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300";
+    return styles[paymentStatus] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700";
   };
 
   const handleProcess = (participant) => {
@@ -121,6 +121,18 @@ export default function EventParticipantTable({ participants = [], refetch }) {
   const onProcessChange = () => {
     setIsProcessOpen((prevstate) => !prevstate);
   };
+
+  const InfoRow = ({ label, value, fullWidth = false, icon: Icon }) => (
+    <div className={`flex flex-col gap-y-1 ${fullWidth ? "col-span-2" : ""}`}>
+      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+        {Icon && <Icon className="w-3 h-3" />}
+        {label}
+      </span>
+      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+        {value || "N/A"}
+      </span>
+    </div>
+  );
 
   return (
     <>
@@ -220,7 +232,7 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                             <Edit className="mr-2 h-4 w-4" />
                             {participant.paymentStatus === "not paid"
                               ? "Process Booking"
-                              : "Edit Booking"}
+                              : "Update Booking"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -241,150 +253,124 @@ export default function EventParticipantTable({ participants = [], refetch }) {
         </div>
       </div>
 
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
-          <DialogHeader className="space-y-3 pb-6 border-b dark:border-slate-800">
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+      <Sheet open={isViewSheetOpen} onOpenChange={setIsViewSheetOpen}>
+        <SheetContent className="w-full md:max-w-[25rem] gap-y-0 overflow-y-auto font-inter dark:bg-slate-900 flex flex-col border-l border-slate-200 dark:border-slate-700">
+          <SheetHeader className="text-left">
+            <SheetTitle className="font-inter text-xl">
               Participant Details
-            </DialogTitle>
-            <DialogDescription className="text-slate-600 dark:text-slate-400">
-              View complete information about this participant
-            </DialogDescription>
-          </DialogHeader>
+            </SheetTitle>
+            <SheetDescription className="text-sm">
+              View complete participant information
+            </SheetDescription>
+          </SheetHeader>
 
           {selectedParticipant && (
-            <div className="space-y-6 py-6">
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Personal Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Participant Name
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedParticipant?.teamMemberParticipant}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Contact Number
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedParticipant?.contactNumber}
-                    </p>
-                  </div>
-                </div>
+            <div className="w-full flex flex-col gap-y-6 px-4">
+              {/* Status Badges */}
+              <div className="flex gap-x-2 flex-wrap">
+                <Badge className={getStatusBadgeStyle(selectedParticipant.status)}>
+                  {selectedParticipant.status}
+                </Badge>
+                {selectedParticipant.payment && (
+                  <Badge className={getPaymentBadgeStyle(selectedParticipant.paymentStatus)}>
+                    {selectedParticipant.paymentStatus}
+                  </Badge>
+                )}
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Event Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Event Title
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedParticipant?.eventTitle}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Date of Event
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {formatDate(selectedParticipant?.dateOfEvent)}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Category
-                    </h4>
-                    <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedParticipant?.category}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Status
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(selectedParticipant.status)}`}>
-                        {selectedParticipant.status}
-                      </span>
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getPaymentBadgeStyle(selectedParticipant.paymentStatus)}`}>
-                        {selectedParticipant.paymentStatus}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              {/* Personal Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Participant Name"
+                  value={selectedParticipant?.teamMemberParticipant}
+                  icon={User}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Contact Number"
+                  value={selectedParticipant?.contactNumber}
+                  icon={Phone}
+                  fullWidth
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Additional Details
-                </h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Special Requirements
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {selectedParticipant?.specialRequirements || "None"}
-                    </p>
-                  </div>
-
-                  {(selectedParticipant?.paymentStatus === "paid" ||
-                    selectedParticipant?.paymentStatus === "refunded") &&
-                    selectedParticipant?.processingNotes && (
-                      <div className="space-y-2 pt-4 border-t dark:border-slate-700">
-                        <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                          Processing Notes
-                        </h4>
-                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                          {selectedParticipant?.processingNotes}
-                        </p>
-                      </div>
-                    )}
-                </div>
+              {/* Event Information */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Event Title"
+                  value={selectedParticipant?.eventTitle}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Date of Event"
+                  value={formatDate(selectedParticipant?.dateOfEvent)}
+                  icon={Calendar}
+                />
+                <InfoRow
+                  label="Category"
+                  value={selectedParticipant?.category}
+                  icon={Tag}
+                />
               </div>
 
-              <div className="bg-white dark:bg-slate-800/50 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                  Timeline
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Created At
-                    </h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDateTime(selectedParticipant?.createdAt)}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase">
-                      Last Updated
-                    </h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDateTime(selectedParticipant?.updatedAt)}
-                    </p>
-                  </div>
+              {/* Special Requirements */}
+              {selectedParticipant?.specialRequirements && (
+                <div className="flex flex-col gap-y-1">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+                    <FileText className="w-3 h-3" />
+                    Special Requirements
+                  </span>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    {selectedParticipant?.specialRequirements}
+                  </p>
                 </div>
+              )}
+
+              {/* Processing Notes */}
+              {(selectedParticipant?.paymentStatus === "paid" ||
+                selectedParticipant?.paymentStatus === "refunded") &&
+                selectedParticipant?.processingNotes && (
+                  <div className="flex flex-col gap-y-1">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+                      <FileText className="w-3 h-3" />
+                      Processing Notes
+                    </span>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                      {selectedParticipant?.processingNotes}
+                    </p>
+                  </div>
+                )}
+
+              {/* Timeline */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <InfoRow
+                  label="Created At"
+                  value={formatDateTime(selectedParticipant?.createdAt)}
+                  icon={Clock}
+                  fullWidth
+                />
+                <InfoRow
+                  label="Last Updated"
+                  value={formatDateTime(selectedParticipant?.updatedAt)}
+                  icon={Clock}
+                  fullWidth
+                />
               </div>
             </div>
           )}
 
-          <DialogFooter className="border-t dark:border-slate-800 pt-6">
-            <DialogClose asChild>
-              <Button variant="outline" className="px-6">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <SheetFooter className="flex flex-row justify-end gap-x-2">
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                className="border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
+              >
+                Close
+              </Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

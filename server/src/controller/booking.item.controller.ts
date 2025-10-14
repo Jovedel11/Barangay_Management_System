@@ -6,9 +6,7 @@ import {
 } from "@/models/borrow.items";
 import FilterCollection from "@/lib/search.data";
 import type { Model } from "mongoose";
-import NotifModel from "@/models/notification";
-import { sendNotification } from "@/config/socket.connection";
-import { io } from "@/App";
+import ProccessNotif from "@/lib/process.notif";
 
 // For Resident for passing booking form
 const bookItem = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,20 +18,14 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     const bookItem = await BorrowRequestModel.create({ ...item }); //for admin (book item)
     bookItem.save();
-    const targetUserId = "68de36fc114288009c8ead8e"; // Your test user ID
-    const notif = await NotifModel.create({
-      user: targetUserId,
-      title: item.name,
-      category: item.category,
-      link: "/resident/manage-borrow-items",
+    const result = await ProccessNotif({
+      resident_id: item.user,
+      data_name: item.name,
+      data_category: item.category,
+      details: "has requested an item",
+      link: "/admin/manage-items",
     });
-    await notif.save();
-
-    console.log(
-      "Notification saved to database, sending socket notification..."
-    );
-    sendNotification(io, targetUserId, true);
-    console.log("Socket notification sent");
+    if (!result?.success) throw new Error("Error in processing notif");
     return res.status(201).json({ message: "Item booked successfully!" });
   } catch (error) {
     console.log(error);
