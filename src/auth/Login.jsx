@@ -75,8 +75,8 @@ const Login = () => {
 
     const result = await login(email, password);
     const status = result.status?.toLowerCase();
-    if (!result.success && status === "rejected") {
-      console.log("Rejected executes");
+    if (status === "rejected") {
+      alert("Rejected");
       return {
         success: false,
         error: "REJECTED",
@@ -84,8 +84,8 @@ const Login = () => {
         nextStep: null,
       };
     }
-    if (!result.success && status === "pending") {
-      console.log("Pending executes");
+    if (status === "pending") {
+      alert("Pending");
       return {
         success: false,
         error: "PENDING",
