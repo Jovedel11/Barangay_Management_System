@@ -25,7 +25,8 @@ import { useAuth } from "@/hooks/useAuthProvider";
 import customRequest from "@/services/customRequest";
 import { useNavigate } from "react-router-dom";
 
-export function NavUser({ user, className }) {
+export function NavUser({ className }) {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { refetch } = useAuth();
   const { isMobile } = useSidebar();
@@ -62,7 +63,10 @@ export function NavUser({ user, className }) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0"
             >
               <Avatar className="h-8 w-8 rounded-lg border border-border bg-muted">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage
+                  src={`https://api.dicebear.com/9.x/initials/svg?seed=${user?.first_name} ${user?.last_name}`}
+                  alt={user?.first_name}
+                />
                 <AvatarFallback className="rounded-lg bg-muted text-muted-foreground">
                   CN
                 </AvatarFallback>
@@ -74,30 +78,34 @@ export function NavUser({ user, className }) {
                 )}
               >
                 <span className="truncate font-medium">
-                  {user?.first_name} {user?.last_name}
+                  {" "}
+                  {`${user?.first_name} ${user?.last_name}`}
                 </span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) max-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg grayscale">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage
+                    src={`https://api.dicebear.com/9.x/initials/svg?seed=${user?.first_name} ${user?.last_name}`}
+                    alt={user?.first_name}
+                  />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
+                    {`${user?.first_name} ${user?.last_name}`}
                   </span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

@@ -111,4 +111,5 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+
 export { register, login, authSender, logout, verifyOtp };

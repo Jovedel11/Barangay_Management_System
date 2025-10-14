@@ -12,8 +12,9 @@ import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
 import { BrgyResident } from "@/models/brgy.resident";
 import { AccountModel } from "@/models/user.model";
-import { deleteResidents } from "@/controller/resident.controller";
+import { deleteResidents, getProfile } from "@/controller/resident.controller";
 import { updateAccountValidation } from "@/middleware/account.update.middleware";
+import { query } from "express-validator";
 const router = Router();
 
 const retrieveSystemResident = createSearchController(BrgyResident, [
@@ -33,6 +34,11 @@ const retrieveSystemResident = createSearchController(BrgyResident, [
 
 const retrieveSystemUser = createSearchController(AccountModel, ["role"]);
 
+router.get(
+  "/profile",
+  query("user_id").isMongoId().withMessage("Invalid user ID"),
+  getProfile
+);
 router.get(
   "/system-resident/retrieve",
   searchItemValidation,
