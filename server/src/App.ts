@@ -20,6 +20,8 @@ import http from "http";
 import { Server } from "socket.io";
 import { socketHandler } from "./config/socket.connection";
 import notifRouter from "./routers/notif.router";
+import path from "path";
+import type { Request, Response } from "express";
 
 const app = express();
 const server = http.createServer(app);
@@ -33,7 +35,7 @@ const io = new Server(server, {
 socketHandler(io);
 
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(morgan(isDeployed ? "combined" : "dev"));
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -67,6 +69,11 @@ app.use("/api/brgy-events", brgyEventRouter);
 app.use("/api/brgy-residents", brgyResidentsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/notification", notifRouter);
+const distPath = path.join(__dirname, "../../dist");
+app.use(express.static(distPath));
+app.get("/*splat", (_req: Request, res: Response) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 
 app.use(errorHandler);
 

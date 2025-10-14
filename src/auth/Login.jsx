@@ -318,13 +318,6 @@ const Login = () => {
 
                   {/* Footer Links */}
                   <div className="space-y-3 text-center">
-                    <Link
-                      to="/forgot-password"
-                      className="block text-primary hover:text-primary/80 text-sm font-medium transition-colors"
-                    >
-                      Forgot your password?
-                    </Link>
-
                     <p className="text-sm text-slate-600">
                       Don't have an account?{" "}
                       <Link
