@@ -45,7 +45,7 @@ const getNotif = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteNotif = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log(req.body);
+    console.log("Notif ID", req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log(errors);

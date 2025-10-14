@@ -4,6 +4,13 @@ import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 import ProccessNotif from "@/lib/process.notif";
 
+type Update = {
+  model: Model<any>;
+  sendNotif?: boolean;
+  detailsToSend?: string;
+  linkToSend?: string;
+};
+
 // Send docs request (resident)
 const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -76,7 +83,12 @@ const deleteDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
 };
 
 // Updating Docs (reusable)
-const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
+const updateDocs = ({
+  model: CollectionModel,
+  sendNotif = false,
+  detailsToSend = "has processed your document",
+  linkToSend,
+}: Update) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       console.log("Request Body: ", req.body);
@@ -109,7 +121,18 @@ const updateDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
           .status(400)
           .json({ success: false, message: "No changes made to the document" });
       }
-
+      if (sendNotif && linkToSend) {
+        const data = await CollectionModel.findById(docs_id);
+        const result = await ProccessNotif({
+          resident_id: data.user,
+          data_name: data.name,
+          data_category: data.category,
+          details: detailsToSend,
+          link: linkToSend,
+          sendToResident: true,
+        });
+        if (!result?.success) throw new Error("Error in processing notif");
+      }
       return res.status(200).json({
         success: true,
         message: "Document successfully updated",

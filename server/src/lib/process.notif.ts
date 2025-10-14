@@ -10,6 +10,7 @@ type Process = {
   data_category: string;
   details: string;
   link: string;
+  sendToResident?: boolean;
 };
 
 const ProccessNotif = async ({
@@ -18,26 +19,30 @@ const ProccessNotif = async ({
   data_category,
   details,
   link,
+  sendToResident = false,
 }: Process): Promise<{ success: boolean }> => {
   try {
-    const admin = await AccountModel.findOne({ role: "admin" }).select("_id");
+    const admin = await AccountModel.findOne({ role: "admin" });
     const resident = await AccountModel.findOne(
       { _id: resident_id },
       { first_name: 1, last_name: 1 }
     );
     if (!admin || !resident) throw new Error("No admin and User found");
     const notifDocs = {
-      user: admin._id,
+      user: sendToResident ? resident_id : admin._id,
       title: data_name,
       category: data_category,
-      details: `${resident.first_name} ${resident.last_name} ${details}`,
+      details: sendToResident
+        ? `Admin ${details}`
+        : `${resident.first_name} ${resident.last_name} ${details}`,
       link: link,
     };
     await NotifModel.insertMany(notifDocs);
     console.log(
       "Notification saved to database, sending socket notification..."
     );
-    sendNotification(io, (admin._id as string).toString(), true);
+    const room = sendToResident ? resident_id : (admin._id as string);
+    sendNotification(io, room.toString(), true);
     console.log("Socket notification sent");
     return { success: true };
   } catch (error) {

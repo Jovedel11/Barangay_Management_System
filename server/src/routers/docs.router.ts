@@ -53,7 +53,12 @@ router.put(
 router.put(
   "/update/request",
   updateDocsValidation,
-  updateDocs({ model: DocsModel })
+  updateDocs({
+    model: DocsModel,
+    sendNotif: true,
+    detailsToSend: "has processed your documents",
+    linkToSend: "/resident/barangay-documents",
+  })
 ); // Update request docs (resident)
 router.delete(
   "/delete/available",

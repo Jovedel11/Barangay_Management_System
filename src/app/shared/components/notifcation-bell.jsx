@@ -158,7 +158,7 @@ const NotificationBell = ({
   );
 
   // Delete notification
-  const deleteNotification = async () => {
+  const deleteNotification = async (notif_id) => {
     try {
       const result = await customRequest({
         path: "/api/notification/delete",
@@ -168,7 +168,7 @@ const NotificationBell = ({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ user_id: user._id }),
+          body: JSON.stringify({ notif_id }),
         },
       });
       if (result?.success) {

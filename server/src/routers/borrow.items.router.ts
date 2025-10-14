@@ -61,7 +61,12 @@ router.put(
 router.put(
   "/update/item-request",
   updateBorrowRequestValidation,
-  updateDocs({ model: BorrowRequestModel })
+  updateDocs({
+    model: BorrowRequestModel,
+    sendNotif: true,
+    detailsToSend: "has processed your item",
+    linkToSend: "/resident/manage-borrow-items",
+  })
 );
 router.delete("/delete", deleteItemValidation, deleteItem); // Delete (reusable)
 router.post("/request/insert", itemBorrowValidation, bookItem); // Insert for booking request

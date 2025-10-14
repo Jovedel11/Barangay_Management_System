@@ -13,11 +13,15 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   specificDetails: T;
   isPregnant: boolean;
   status?: string;
+  category: string;
+  name: string;
 };
 
 const docsSchema = new Schema<DocumentRequest<string>>({
   user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   purpose: { type: String, required: true },
+  name: { type: String, required: true },
+  category: { type: String, required: true },
   quantity: { type: Number, required: true },
   urgentRequest: { type: Boolean, required: true },
   deliveryMethod: { type: String, required: true },

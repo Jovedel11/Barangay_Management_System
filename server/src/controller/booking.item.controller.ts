@@ -13,6 +13,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(errors)
       throw new Error("Book item: Invalid fields");
     }
     const item = matchedData(req);
