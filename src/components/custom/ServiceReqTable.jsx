@@ -119,7 +119,7 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
               <TableRow>
                 <TableHead>Resident</TableHead>
                 <TableHead>Service</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Progress</TableHead>
                 <TableHead>Date & Time</TableHead>
                 <TableHead>Details</TableHead>
                 <TableHead className="text-center">Action</TableHead>

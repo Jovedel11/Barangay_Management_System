@@ -151,7 +151,7 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Event Details</TableHead>
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Category</TableHead>
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Contact</TableHead>
-                <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Status</TableHead>
+                <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Progress</TableHead>
                 <TableHead className="text-center font-semibold text-slate-900 dark:text-slate-100">Action</TableHead>
               </TableRow>
             </TableHeader>

@@ -5,6 +5,7 @@ import {
   MoreHorizontal,
   Trash2,
   AlertCircle,
+  Check,
 } from "lucide-react";
 import {
   Table,
@@ -138,20 +139,19 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
   });
 
   const handleProcessBooking = useCallback(
-    async (booking) => {
+    async (booking, status) => {
       try {
-        const currentDate = new Date();
-        const returnDate = new Date(booking.returnDate);
-
-        let newStatus;
+        /*let newStatus;
         if (booking.status === "pending") {
           newStatus = "approved";
+        } else if (booking.status === "returned") {
+          console.log("Booking : ", booking);
+          newStatus = "returned";
         } else if (booking.status === "approved" && currentDate > returnDate) {
           newStatus = "overdue";
         } else {
           newStatus = "pending";
-        }
-
+        }*/
         updateMutation.mutate({
           path: "/api/borrow-item/update/item-request",
           attributes: {
@@ -161,7 +161,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
             },
             body: JSON.stringify({
               docs_id: booking._id,
-              status: newStatus,
+              status,
               main_item: booking.main_item,
               quantity: booking.quantity,
             }),
@@ -235,7 +235,14 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusInfo?.label?.toLowerCase()}>
+                        <Badge
+                          variant={
+                            booking.status === "approved" &&
+                            new Date() > new Date(booking.returnDate)
+                              ? "overdue"
+                              : statusInfo?.label?.toLowerCase()
+                          }
+                        >
                           {statusInfo.label}
                         </Badge>
                       </TableCell>
@@ -268,21 +275,36 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            {booking.status !== "completed" && (
+                            {booking.status !== "approved" && (
                               <DropdownMenuItem
-                                onClick={() => handleProcessBooking(booking)}
+                                onClick={() =>
+                                  handleProcessBooking(booking, "approved")
+                                }
                               >
-                                {booking.status === "pending" ? (
-                                  <Fragment>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Approve Booking
-                                  </Fragment>
-                                ) : (
-                                  <Fragment>
-                                    <Loader className="mr-2 h-4 w-4" />
-                                    Set to Pending
-                                  </Fragment>
-                                )}
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Approve Booking
+                              </DropdownMenuItem>
+                            )}
+                            {booking.status !== "pending" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleProcessBooking(booking, "pending")
+                                }
+                              >
+                                <Loader className="mr-2 h-4 w-4" />
+                                Set to Pending
+                              </DropdownMenuItem>
+                            )}
+                            {booking.status !== "returned" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleProcessBooking(booking, "returned")
+                                }
+                              >
+                                <Fragment>
+                                  <Check className="mr-2 h-4 w-4" />
+                                  Mark as Returned
+                                </Fragment>
                               </DropdownMenuItem>
                             )}
                             {booking.status === "completed" && (

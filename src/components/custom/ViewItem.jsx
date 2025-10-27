@@ -109,7 +109,6 @@ const ViewItemDialog = ({ children, open, handleOpenChange, data }) => {
             <InfoRow label="Total" value={data.total} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InfoRow label="Borrowing Fee" value={data.borrowingFee} />
             <InfoRow
               label="Max Borrow Days"
               value={`${data.maxBorrowDays} days`}

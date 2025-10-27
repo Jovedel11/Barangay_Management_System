@@ -138,11 +138,6 @@ const borrowableItemValidation = [
     .withMessage("Condition is required.")
     .notEmpty()
     .withMessage("Condition cannot be empty."),
-  body("borrowingFee")
-    .exists()
-    .withMessage("Borrowing fee is required.")
-    .notEmpty()
-    .withMessage("Borrowing fee cannot be empty."),
   body("maxBorrowDays")
     .exists()
     .withMessage("Max borrow days is required.")
@@ -228,10 +223,6 @@ const updateItemValidation = [
     .optional()
     .isString()
     .withMessage("Condition must be a string"),
-  body("borrowingFee")
-    .optional()
-    .isString()
-    .withMessage("Borrowing fee must be a string"),
   body("maxBorrowDays")
     .optional()
     .isInt({ gt: 0 })
@@ -252,7 +243,7 @@ const updateItemValidation = [
         return true;
       }
       if (typeof value === "string") {
-        const allowed = ["pending", "processing", "completed", "rejected"];
+        const allowed = ["pending", "processing", "completed", "rejected", "returned"];
         if (allowed.includes(value.toLowerCase())) {
           return true;
         }
@@ -269,7 +260,6 @@ const updateItemValidation = [
       "available",
       "total",
       "condition",
-      "borrowingFee",
       "maxBorrowDays",
       "deliveryAvailable",
       "requirements",
