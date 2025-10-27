@@ -172,7 +172,7 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                       <div className="flex flex-col gap-1">
                         <span className="font-medium text-slate-900 dark:text-slate-100">
                           {participant?.teamMemberParticipant}
-                        </span>
+                        </span> 
                         <span className="text-xs text-slate-500 dark:text-slate-400">
                           {participant?.specialRequirements ||
                             "No special requirements"}
