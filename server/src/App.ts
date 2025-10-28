@@ -83,7 +83,7 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/notification", notifRouter);
 
 // Static files
-const distPath = path.join(__dirname, "../../dist");
+const distPath = path.join(__dirname, "../../dist");   
 app.use(express.static(distPath));
 
 // SPA catch-all - FIXED: changed from /*splat to *

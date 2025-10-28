@@ -215,7 +215,7 @@ const AddEvent = ({
       if (!isValidPhone)
         return CustomToast({
           description: "Invalid format of Phone Number",
-          status: "error"
+          status: "error",
         });
       const payload = {
         ...info,
@@ -418,13 +418,13 @@ const AddEvent = ({
           </div>
 
           <div className="w-full flex flex-col gap-y-1">
-            <span className="text-sm font-medium">Status</span>
+            <span className="text-sm font-medium">Progress</span>
             <Select
               value={info.status}
               onValueChange={(value) => handleSelectChange("status", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder="Select Progress" />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((status) => (

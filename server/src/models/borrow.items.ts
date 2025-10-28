@@ -22,7 +22,6 @@ type IBorrowableItem<T extends string> = {
   available: number;
   total: number;
   condition: T;
-  borrowingFee: T;
   maxBorrowDays: number;
   deliveryAvailable: boolean;
   requirements: T;
@@ -58,7 +57,6 @@ const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
   available: { type: Number, required: true },
   total: { type: Number, required: true },
   condition: { type: String, required: true },
-  borrowingFee: { type: String, required: true },
   maxBorrowDays: { type: Number, required: true },
   deliveryAvailable: { type: Boolean, required: true },
   requirements: { type: String, required: true },

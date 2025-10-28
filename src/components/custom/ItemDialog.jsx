@@ -40,7 +40,6 @@ const ItemDialog = ({
     available: data?.available ?? "",
     total: data?.total ?? "",
     condition: data?.condition ?? "",
-    borrowingFee: data?.borrowingFee ?? "",
     maxBorrowDays: data?.maxBorrowDays ?? "",
     deliveryAvailable: data?.deliveryAvailable ?? false,
     status: data?.status ?? false,
@@ -66,7 +65,6 @@ const ItemDialog = ({
         !info.available.toString().trim() ||
         !info.total.toString().trim() ||
         !info.condition.trim() ||
-        !info.borrowingFee.trim() ||
         !info.maxBorrowDays.toString().trim() ||
         !info.requirements.trim() ||
         !info.notes.trim());
@@ -80,7 +78,6 @@ const ItemDialog = ({
       data?.available === info.available &&
       data?.total === info.total &&
       data?.condition === info.condition &&
-      data?.borrowingFee === info.borrowingFee &&
       data?.maxBorrowDays === info.maxBorrowDays &&
       data?.deliveryAvailable === info.deliveryAvailable &&
       data?.status === info.status &&
@@ -124,7 +121,6 @@ const ItemDialog = ({
         available: data.available ?? "",
         total: data.total ?? "",
         condition: data.condition ?? "",
-        borrowingFee: data.borrowingFee ?? "",
         maxBorrowDays: data.maxBorrowDays ?? "",
         deliveryAvailable: data.deliveryAvailable ?? false,
         status: data.status ?? false,
@@ -169,7 +165,9 @@ const ItemDialog = ({
     setIsLoading(true);
     try {
       submitMutation.mutate({
-        path: isEdit ? "/api/borrow-item/update/available" : "/api/borrow-item/available/insert",
+        path: isEdit
+          ? "/api/borrow-item/update/available"
+          : "/api/borrow-item/available/insert",
         attributes: {
           method: isEdit ? "PUT" : "POST",
           headers: {
@@ -291,15 +289,6 @@ const ItemDialog = ({
           </div>
 
           <div className="w-full flex gap-x-3">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">Borrowing Fee</span>
-              <Input
-                id="borrowingFee"
-                value={info.borrowingFee}
-                onChange={handleChange}
-                placeholder="e.g., 50 PHP/day"
-              />
-            </div>
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Max Borrow Days</span>
               <Input

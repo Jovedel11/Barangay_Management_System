@@ -116,7 +116,7 @@ export default function ProcessRequestDialog({
           {/* Status Selection */}
           <div className="space-y-2">
             <span className="text-sm font-medium">
-              Status <span className="text-destructive">*</span>
+              Action <span className="text-destructive">*</span>
             </span>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger id="status">

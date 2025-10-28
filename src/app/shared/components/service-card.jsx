@@ -212,7 +212,7 @@ const ServiceCard = ({ service, className = "", refetch }) => {
           </AddService>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="px-2 dark:border-slate-700">
+              <Button size="sm" variant="outline" className="px-2 dark:border-slate-700 ">
                 <MoreHorizontal className="h-3 w-3 " />
               </Button>
             </DropdownMenuTrigger>

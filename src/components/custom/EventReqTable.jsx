@@ -151,7 +151,7 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Event Details</TableHead>
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Category</TableHead>
                 <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Contact</TableHead>
-                <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Status</TableHead>
+                <TableHead className="font-semibold text-slate-900 dark:text-slate-100">Progress</TableHead>
                 <TableHead className="text-center font-semibold text-slate-900 dark:text-slate-100">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -172,7 +172,7 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                       <div className="flex flex-col gap-1">
                         <span className="font-medium text-slate-900 dark:text-slate-100">
                           {participant?.teamMemberParticipant}
-                        </span>
+                        </span> 
                         <span className="text-xs text-slate-500 dark:text-slate-400">
                           {participant?.specialRequirements ||
                             "No special requirements"}
