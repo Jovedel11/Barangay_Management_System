@@ -253,7 +253,7 @@ const processAccountValidation = [
     .isString()
     .isIn(["approved", "rejected"])
     .withMessage("Status must be either 'approved' or 'rejected'"),
-  body("docs_id")
+  body("user_id")
     .notEmpty()
     .withMessage("Account ID cannot be empty")
     .isMongoId()
