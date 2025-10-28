@@ -12,7 +12,11 @@ import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
 import { BrgyResident } from "@/models/brgy.resident";
 import { AccountModel } from "@/models/user.model";
-import { deleteResidents, getProfile } from "@/controller/resident.controller";
+import {
+  deleteResidents,
+  getProfile,
+  updateAccount,
+} from "@/controller/resident.controller";
 import { updateAccountValidation } from "@/middleware/account.update.middleware";
 import { query } from "express-validator";
 const router = Router();
@@ -61,7 +65,7 @@ router.put(
   "/update/system-user",
   processAccountValidation,
   handleValidationErrors,
-  updateDocs({ model: AccountModel })
+  updateAccount({ model: AccountModel })
 );
 router.post(
   "/insert/system-resident",

@@ -39,11 +39,7 @@ import { useAuth } from "@/hooks/useAuthProvider";
 const Login = () => {
   const { refetch } = useAuth();
   const navigate = useNavigate();
-  const {
-    login,
-    resendEmailConfirmation,
-    verifyTwoFactor,
-  } = {
+  const { login, resendEmailConfirmation, verifyTwoFactor } = {
     login: (email, password) => accLogin(email, password),
     resendEmailConfirmation: (email, password) => accLogin(email, password),
     verifyTwoFactor: (code) => sendOtp(code),
@@ -70,7 +66,7 @@ const Login = () => {
   // Login handler
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
     const email = formData.get("email");
     const password = formData.get("password");
@@ -100,14 +96,15 @@ const Login = () => {
     try {
       const result = await login(email, password);
       console.log("Login result:", result);
-      
+
       const status = result.status?.toLowerCase();
 
       if (!result.success && status === "rejected") {
         setLoginState({
           success: false,
           error: "REJECTED",
-          message: "Your account request has been declined by the administrator.",
+          message:
+            "Your account request has been declined by the administrator.",
           nextStep: null,
           canResendEmail: false,
           requires2FA: false,
@@ -120,7 +117,8 @@ const Login = () => {
         setLoginState({
           success: false,
           error: "PENDING",
-          message: "Your account is pending approval. You'll be able to access your account once an administrator approves your registration.",
+          message:
+            "Your account approval is pending. We will notify you by email once it has been processed and approved.",
           nextStep: null,
           canResendEmail: false,
           requires2FA: false,

@@ -36,6 +36,6 @@
     "files": true, //to recognize d.ts
     "require": ["tsconfig-paths/register"] //to understand path aliases
   },
-  "include": ["src", "types"], //Types must be included otherwise the global types inside the folder won't work
+  "include": ["src", "types", "../src/lib/send.email.ts"], //Types must be included otherwise the global types inside the folder won't work
   "exclude": ["node_modules", "dist"]
 }

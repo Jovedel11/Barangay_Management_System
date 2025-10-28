@@ -17,6 +17,7 @@ import {
 } from "@/core/components/ui/dropdown-menu";
 import { Button } from "@/core/components/ui/button";
 import { CustomToast } from "./CustomToast";
+import { SendEmail } from "@/lib/sendEmail";
 
 export default function AccountTable({ residents = [], refetch }) {
   const formatDate = (dateString) => {
@@ -38,12 +39,11 @@ export default function AccountTable({ residents = [], refetch }) {
         credentials: "include",
         body: JSON.stringify({
           status: action === "approve" ? "approved" : "rejected",
-          docs_id: user_id,
+          user_id,
         }),
       });
 
       const result = await response.json();
-
       if (!response.ok) {
         console.error("Error response:", result);
         return CustomToast({
@@ -51,7 +51,12 @@ export default function AccountTable({ residents = [], refetch }) {
           status: "error",
         });
       }
-
+      const { success } = await SendEmail({
+        status: result.status,
+        email: result.email,
+        full_name: result.full_name,
+      });
+      if (!success) throw new Error("Failed to send email");
       CustomToast({
         description: "Document updated successfully.",
         status: "success",
