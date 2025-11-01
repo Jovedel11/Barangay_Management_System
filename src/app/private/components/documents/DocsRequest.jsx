@@ -47,16 +47,14 @@ const DocsRequest = () => {
         return (
           <Badge className="bg-success/10 text-success border-success/30">
             <CheckCircle className="h-3 w-3 mr-1" />
-            {deliveryMethod === "pickup"
-              ? "Ready - Pay at Office"
-              : "Ready for Delivery"}
+            Ready for Pickup
           </Badge>
         );
-      case "processing":
+      case "delivered":
         return (
-          <Badge className="bg-primary/10 text-primary border-primary/30">
-            <Clock className="h-3 w-3 mr-1" />
-            Processing
+          <Badge className="bg-success/10 text-success border-success/30">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Delivered
           </Badge>
         );
       case "pending":
@@ -236,30 +234,6 @@ const DocsRequest = () => {
                           </p>
                         </div>
                       )}
-
-                    <div className="flex gap-2">
-                      {request.status === "completed" && (
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
-                        >
-                          <Wallet className="h-3 w-3 mr-1" />
-                          {request.deliveryMethod === "pickup"
-                            ? "Pay & Collect"
-                            : "Track Delivery"}
-                        </Button>
-                      )}
-                      {request.status === "processing" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          Track Status
-                        </Button>
-                      )}
-                    </div>
                   </div>
                 </div>
               ))

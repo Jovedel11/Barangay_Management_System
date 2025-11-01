@@ -113,7 +113,6 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
     async ({ docs_id, status }) => {
       console.log(docs_id, status);
       try {
-        const reqStatus = status === "pending" ? "completed" : "pending";
         updateMutation.mutate({
           path: "/api/brgy-docs/update/request",
           attributes: {
@@ -121,7 +120,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ docs_id, status: reqStatus }),
+            body: JSON.stringify({ docs_id, status }),
             credentials: "include",
           },
         });
@@ -143,8 +142,8 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 <TableHead>Purpose</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Delivery</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-42">Mode of Delivery</TableHead>
+                <TableHead>Request Status</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -174,11 +173,9 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span>{request.purpose}</span>
-                        <span className="text-sm text-zinc-400">
-                          {request?.status === "completed"
-                            ? "Ready for pickup"
-                            : "Pending"}
+                        <span>{request.name}</span>
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                          {request.purpose}
                         </span>
                       </div>
                     </TableCell>
@@ -186,14 +183,18 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       <span className="pl-5"> {request.quantity}</span>
                     </TableCell>
                     <TableCell>{request.contactNumber}</TableCell>
-                    <TableCell className="capitalize">
+                    <TableCell className="capitalize text-center w-42 md:pr-8">
                       {request.deliveryMethod}
                     </TableCell>
-                    <TableCell>
-                      {request.urgentRequest ? (
-                        <Badge variant="destructive">Urgent</Badge>
-                      ) : (
-                        <Badge variant="secondary">Normal</Badge>
+                    <TableCell className="pl-6">
+                      {request?.status === "completed" && (
+                        <Badge variant="destructive">Ready for pickup</Badge>
+                      )}
+                      {request?.status === "pending" && (
+                        <Badge variant="destructive">Pending</Badge>
+                      )}
+                      {request?.status === "delivered" && (
+                        <Badge variant="destructive">Delivered</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -203,7 +204,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-46">
+                        <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -212,26 +213,48 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             <Eye className="mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleUpdate({
-                                docs_id: request?._id,
-                                status: request?.status,
-                              })
-                            }
-                          >
-                            {request?.status !== "completed" ? (
-                              <Fragment>
+                          {request?.deliveryMethod === "pickup" &&
+                            request?.status === "pending" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUpdate({
+                                    docs_id: request?._id,
+                                    status: "completed",
+                                  })
+                                }
+                              >
                                 <CheckCircle className="mr-2" />
-                                Mark as Done
-                              </Fragment>
-                            ) : (
-                              <Fragment>
-                                <Loader className="mr-2" />
-                                Mark as Pending
-                              </Fragment>
+                                Mark as Ready for pickup
+                              </DropdownMenuItem>
                             )}
-                          </DropdownMenuItem>
+                          {request?.status !== "pending" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleUpdate({
+                                  docs_id: request?._id,
+                                  status: "pending",
+                                })
+                              }
+                            >
+                              <Loader className="mr-2" />
+                              Mark as Pending
+                            </DropdownMenuItem>
+                          )}
+                          {request?.deliveryMethod === "delivery" &&
+                            request?.status === "pending" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUpdate({
+                                    docs_id: request?._id,
+                                    status: request?.status,
+                                    isDelivered: "delivered",
+                                  })
+                                }
+                              >
+                                <CheckCircle className="mr-2" />
+                                Mark as Delivered
+                              </DropdownMenuItem>
+                            )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
@@ -328,34 +351,16 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       Progress Status
                     </h4>
                     <p className="text-base">
-                      {selectedRequest?.status || "No outgoing progress"}
+                      {selectedRequest?.status === "completed" && (
+                        <Badge variant="destructive">Ready for pickup</Badge>
+                      )}
+                      {selectedRequest?.status === "pending" && (
+                        <Badge variant="destructive">Pending</Badge>
+                      )}
+                      {selectedRequest?.status === "delivered" && (
+                        <Badge variant="destructive">Delivered</Badge>
+                      )}
                     </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Request Priority
-                    </h4>
-                    <div className="mt-1">
-                      {selectedRequest.urgentRequest ? (
-                        <Badge variant="destructive">Urgent</Badge>
-                      ) : (
-                        <Badge variant="secondary">Normal</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Pregnancy Status
-                    </h4>
-                    <div className="mt-1">
-                      {selectedRequest.isPregnant ? (
-                        <Badge variant="default">Pregnant</Badge>
-                      ) : (
-                        <Badge variant="outline">Not Pregnant</Badge>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>

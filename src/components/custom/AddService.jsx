@@ -318,9 +318,11 @@ const AddService = ({
               <span className="text-sm font-medium">Available Slots</span>
               <Input
                 id="slots"
+                type="number"
                 value={info.slots}
                 onChange={handleChange}
-                placeholder="e.g., 20"
+                placeholder="0"
+                min="0"
               />
             </div>
           </div>

@@ -125,8 +125,7 @@ const updateServiceValidation = [
     }),
   body("slots")
     .optional()
-    .isString()
-    .trim()
+    .isNumeric()
     .notEmpty()
     .withMessage("Slots cannot be empty"),
   body("contact")
@@ -253,7 +252,7 @@ const createServiceValidation = [
   body("slots")
     .exists()
     .withMessage("Slots are required")
-    .isString()
+    .isNumeric()
     .trim()
     .notEmpty()
     .withMessage("Slots cannot be empty"),

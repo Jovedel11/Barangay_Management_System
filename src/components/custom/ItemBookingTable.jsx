@@ -195,7 +195,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                 <TableHead>Item</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Dates</TableHead>
-                <TableHead>Delivery</TableHead>
+                <TableHead>Mode of Delivery</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -256,7 +256,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="capitalize">
+                      <TableCell className="capitalize pl-10">
                         {getDeliveryMethod(booking)}
                       </TableCell>
                       <TableCell className="text-center">

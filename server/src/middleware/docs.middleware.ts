@@ -173,6 +173,7 @@ const updateDocsValidation = [
           "completed",
           "rejected",
           "approved",
+          "delivered",
         ];
         if (allowed.includes(value.toLocaleLowerCase())) {
           console.log("Allowed");
