@@ -38,7 +38,7 @@ const ManageService = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [activeTab, debouncedSearchQuery, category, statusFilter],
+    queryKey: ["admin-service-available", activeTab, debouncedSearchQuery, category, statusFilter],
     queryFn: () =>
       customRequest({
         path: `/api/brgy-services/${activeTab}?search=${debouncedSearchQuery}&category=${category}${

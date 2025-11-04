@@ -13,6 +13,11 @@ const STATUS_ENUM: string[] = [
 ];
 
 export const serviceRequestValidation: ValidationChain[] = [
+  body("service_id")
+    .exists({ checkFalsy: true })
+    .withMessage("Service ID is required")
+    .isMongoId()
+    .withMessage("Service ID must be a valid MongoDB ObjectId"),
   body("user")
     .exists({ checkFalsy: true })
     .withMessage("User ID is required")

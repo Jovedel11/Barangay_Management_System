@@ -27,8 +27,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import customRequest from "@/services/customRequest";
-import { CustomToast } from "./CustomToast";
+//import customRequest from "@/services/customRequest";
+//import { CustomToast } from "./CustomToast";
 import ProcessRequestDialog from "./ProcessReq";
 
 export default function ServiceRequestTable({ requests = [], refetch }) {
@@ -44,10 +44,10 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
 
   const getStatusVariant = (status) => {
     const variants = {
-      confirmed: "default",
-      pending: "secondary",
-      completed: "default",
-      rescheduled: "destructive",
+      confirmed: "returned",
+      pending: "pending",
+      completed: "approved",
+      rescheduled: "rejected",
     };
     return variants[status] || "secondary";
   };
@@ -57,7 +57,7 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
     setIsProcessOpen(true);
   };
 
-  const handleDelete = async (requestId) => {
+  /*const handleDelete = async (requestId) => {
     try {
       if (!requestId) throw new Error();
       const result = await customRequest({
@@ -88,7 +88,7 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
         status: "error",
       });
     }
-  };
+  };*/
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -197,14 +197,14 @@ export default function ServiceRequestTable({ requests = [], refetch }) {
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Process Request
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
+                          {/*<DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
                             onClick={() => handleDelete(request?._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
-                          </DropdownMenuItem>
+                          </DropdownMenuItem>*/}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

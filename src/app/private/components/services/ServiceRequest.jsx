@@ -16,6 +16,7 @@ import {
   FileText,
   Tag,
   MessageSquare,
+  Check,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
@@ -129,8 +130,8 @@ const ServiceRequests = () => {
             <p className="text-center text-muted-foreground text-sm">
               Loading requests...
             </p>
-          ) : myRequests.length > 0 ? (
-            myRequests.map((request, index) => (
+          ) : myRequests?.length > 0 ? (
+            myRequests?.map((request, index) => (
               <div
                 key={index}
                 className="p-4 border border-border rounded-lg hover:shadow-sm transition-all duration-200 bg-background/50"
@@ -166,15 +167,18 @@ const ServiceRequests = () => {
                       </div>
                     )}
 
-                    {request?.specialNote && (
-                      <div className="p-3 bg-warning/5 border border-warning/10 rounded-lg mt-3">
-                        <p className="text-warning font-medium flex items-center gap-1 mb-1">
-                          <MessageSquare className="h-3 w-3" />
-                          Special Note:
-                        </p>
-                        <p className="text-warning/80">{request.specialNote}</p>
-                      </div>
-                    )}
+                    {request?.specialNote &&
+                      request?.status === "rescheduled" && (
+                        <div className="p-3 bg-warning/5 border border-warning/10 rounded-lg mt-3">
+                          <p className="text-warning font-medium flex items-center gap-1 mb-1">
+                            <MessageSquare className="h-3 w-3" />
+                            Special Note:
+                          </p>
+                          <p className="text-warning/80">
+                            {request.specialNote}
+                          </p>
+                        </div>
+                      )}
                   </div>
 
                   {/* Status Messages */}
@@ -218,29 +222,10 @@ const ServiceRequests = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 border-warning/30 text-warning hover:bg-warning/10"
+                        className="flex-1 border-warning/30 text-warning hover:bg-warning/10 shadow-none"
                       >
                         <Clock className="h-3 w-3 mr-1" />
                         Awaiting Review
-                      </Button>
-                    )}
-                    {request.status === "processing" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 border-primary/30 text-primary hover:bg-primary/10"
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Track Status
-                      </Button>
-                    )}
-                    {request.status === "completed" && (
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-success hover:bg-success/90 text-success-foreground"
-                      >
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        View Details
                       </Button>
                     )}
                   </div>

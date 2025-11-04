@@ -90,8 +90,10 @@ const ServiceCard = ({ selectedService }) => {
   const IconComponent = getCategoryIcon(selectedService.category);
   const isAvailable =
     selectedService.status === true || selectedService.status === "true";
+  const hasSlots = selectedService.slots > 0;
 
   const handleOpenRequest = () => setOpenRequest((state) => !state);
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200 bg-background/50">
       <CardHeader className="pb-3">
@@ -159,8 +161,16 @@ const ServiceCard = ({ selectedService }) => {
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-            <span className="text-gray-600 dark:text-gray-300">
-              {selectedService.slots} slots available
+            <span
+              className={
+                hasSlots
+                  ? "text-gray-600 dark:text-gray-300"
+                  : "text-red-600 dark:text-red-400 font-semibold"
+              }
+            >
+              {hasSlots
+                ? `${selectedService.slots} slots available`
+                : "No slots available"}
             </span>
           </div>
         </div>
@@ -196,8 +206,9 @@ const ServiceCard = ({ selectedService }) => {
           selectedService={selectedService}
         />
         <Button
-          className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleOpenRequest}
+          disabled={!hasSlots}
         >
           <Plus className="h-4 w-4 mr-2" />
           Book Service

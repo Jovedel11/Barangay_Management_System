@@ -22,7 +22,7 @@ const BarangayServices = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 800);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [debouncedSearchQuery, category],
+    queryKey: ["service-available", debouncedSearchQuery, category],
     queryFn: () =>
       customRequest({
         path: `/api/brgy-services/available/services?search=${debouncedSearchQuery}&category=${category}`,

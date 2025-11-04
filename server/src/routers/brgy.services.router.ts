@@ -9,6 +9,7 @@ import { BrgyService, ServiceRequest } from "@/models/brgy.services";
 import {
   createService,
   deleteService,
+  updateService,
 } from "@/controller/brgy.services.controller";
 import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
@@ -49,12 +50,7 @@ router.put(
 router.put(
   "/update/request",
   updateServiceValidation,
-  updateDocs({
-    model: ServiceRequest,
-    sendNotif: true,
-    detailsToSend: "has processed your service request",
-    linkToSend: "/resident/barangay-services",
-  })
+  updateService
 ); // Update (request)
 router.post(
   "/insert/available",
