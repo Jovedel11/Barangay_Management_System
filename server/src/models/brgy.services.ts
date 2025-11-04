@@ -19,6 +19,7 @@ type IBrgyService<T extends string> = {
 
 interface IServiceRequestBase {
   user: ObjectId;
+  request_id: ObjectId;
   service: string;
   category: string;
   status: "confirmed" | "pending" | "completed" | "rescheduled";
@@ -36,6 +37,7 @@ const serviceRequestSchema = new Schema<IServiceRequest>(
     user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
     service: { type: String, required: true },
     category: { type: String, required: true },
+    request_id: { type: Schema.Types.ObjectId, required: true },
     status: {
       type: String,
       required: false,

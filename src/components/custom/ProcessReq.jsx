@@ -9,7 +9,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/core/components/ui/button";
-import { Input } from "@/core/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "./CustomToast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProcessRequestDialog({
   isOpen,
@@ -27,6 +27,7 @@ export default function ProcessRequestDialog({
   request,
   refetch,
 }) {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,12 +45,16 @@ export default function ProcessRequestDialog({
           body: JSON.stringify({
             docs_id: request._id,
             status,
-            ...(description ? { specialNote: description } : {}),
+            ...(description?.length > 0 ? { specialNote: description } : {}),
           }),
           credentials: "include",
         },
       });
+      console.log(result);
       if (result?.success) {
+        queryClient.invalidateQueries({
+          queryKey: ["admin-service-available"],
+        });
         refetch();
         onOpenChange();
         return CustomToast({
@@ -70,7 +75,7 @@ export default function ProcessRequestDialog({
     } finally {
       setIsSubmitting(false);
     }
-  }, [refetch, request, status, description, onOpenChange]);
+  }, [refetch, request, status, description, onOpenChange, queryClient]);
 
   const handleSubmit = async () => {
     onProcessUpdate();
@@ -123,7 +128,6 @@ export default function ProcessRequestDialog({
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="rescheduled">Rescheduled</SelectItem>
@@ -136,7 +140,11 @@ export default function ProcessRequestDialog({
             <span className="text-sm font-medium">
               Processing Note
               <span className="text-muted-foreground text-xs ml-1">
-                (Optional)
+                {status === "rescheduled" ? (
+                  <span className="text-red-500 dark:text-red-400">*</span>
+                ) : (
+                  <span>(Optional)</span>
+                )}
               </span>
             </span>
             <Textarea
@@ -147,6 +155,12 @@ export default function ProcessRequestDialog({
               rows={4}
               className="resize-none"
             />
+            {status === "rescheduled" && description?.length === 0 && (
+              <span className="text-red-500 dark:text-red-400 text-sm">
+                Please provide a processing note — this is required for
+                rescheduled service.
+              </span>
+            )}
           </div>
         </div>
 
@@ -156,7 +170,10 @@ export default function ProcessRequestDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={status === "rescheduled" && description?.length === 0 || isSubmitting}
+          >
             {isSubmitting ? "Processing..." : "Process Request"}
           </Button>
         </DialogFooter>

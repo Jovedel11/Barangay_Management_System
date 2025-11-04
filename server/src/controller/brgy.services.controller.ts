@@ -1,4 +1,5 @@
 import ProccessNotif from "@/lib/process.notif";
+import { BrgyService, ServiceRequest } from "@/models/brgy.services";
 import type { Request, Response, NextFunction } from "express";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
@@ -19,10 +20,16 @@ const createService = ({
         console.log(errors);
         return res.status(400).json({ errors: errors.array() });
       }
-      const data = matchedData(req);
-      const service = await CollectionModel.create({ ...data });
-      service.save();
+      const { service_id, ...data } = matchedData(req);
       if (sendNotif) {
+        console.log(service_id);
+        const { matchedCount, modifiedCount } = await BrgyService.updateOne(
+          { _id: service_id },
+          { $inc: { slots: -1 } }
+        );
+        if (matchedCount === 0 || modifiedCount === 0) {
+          throw new Error("Error in decreasing the slots");
+        }
         const result = await ProccessNotif({
           resident_id: data.user,
           data_name: data.service,
@@ -32,6 +39,11 @@ const createService = ({
         });
         if (!result?.success) throw new Error("Error in processing notif");
       }
+      const service = await CollectionModel.create({
+        ...data,
+        request_id: service_id,
+      });
+      service.save();
       return res.status(201).json({
         message: "Document successfully created",
       });
@@ -40,6 +52,80 @@ const createService = ({
       next(error);
     }
   };
+};
+
+const updateService = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("Request Body: ", req.body);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new Error("Service : Invalid fields");
+    }
+    const data = matchedData(req);
+    const { docs_id, status, ...updateFields } = data;
+    Object.keys(updateFields).forEach((key) => {
+      if (
+        updateFields[key] &&
+        typeof updateFields[key] === "object" &&
+        Object.keys(updateFields[key]).length === 0
+      ) {
+        delete updateFields[key];
+      }
+    });
+    const service = await ServiceRequest.findById(docs_id);
+    if (!service) throw new Error();
+    const success = await BrgyService.updateOne(
+      { _id: service.request_id },
+      {
+        $inc:
+          status?.toLowerCase() !== "completed" &&
+          service?.status?.toLowerCase() === "completed"
+            ? { slots: -1 }
+            : status?.toLowerCase() === "completed"
+            ? { slots: 1 }
+            : {},
+      }
+    );
+    if (success?.matchedCount === 0) {
+      throw new Error();
+    }
+    const { matchedCount, modifiedCount } = await ServiceRequest.updateOne(
+      { _id: docs_id },
+      {
+        $set: { ...updateFields, status },
+      }
+    );
+
+    if (matchedCount === 0) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    if (modifiedCount === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No changes made to the document" });
+    }
+    const result = await ProccessNotif({
+      resident_id: service.user,
+      data_name: service.service,
+      data_category: service.category,
+      details: "has processed your service request",
+      link: "/resident/barangay-services",
+      sendToResident: true,
+    });
+    if (!result?.success) throw new Error("Error in processing notif");
+    return res.status(200).json({
+      success: true,
+      message: "Document successfully updated",
+      modifiedCount,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const deleteService = ({
@@ -66,4 +152,4 @@ const deleteService = ({
   };
 };
 
-export { createService, deleteService };
+export { createService, deleteService, updateService };

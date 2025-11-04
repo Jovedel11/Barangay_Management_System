@@ -42,6 +42,7 @@ const ServiceRequestDialog = ({ open, onOpenChange, selectedService }) => {
       setIsSubmitting(true);
 
       const payload = {
+        service_id: selectedService._id,
         category: selectedService.category,
         service: selectedService.name,
         details: requestForm.details,
@@ -62,6 +63,7 @@ const ServiceRequestDialog = ({ open, onOpenChange, selectedService }) => {
 
       if (result?.success) {
         queryClient.invalidateQueries({ queryKey: ["my-service-requests"] });
+        queryClient.invalidateQueries({ queryKey: ["service-available"] });
         CustomToast({
           description: "Service request submitted successfully",
           status: "success",
