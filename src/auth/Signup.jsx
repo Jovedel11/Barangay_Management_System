@@ -596,7 +596,7 @@ const Signup = () => {
                     </div>
 
                     {/* Phone Number and Residency Status */}
-                    <div className="w-full flex-col md:flex-row gap-3">
+                    <div className="w-full flex flex-col md:flex-row gap-3">
                       <div className="space-y-2">
                         <Label
                           htmlFor="phone_number"
@@ -656,7 +656,7 @@ const Signup = () => {
                           disabled={isLoading}
                         >
                           <SelectTrigger
-                            className={`h-10 w-full transition-colors ${
+                            className={`!h-10 w-full transition-colors ${
                               fieldErrors.residency_status
                                 ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                                 : formData.residency_status
