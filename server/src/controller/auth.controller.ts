@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import passport from "passport";
 import SendOtp from "@/middleware/email.otp";
 import { Otp } from "@/models/otp.model";
+import supabase from "@/config/supabase.client";
 dotenv.config();
 
 type RegisterInfo = {
@@ -21,6 +22,19 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    if (!req.file) throw new Error("Barangay ID file is required");
+
+    const { originalname, buffer, mimetype } = req.file;
+
+    const { data, error } = await supabase.storage
+      .from("registration")
+      .upload(`proof_img/${Date.now()}-${originalname}`, buffer, {
+        contentType: mimetype,
+        upsert: false,
+      });
+    if (error) throw new Error("Failed to upload proof file");
+
+    const filePath = `${process.env.SUPABASE_URL}/storage/v1/object/public/registration/${data?.path}`;
     const { password, email, first_name, last_name, phone_number } =
       matchedData(req) as RegisterInfo;
     const newUser = new AccountModel({
@@ -28,6 +42,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       email,
       first_name,
       last_name,
+      barangay_id_image: filePath,
       ...(phone_number ? { phone_number } : {}),
     });
     const { _id } = await newUser.save();

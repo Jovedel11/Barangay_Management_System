@@ -10,6 +10,7 @@ interface IAccount extends Document {
   role: "resident" | "admin";
   email: string;
   password: string;
+  barangay_id_image: string;
   validatePassword: (plainPassword: string, email: string) => Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +38,7 @@ const accountSchema = new Schema<IAccount>(
       default: "Phone is not provided",
       unique: true,
     },
+    barangay_id_image: { type: String, required: true },
   },
   { timestamps: true }
 );
