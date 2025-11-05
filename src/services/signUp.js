@@ -6,6 +6,8 @@ const signUp = async (userData) => {
     formData.append("last_name", userData.last_name);
     formData.append("email", userData.email);
     formData.append("password", userData.password);
+    formData.append("resident_address", userData.resident_address);
+    formData.append("residency_status", userData.residency_status);
 
     if (userData.phone_number) {
       formData.append("phone_number", userData.phone_number);

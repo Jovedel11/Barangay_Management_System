@@ -7,7 +7,7 @@ const checkEmail = async (req: Request, res: Response, next: NextFunction) => {
   const user = await AccountModel.findOne({ email });
   console.log(email);
   if (user) {
-    console.log("Email exists")
+    console.log("Email exists");
     return res.status(400).json({ message: "Email is already in use" });
   }
   console.log("Next gets executed");
@@ -18,6 +18,14 @@ const validateRegistration = [
   body("first_name").trim().notEmpty().withMessage("First name is required"),
   body("last_name").trim().notEmpty().withMessage("Last name is required"),
   body("email").trim().isEmail().withMessage("Valid email is required"),
+  body("residency_status")
+    .trim()
+    .notEmpty()
+    .withMessage("Residency status is required"),
+  body("resident_address")
+    .trim()
+    .notEmpty()
+    .withMessage("Resident address is required"),
   body("password")
     .trim()
     .isLength({ min: 8 })

@@ -14,6 +14,8 @@ type RegisterInfo = {
   email: string;
   password: string;
   phone_number?: string;
+  resident_address: string
+  residency_status: string;
 };
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -35,7 +37,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     if (error) throw new Error("Failed to upload proof file");
 
     const filePath = `${process.env.SUPABASE_URL}/storage/v1/object/public/registration/${data?.path}`;
-    const { password, email, first_name, last_name, phone_number } =
+    const { password, email, first_name, last_name, phone_number, resident_address, residency_status } =
       matchedData(req) as RegisterInfo;
     const newUser = new AccountModel({
       password,
@@ -43,6 +45,8 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       first_name,
       last_name,
       barangay_id_image: filePath,
+      resident_address,
+      residency_status,
       ...(phone_number ? { phone_number } : {}),
     });
     const { _id } = await newUser.save();

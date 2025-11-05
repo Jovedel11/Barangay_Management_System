@@ -6,6 +6,7 @@ import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import signUp from "@/services/signUp";
 import { Card } from "@/core/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Alert,
   AlertDescription,
@@ -14,6 +15,14 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { Separator } from "@/core/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
+import {
+  MapPin,
   UserPlus,
   Mail,
   Lock,
@@ -45,6 +54,8 @@ const Signup = () => {
     email: "",
     phone_number: "",
     password: "",
+    residency_status: "",
+    resident_address: "",
   });
 
   const formRef = useRef(null);
@@ -107,7 +118,9 @@ const Signup = () => {
       email: formData.get("email")?.trim(),
       phone_number: formData.get("phone_number")?.trim(),
       password: formData.get("password"),
+      residency_status: formData.get("residency_status"),
       barangay_id_image: imageFile,
+      resident_address: formData.get("resident_address")?.trim(),
     };
 
     // reset field errors
@@ -134,6 +147,12 @@ const Signup = () => {
     if (userData.phone_number && !validatePhone(userData.phone_number)) {
       errors.phone_number = "Please enter a valid Philippine phone number";
     }
+    if (!userData.residency_status) {
+      errors.residency_status = "Residency status is required";
+    }
+    if (!userData.resident_address) {
+      errors.resident_address = "Resident address is required";
+    }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -156,6 +175,7 @@ const Signup = () => {
         email: "",
         phone_number: "",
         password: "",
+        residency_status: "",
       });
       setFileName(null);
       setImageFile(null);
@@ -289,9 +309,11 @@ const Signup = () => {
     const fileName = file.name;
     const fileExtension = fileName.split(".").pop()?.toLowerCase();
     const allowedExtensions = ["png", "jpg", "jpeg", "svg", "webp"];
-    
+
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-      setImageError("Please upload a valid image file (PNG, JPG, JPEG, SVG, or WebP)");
+      setImageError(
+        "Please upload a valid image file (PNG, JPG, JPEG, SVG, or WebP)"
+      );
       e.target.value = "";
       return;
     }
@@ -307,10 +329,10 @@ const Signup = () => {
     // Validate image dimensions (optional but recommended)
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-      
+
       // Check if image dimensions are reasonable (min 200x200, max 4000x4000)
       if (img.width < 200 || img.height < 200) {
         setImageError("Image dimensions must be at least 200x200 pixels");
@@ -318,27 +340,27 @@ const Signup = () => {
         setImageFile(null);
         return;
       }
-      
+
       if (img.width > 4000 || img.height > 4000) {
         setImageError("Image dimensions must not exceed 4000x4000 pixels");
         setFileName("");
         setImageFile(null);
         return;
       }
-      
+
       // All validations passed
       setFileName(fileName);
       setImageFile(file);
       setImageError(null);
     };
-    
+
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
       setImageError("Invalid image file. Please upload a valid image.");
       setFileName("");
       setImageFile(null);
     };
-    
+
     img.src = objectUrl;
     e.target.value = "";
   };
@@ -493,6 +515,49 @@ const Signup = () => {
                         htmlFor="email"
                         className="text-sm font-medium text-slate-700"
                       >
+                        Complete Address *
+                      </Label>
+                      <div className="relative">
+                        <Textarea
+                          id="resident_address"
+                          name="resident_address"
+                          value={formData.resident_address}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "resident_address",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Enter your complete address"
+                          className={`h-10 transition-colors ${
+                            fieldErrors.resident_address
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                              : getFieldStatus("resident_address") === "success"
+                              ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                              : "border-slate-300 focus:border-success focus:ring-success/20"
+                          }`}
+                          required
+                          disabled={isLoading}
+                        />
+                        {getFieldStatus("resident_address") === "success" && (
+                          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                        )}
+                        {fieldErrors.resident_address && (
+                          <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                      {fieldErrors.resident_address && (
+                        <p className="text-xs text-red-600">
+                          {fieldErrors.resident_address}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm font-medium text-slate-700"
+                      >
                         Email Address *
                       </Label>
                       <div className="relative">
@@ -530,50 +595,90 @@ const Signup = () => {
                       )}
                     </div>
 
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="phone_number"
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        Phone Number
-                      </Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <Input
-                          type="tel"
-                          id="phone_number"
-                          name="phone_number"
-                          value={formData.phone_number}
-                          onChange={(e) =>
-                            handleInputChange("phone_number", e.target.value)
-                          }
-                          placeholder="+63 912 345 6789"
-                          className={`pl-10 pr-10 h-10 transition-colors ${
-                            fieldErrors.phone_number
-                              ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                              : getFieldStatus("phone_number") === "success"
-                              ? "border-green-300 focus:border-green-500 focus:ring-green-200"
-                              : "border-slate-300 focus:border-success focus:ring-success/20"
-                          }`}
-                          disabled={isLoading}
-                        />
-                        {getFieldStatus("phone_number") === "success" && (
-                          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
-                        )}
-                        {fieldErrors.phone_number && (
-                          <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                    {/* Phone Number and Residency Status */}
+                    <div className="w-full flex-col md:flex-row gap-3">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="phone_number"
+                          className="text-sm font-medium text-slate-700"
+                        >
+                          Phone Number
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Input
+                            type="tel"
+                            id="phone_number"
+                            name="phone_number"
+                            value={formData.phone_number}
+                            onChange={(e) =>
+                              handleInputChange("phone_number", e.target.value)
+                            }
+                            placeholder="+63 912 345 6789"
+                            className={`pl-10 pr-10 h-10 transition-colors ${
+                              fieldErrors.phone_number
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                                : getFieldStatus("phone_number") === "success"
+                                ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                                : "border-slate-300 focus:border-success focus:ring-success/20"
+                            }`}
+                            disabled={isLoading}
+                          />
+                          {getFieldStatus("phone_number") === "success" && (
+                            <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                          )}
+                          {fieldErrors.phone_number && (
+                            <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                          )}
+                        </div>
+                        {fieldErrors.phone_number ? (
+                          <p className="text-xs text-red-600">
+                            {fieldErrors.phone_number}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-500">Optional</p>
                         )}
                       </div>
-                      {fieldErrors.phone_number ? (
-                        <p className="text-xs text-red-600">
-                          {fieldErrors.phone_number}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-slate-500">
-                          Optional - Philippine mobile number
-                        </p>
-                      )}
+
+                      <div className="space-y-2 flex-1 mt-2 md:mt-0">
+                        <Label
+                          htmlFor="residency_status"
+                          className="text-sm font-medium text-slate-700"
+                        >
+                          Residency Status *
+                        </Label>
+                        <Select
+                          name="residency_status"
+                          value={formData.residency_status}
+                          onValueChange={(value) =>
+                            handleInputChange("residency_status", value)
+                          }
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger
+                            className={`h-10 w-full transition-colors ${
+                              fieldErrors.residency_status
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                                : formData.residency_status
+                                ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                                : "border-slate-300 focus:border-success focus:ring-success/20"
+                            }`}
+                          >
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="resident">Resident</SelectItem>
+                            <SelectItem value="new_resident">
+                              New Resident
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {fieldErrors.residency_status && (
+                          <p className="text-xs text-red-600">
+                            {fieldErrors.residency_status}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Password Field */}
@@ -648,7 +753,11 @@ const Signup = () => {
                                 : "border-zinc-300 hover:border-success/50 hover:bg-success/5"
                             }`}
                           >
-                            <span className={`text-sm ${imageError ? "text-red-600" : "text-zinc-500"}`}>
+                            <span
+                              className={`text-sm ${
+                                imageError ? "text-red-600" : "text-zinc-500"
+                              }`}
+                            >
                               Upload your Barangay ID (Optional)
                             </span>
                             <input
@@ -682,7 +791,8 @@ const Signup = () => {
                         )}
                         {!imageError && (
                           <p className="text-xs text-slate-500">
-                            Accepted formats: PNG, JPG, JPEG, SVG, WebP (Max 5MB)
+                            Accepted formats: PNG, JPG, JPEG, SVG, WebP (Max
+                            5MB)
                           </p>
                         )}
                       </div>
