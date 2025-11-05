@@ -228,7 +228,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{booking.name}</span>
+                          <span className="font-medium">{booking.category}</span>
                           <span className="text-sm text-zinc-400">
                             Qty: {booking.quantity}
                           </span>
@@ -388,9 +388,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Item Name
+                      Category
                     </h4>
-                    <p className="text-base">{selectedBooking?.name}</p>
+                    <p className="text-base">{selectedBooking?.category}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">

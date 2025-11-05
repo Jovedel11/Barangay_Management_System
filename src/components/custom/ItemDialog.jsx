@@ -34,7 +34,6 @@ const ItemDialog = ({
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [info, setInfo] = useState({
-    name: data?.name ?? "",
     category: data?.category ?? "",
     description: data?.description ?? "",
     available: data?.available ?? "",
@@ -59,8 +58,7 @@ const ItemDialog = ({
   const nothingChanged = useMemo(() => {
     const anyEmpty =
       !isEdit &&
-      (!info.name.trim() ||
-        !info.category.trim() ||
+      (!info.category.trim() ||
         !info.description.trim() ||
         !info.available.toString().trim() ||
         !info.total.toString().trim() ||
@@ -72,7 +70,6 @@ const ItemDialog = ({
     if (anyEmpty) return true;
 
     const isSameAsData =
-      data?.name === info.name &&
       data?.category === info.category &&
       data?.description === info.description &&
       data?.available === info.available &&
@@ -115,7 +112,6 @@ const ItemDialog = ({
   useEffect(() => {
     if (data) {
       setInfo({
-        name: data.name ?? "",
         category: data.category ?? "",
         description: data.description ?? "",
         available: data.available ?? "",
@@ -202,15 +198,6 @@ const ItemDialog = ({
         </DialogHeader>
         <div className="w-full flex flex-col gap-y-4">
           <div className="flex gap-x-2">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">Item Name</span>
-              <Input
-                id="name"
-                value={info.name}
-                onChange={handleChange}
-                placeholder="Enter item name"
-              />
-            </div>
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Category</span>
               <Select

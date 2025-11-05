@@ -22,7 +22,6 @@ const router = Router();
 
 // Search controller for searching specific data (reusable)
 const retreiveAllItems = createSearchController(BorrowableItemsModel, [
-  "name",
   "category",
   "description",
   "total",
@@ -37,7 +36,6 @@ const retreieveItemRequests = createSearchController(
   BorrowRequestModel,
   [
     "user",
-    "name",
     "quantity",
     "borrowDate",
     "returnDate",

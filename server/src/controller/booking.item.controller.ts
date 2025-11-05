@@ -31,12 +31,12 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
       {
         $inc: { available: -item.quantity },
       }
-    );
-    console.log(update_result);
+    );  
+    console.log("Item category :", item.category);
     if (update_result.modifiedCount === 0) throw new Error("Not enough stack");
     const result = await ProccessNotif({
       resident_id: item.user,
-      data_name: item.name,
+      data_name: item.category,
       data_category: item.category,
       details: "has requested an item",
       link: "/admin/manage-items",

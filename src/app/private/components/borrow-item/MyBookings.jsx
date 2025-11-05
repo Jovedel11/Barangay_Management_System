@@ -198,10 +198,10 @@ const BookingCard = () => {
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-medium text-foreground">
-                          {booking.name}
+                          {booking?.category}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          Qty: {booking.quantity} • {booking.category}
+                          Qty: {booking.quantity}
                         </p>
                       </div>
                       {getStatusBadge(

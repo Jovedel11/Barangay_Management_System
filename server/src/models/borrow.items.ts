@@ -3,7 +3,6 @@ import { Schema, model } from "mongoose";
 
 type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
   user: Schema.Types.ObjectId;
-  name: string;
   borrowDate: Date;
   returnDate: Date;
   eventLocation: T;
@@ -16,7 +15,6 @@ type ItemBorrowRequest<T extends string> = BaseTypes<T> & {
 
 type IBorrowableItem<T extends string> = {
   //user: Schema.Types.ObjectId;
-  name: T;
   category: T;
   description: T;
   available: number;
@@ -31,7 +29,6 @@ type IBorrowableItem<T extends string> = {
 
 const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
-  name: { type: String, required: true },
   quantity: { type: Number, required: true },
   borrowDate: { type: Date, required: true },
   returnDate: { type: Date, required: true },
@@ -51,7 +48,6 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
   //user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
-  name: { type: String, required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
   available: { type: Number, required: true },

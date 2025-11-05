@@ -43,7 +43,7 @@ const ItemCard = ({ item, refetch }) => {
               <Icon className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-foreground">{item?.name}</h4>
+              <h4 className="font-medium text-foreground">{item?.category}</h4>
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {item?.description}
               </p>
