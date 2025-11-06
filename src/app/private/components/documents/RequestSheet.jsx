@@ -13,7 +13,7 @@ import { Input } from "@/core/components/ui/input";
 import { Textarea } from "@/core/components/ui/textarea";
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/core/components/ui/checkbox";
-import { Wallet, Plus, Home, Truck, FileCheck } from "lucide-react";
+import { Wallet, Plus, Home, Truck, FileCheck, Globe } from "lucide-react";
 import { useMemo } from "react";
 import { CustomToast } from "@/components/custom/CustomToast";
 import customRequest from "@/services/customRequest";
@@ -141,7 +141,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
       setRequestForm((prevForm) => ({
         ...prevForm,
         deliveryMethod: selectedDocument.deliveryAvailable
-          ? "delivery"
+          ? "gcash"
           : "pickup",
       }));
     }
@@ -227,21 +227,23 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                   setRequestForm({ ...requestForm, urgentRequest: checked })
                 }
               />
-              <div className="flex-1">
-                <Label
-                  htmlFor="urgentRequest"
-                  className="cursor-pointer font-medium"
-                >
-                  Rush Processing (
-                  {selectedDocument.urgentFee === "free"
-                    ? "Free"
-                    : selectedDocument.urgentFee}
-                  )
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {selectedDocument.urgentTime} processing
-                </p>
-              </div>
+              {selectedDocument?.urgent && (
+                <div className="flex-1">
+                  <Label
+                    htmlFor="urgentRequest"
+                    className="cursor-pointer font-medium"
+                  >
+                    Rush Processing (
+                    {selectedDocument.urgentFee === "free"
+                      ? "Free"
+                      : selectedDocument.urgentFee}
+                    )
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDocument.urgentTime} processing
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -278,7 +280,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
               </Button>
 
               {/* Delivery */}
-              {selectedDocument.deliveryAvailable && (
+              {selectedDocument.onlinePaymentAvailable && (
                 <Button
                   type="button"
                   variant="outline"
@@ -286,20 +288,20 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                     setRequestForm((prev) => ({
                       ...prev,
                       deliveryMethod:
-                        prev.deliveryMethod === "delivery" ? "" : "delivery",
+                        prev.deliveryMethod === "gcash" ? "" : "gcash",
                     }))
                   }
                   className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
-                    requestForm.deliveryMethod === "delivery"
+                    requestForm.deliveryMethod === "gcash"
                       ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
                       : "border-muted bg-transparent"
                   }`}
                 >
-                  <Truck className="h-4 w-4 text-accent" />
+                  <Globe className="h-4 w-4 text-accent" />
                   <div className="flex flex-col items-start">
-                    <span className="font-medium text-sm">Home Delivery</span>
+                    <span className="font-medium text-sm">Online Payment</span>
                     <p className="text-xs text-muted-foreground">
-                      Cash on delivery (COD) payment
+                      Gcash payment
                     </p>
                   </div>
                 </Button>

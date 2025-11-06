@@ -18,6 +18,7 @@ import {
   Eye,
   Phone,
   Loader2,
+  Globe,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
@@ -50,13 +51,13 @@ const DocsRequest = () => {
             Ready for Pickup
           </Badge>
         );
-      case "delivered":
+      /*case "delivered":
         return (
           <Badge className="bg-success/10 text-success border-success/30">
             <CheckCircle className="h-3 w-3 mr-1" />
             Delivered
           </Badge>
-        );
+        );*/
       case "pending":
         return (
           <Badge className="bg-warning/10 text-warning border-warning/30">
@@ -93,8 +94,8 @@ const DocsRequest = () => {
           variant="outline"
           className="bg-accent/10 text-accent border-accent/30"
         >
-          <Truck className="h-3 w-3 mr-1" />
-          COD Delivery
+          <Globe className="h-3 w-3 mr-1" />
+          Gcash Payment
         </Badge>
       );
     }
@@ -208,7 +209,6 @@ const DocsRequest = () => {
                         </p>
                       </div>
                     )}
-
                     {request.status === "completed" &&
                       request.deliveryMethod === "pickup" && (
                         <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
@@ -223,7 +223,7 @@ const DocsRequest = () => {
                       )}
 
                     {request.status === "completed" &&
-                      request.deliveryMethod === "delivery" && (
+                      request.deliveryMethod === "gcash" && (
                         <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
                           <p className="text-success font-medium">
                             Ready for Delivery!

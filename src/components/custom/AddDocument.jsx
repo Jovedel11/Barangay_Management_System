@@ -41,7 +41,7 @@ const AddDocument = ({
     processingTime: data?.processingTime ?? "",
     requirements: data?.requirements ?? "",
     purposes: data?.purposes ?? "",
-    deliveryAvailable: data?.deliveryAvailable ?? false,
+    onlinePaymentAvailable: data?.onlinePaymentAvailable ?? false,
     urgent: data?.urgent ?? false,
     urgentFee: data?.urgentFee ?? "",
     urgentTime: data?.urgentTime ?? "",
@@ -67,7 +67,6 @@ const AddDocument = ({
         !info.processingTime.trim() ||
         !info.requirements.trim() ||
         !info.purposes.trim() ||
-        !info.urgentFee.trim() ||
         !info.urgentTime.trim() ||
         !info.specialNote.trim());
 
@@ -81,7 +80,7 @@ const AddDocument = ({
       data?.processingTime === info.processingTime &&
       data?.requirements === info.requirements &&
       data?.purposes === info.purposes &&
-      data?.deliveryAvailable === info.deliveryAvailable &&
+      data?.onlinePaymentAvailable === info.onlinePaymentAvailable &&
       data?.urgent === info.urgent &&
       data?.urgentFee === info.urgentFee &&
       data?.urgentTime === info.urgentTime &&
@@ -126,7 +125,7 @@ const AddDocument = ({
         processingTime: data.processingTime ?? "",
         requirements: data.requirements ?? "",
         purposes: data.purposes ?? "",
-        deliveryAvailable: data.deliveryAvailable ?? false,
+        onlinePaymentAvailable: data.onlinePaymentAvailable ?? false,
         urgent: data.urgent ?? false,
         urgentFee: data.urgentFee ?? "",
         urgentTime: data.urgentTime ?? "",
@@ -172,6 +171,20 @@ const AddDocument = ({
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     try {
+      if (info.urgent && info.urgentFee.trim()?.length === 0) {
+        return CustomToast({
+          description: "Please provide an urgent fee for urgent document.",
+          status: "info",
+        });
+      }
+      const { urgentFee, ...rest } = info;
+      const payload = {
+        ...(urgentFee?.trim()?.length > 0
+          ? { urgentFee }
+          : {}),
+        ...rest,
+      };
+      console.log("Payload:", payload);
       submitMutation.mutate({
         path: isEdit
           ? "/api/brgy-docs/update/available"
@@ -182,7 +195,7 @@ const AddDocument = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(
-            !isEdit ? info : { docs_id: data?._id, ...info }
+            !isEdit ? payload  : { docs_id: data?._id, ...payload }
           ),
           credentials: "include",
         },
@@ -296,6 +309,7 @@ const AddDocument = ({
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Urgent Fee</span>
               <Input
+                disabled={!info.urgent}
                 id="urgentFee"
                 value={info.urgentFee}
                 onChange={handleChange}
@@ -332,17 +346,17 @@ const AddDocument = ({
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="deliveryAvailable"
-                  checked={info.deliveryAvailable}
+                  id="onlinePaymentAvailable"
+                  checked={info.onlinePaymentAvailable}
                   onCheckedChange={(checked) =>
-                    handleCheckboxChange("deliveryAvailable", checked)
+                    handleCheckboxChange("onlinePaymentAvailable", checked)
                   }
                 />
                 <label
-                  htmlFor="deliveryAvailable"
+                  htmlFor="onlinePaymentAvailable"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Delivery Available
+                  Online Payment Available
                 </label>
               </div>
 

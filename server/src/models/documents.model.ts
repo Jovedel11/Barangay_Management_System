@@ -11,10 +11,12 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   urgentRequest: boolean;
   contactNumber: T;
   specificDetails: T;
-  isPregnant: boolean;
   status?: string;
   category: string;
   name: string;
+  fileSrc?: string;
+  fileName?: string;
+  fileSize?: string;
 };
 
 const docsSchema = new Schema<DocumentRequest<string>>({
@@ -27,7 +29,9 @@ const docsSchema = new Schema<DocumentRequest<string>>({
   deliveryMethod: { type: String, required: true },
   contactNumber: { type: String, required: true },
   specificDetails: { type: String, required: false },
-  isPregnant: { type: Boolean, required: true },
+  fileSrc: { type: String, required: false },
+  fileName: { type: String, required: false },
+  fileSize: { type: String, required: false },
   status: { type: String, required: false, default: "pending" },
 });
 
@@ -45,11 +49,12 @@ interface IAvailableDoc {
   processingTime: string;
   requirements: Pick<IDocumentItem, "requirement">;
   purposes: Pick<IDocumentItem, "purpose">;
-  deliveryAvailable: boolean;
   urgent: boolean;
   urgentFee: string;
   urgentTime: string;
   isActive: boolean;
+  onlinePaymentAvailable: boolean;
+  paymentSrc?: string;
   specialNote: string;
   totalReq?: number;
   pendings?: number;
@@ -62,11 +67,12 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   fee: { type: String, required: true },
   processingTime: { type: String, required: true },
   requirements: { type: String, required: true },
+  paymentSrc: { type: String, required: false },
   purposes: { type: String, required: true },
-  deliveryAvailable: { type: Boolean, required: true },
-  urgent: { type: Boolean, required: true },
-  urgentFee: { type: String, required: true },
+  urgent: { type: Boolean, required: false, default: false },
+  urgentFee: { type: String, required: false },
   urgentTime: { type: String, required: true },
+  onlinePaymentAvailable: { type: Boolean, required: true },
   isActive: { type: Boolean, required: true },
   specialNote: { type: String, required: true },
   totalReq: { type: Number, required: false, default: 0 }, //No functionalities yet
