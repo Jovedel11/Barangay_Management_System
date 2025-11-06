@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import passport from "passport";
 import SendOtp from "@/middleware/email.otp";
 import { Otp } from "@/models/otp.model";
+import supabase from "@/config/supabase.client";
 dotenv.config();
 
 type RegisterInfo = {
@@ -13,6 +14,8 @@ type RegisterInfo = {
   email: string;
   password: string;
   phone_number?: string;
+  resident_address: string;
+  residency_status: string;
 };
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -21,13 +24,36 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { password, email, first_name, last_name, phone_number } =
-      matchedData(req) as RegisterInfo;
+    if (!req.file) throw new Error("Barangay ID file is required");
+
+    const { originalname, buffer, mimetype } = req.file;
+
+    const { data, error } = await supabase.storage
+      .from("registration")
+      .upload(`proof_img/${Date.now()}-${originalname}`, buffer, {
+        contentType: mimetype,
+        upsert: false,
+      });
+    if (error) throw new Error("Failed to upload proof file");
+
+    const filePath = `${process.env.SUPABASE_URL}/storage/v1/object/public/registration/${data?.path}`;
+    const {
+      password,
+      email,
+      first_name,
+      last_name,
+      phone_number,
+      resident_address,
+      residency_status,
+    } = matchedData(req) as RegisterInfo;
     const newUser = new AccountModel({
       password,
       email,
       first_name,
       last_name,
+      barangay_id_image: filePath,
+      resident_address,
+      residency_status,
       ...(phone_number ? { phone_number } : {}),
     });
     const { _id } = await newUser.save();
@@ -62,18 +88,20 @@ const login = (req: Request, res: Response, next: NextFunction) => {
         return res.status(401).json({ success: false, role: null });
       }
 
+      if (user && !user.role) {
+        return res.status(403).json({ success: false, role: null });
+      }
+
+      if (user.role === "admin") {
+        const result = await SendOtp(user as Record<string, string>);
+        if (!result.success) {
+          return res.status(200).json({ success: false });
+        }
+      }
+
       req.login(user, async (err) => {
         if (err) return res.status(500).json({ success: false, role: null });
-        if (user && !user.role) {
-          return res.status(403).json({ success: false, role: null });
-        }
-        if (user.role !== "admin") {
-          return res.status(200).json({ success: true, role: user.role });
-        }
-        const result = await SendOtp(user as Record<string, string>);
-        if (result.success)
-          return res.status(200).json({ success: true, role: user.role });
-        next(result.error);
+        return res.status(200).json({ success: true, role: user.role });
       });
     }
   )(req, res, next);

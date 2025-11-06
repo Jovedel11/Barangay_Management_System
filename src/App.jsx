@@ -4,6 +4,7 @@ import PublicRoute from "./routers/PublicRoute";
 import ResidentRoute from "./routers/ResidentRoute";
 import "./core/styles/global.css";
 import { AuthProvider } from "@/hooks/useAuthProvider";
+import ViewBrgyId from "@/components/custom/ViewBrgyId";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path="/resident/*" element={<ResidentRoute />} />
         <Route path="/admin/*" element={<AdminRoute />} />
+        <Route path="/view-brgy-id/:image_src" element={<ViewBrgyId />} />
         <Route path="/*" element={<PublicRoute />} />
       </Routes>
     </AuthProvider>

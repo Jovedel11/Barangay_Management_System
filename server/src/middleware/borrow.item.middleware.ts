@@ -8,11 +8,6 @@ const itemBorrowValidation = [
     .withMessage("User ID cannot be empty.")
     .isMongoId()
     .withMessage("User ID must be a valid Mongo ID."),
-  body("name")
-    .exists()
-    .withMessage("Item name date is required.")
-    .notEmpty()
-    .withMessage("Item name cannot be empty."),
   body("quantity")
     .exists()
     .withMessage("Quantity is required.")
@@ -104,11 +99,6 @@ const borrowableItemValidation = [
     .withMessage("User ID cannot be empty.")
     .isMongoId()
     .withMessage("User ID must be a valid Mongo ID."),*/
-  body("name")
-    .exists()
-    .withMessage("Item name is required.")
-    .notEmpty()
-    .withMessage("Item name cannot be empty."),
   body("category")
     .exists()
     .withMessage("Category is required.")
@@ -243,7 +233,13 @@ const updateItemValidation = [
         return true;
       }
       if (typeof value === "string") {
-        const allowed = ["pending", "processing", "completed", "rejected", "returned"];
+        const allowed = [
+          "pending",
+          "processing",
+          "completed",
+          "rejected",
+          "returned",
+        ];
         if (allowed.includes(value.toLowerCase())) {
           return true;
         }

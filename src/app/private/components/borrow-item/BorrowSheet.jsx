@@ -32,7 +32,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
   const queryClient = useQueryClient();
   const { user } = useAuth(); // Retreiving the User when they successfully login
   const [bookingForm, setBookingForm] = useState({
-    name: "",
     category: "",
     quantity: 1,
     borrowDate: "",
@@ -77,7 +76,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
 
   const nothingChanged = useMemo(() => {
     const anyEmpty =
-      !bookingForm.name.trim() ||
       !bookingForm.quantity === 0 ||
       !bookingForm.borrowDate.trim() ||
       !bookingForm.returnDate ||
@@ -99,7 +97,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
   useEffect(() => {
     if (selectedItem) {
       setBookingForm({
-        name: selectedItem?.name ?? "",
         category: selectedItem?.category ?? "",
         quantity: 1,
         borrowDate: new Date().toISOString().split("T")[0],
@@ -216,7 +213,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
           <>
             <SheetHeader className="text-left">
               <SheetTitle className="flex items-center gap-2 font-inter text-xl">
-                Book {selectedItem?.name}
+                Book {selectedItem?.category}
               </SheetTitle>
               <SheetDescription className="text-sm">
                 Reserve this item • Payment at barangay office

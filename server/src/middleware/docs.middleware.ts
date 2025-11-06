@@ -42,7 +42,7 @@ const requestDocsValidation = [
   requiredBoolean("urgentRequest", "Urgent request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
     .customSanitizer((value) => value.toLowerCase())
-    .isIn(["pickup", "delivery"])
+    .isIn(["pickup", "gcash"])
     .withMessage("Invalid delivery method."),
 
   requiredString("contactNumber", "Contact number is required.")
@@ -54,13 +54,6 @@ const requestDocsValidation = [
     .isString()
     .withMessage("Specific details must be a string")
     .trim(),
-
-  body("isPregnant")
-    .optional()
-    .isBoolean()
-    .withMessage("isPregnant must be true or false")
-    .toBoolean(),
-
   body("specificDetails")
     .optional()
     .isString()
@@ -68,7 +61,6 @@ const requestDocsValidation = [
     .trim(),
   requiredString("name", "Name is required."),
   requiredString("category", "Category is required."),
-  requiredBoolean("isPregnant", "Pregnancy status is required."),
 ];
 
 const availableDocsValidation = [
@@ -79,9 +71,19 @@ const availableDocsValidation = [
   requiredString("processingTime", "Processing time is required."),
   requiredString("requirements", "Requirements list is required."),
   requiredString("purposes", "Purposes list is required."),
-  requiredBoolean("deliveryAvailable", "Delivery availability is required."),
-  requiredBoolean("urgent", "Urgent status is required."),
-  requiredString("urgentFee", "Urgent fee is required."),
+  body("urgent")
+    .optional()
+    .isBoolean()
+    .withMessage("Urgent must be a boolean."),
+  body("onlinePaymentAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Online payment availability must be a boolean."),
+  body("urgentFee")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Urgent fee must be a string."),
   requiredString("urgentTime", "Urgent time is required."),
   requiredBoolean("isActive", "IsActive status is required."),
   requiredString("specialNote", "SpecialNote status is required."),
@@ -133,10 +135,10 @@ const updateDocsValidation = [
     .optional()
     .isString()
     .withMessage("Purposes must be an array"),
-  body("deliveryAvailable")
+  body("onlinePaymentAvailable")
     .optional()
     .isBoolean()
-    .withMessage("Delivery available must be boolean"),
+    .withMessage("Online payment availability must be boolean"),
   body("urgent").optional().isBoolean().withMessage("Urgent must be boolean"),
   body("urgentFee")
     .optional()
@@ -173,7 +175,6 @@ const updateDocsValidation = [
           "completed",
           "rejected",
           "approved",
-          "delivered",
         ];
         if (allowed.includes(value.toLocaleLowerCase())) {
           console.log("Allowed");
@@ -194,7 +195,7 @@ const updateDocsValidation = [
       "processingTime",
       "requirements",
       "purposes",
-      "deliveryAvailable",
+      "onlinePaymentAvailable",
       "urgent",
       "urgentFee",
       "urgentTime",

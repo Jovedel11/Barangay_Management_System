@@ -6,6 +6,7 @@ import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import signUp from "@/services/signUp";
 import { Card } from "@/core/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Alert,
   AlertDescription,
@@ -14,6 +15,14 @@ import {
 import { Badge } from "@/core/components/ui/badge";
 import { Separator } from "@/core/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
+import {
+  MapPin,
   UserPlus,
   Mail,
   Lock,
@@ -36,13 +45,17 @@ const Signup = () => {
   const [showPasswords, setShowPasswords] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [imageName, setFileName] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imageError, setImageError] = useState(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone_number: "",
     password: "",
-    confirmPassword: "",
+    residency_status: "",
+    resident_address: "",
   });
 
   const formRef = useRef(null);
@@ -61,10 +74,6 @@ const Signup = () => {
 
   const validatePassword = (password) => {
     return password.length >= 8;
-  };
-
-  const validatePasswordMatch = (password, confirmPassword) => {
-    return password === confirmPassword;
   };
 
   // Handle input changes and real-time validation
@@ -93,23 +102,6 @@ const Signup = () => {
         if (value && !validatePassword(value)) {
           error = "Password must be at least 8 characters long";
         }
-        // check if password exists
-        if (
-          formData.confirmPassword &&
-          !validatePasswordMatch(value, formData.confirmPassword)
-        ) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            confirmPassword: "Passwords do not match",
-          }));
-        } else if (formData.confirmPassword) {
-          setFieldErrors((prev) => ({ ...prev, confirmPassword: null }));
-        }
-        break;
-      case "confirmPassword":
-        if (value && !validatePasswordMatch(formData.password, value)) {
-          error = "Passwords do not match";
-        }
         break;
     }
 
@@ -126,9 +118,10 @@ const Signup = () => {
       email: formData.get("email")?.trim(),
       phone_number: formData.get("phone_number")?.trim(),
       password: formData.get("password"),
+      residency_status: formData.get("residency_status"),
+      barangay_id_image: imageFile,
+      resident_address: formData.get("resident_address")?.trim(),
     };
-
-    const confirmPassword = formData.get("confirmPassword");
 
     // reset field errors
     setFieldErrors({});
@@ -151,13 +144,14 @@ const Signup = () => {
     } else if (!validatePassword(userData.password)) {
       errors.password = "Password must be at least 8 characters long";
     }
-    if (!confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
-    } else if (!validatePasswordMatch(userData.password, confirmPassword)) {
-      errors.confirmPassword = "Passwords do not match";
-    }
     if (userData.phone_number && !validatePhone(userData.phone_number)) {
       errors.phone_number = "Please enter a valid Philippine phone number";
+    }
+    if (!userData.residency_status) {
+      errors.residency_status = "Residency status is required";
+    }
+    if (!userData.resident_address) {
+      errors.resident_address = "Resident address is required";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -181,9 +175,12 @@ const Signup = () => {
         email: "",
         phone_number: "",
         password: "",
-        confirmPassword: "",
+        residency_status: "",
       });
+      setFileName(null);
+      setImageFile(null);
       setFieldErrors({});
+      setImageError(null);
     }
 
     return {
@@ -222,10 +219,6 @@ const Signup = () => {
         return value ? (validatePhone(value) ? "success" : null) : null;
       case "password":
         return validatePassword(value) ? "success" : null;
-      case "confirmPassword":
-        return value && validatePasswordMatch(formData.password, value)
-          ? "success"
-          : null;
       default:
         return value.trim() ? "success" : null;
     }
@@ -295,6 +288,82 @@ const Signup = () => {
       </div>
     );
   }
+
+  const removeImage = (e) => {
+    e.preventDefault();
+    if (imageName) {
+      setFileName("");
+      setImageFile(null);
+      setImageError(null);
+    }
+  };
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset previous error
+    setImageError(null);
+
+    // Validate file type
+    const fileName = file.name;
+    const fileExtension = fileName.split(".").pop()?.toLowerCase();
+    const allowedExtensions = ["png", "jpg", "jpeg", "svg", "webp"];
+
+    if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+      setImageError(
+        "Please upload a valid image file (PNG, JPG, JPEG, SVG, or WebP)"
+      );
+      e.target.value = "";
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setImageError("Image size must be less than 5MB");
+      e.target.value = "";
+      return;
+    }
+
+    // Validate image dimensions (optional but recommended)
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      // Check if image dimensions are reasonable (min 200x200, max 4000x4000)
+      if (img.width < 200 || img.height < 200) {
+        setImageError("Image dimensions must be at least 200x200 pixels");
+        setFileName("");
+        setImageFile(null);
+        return;
+      }
+
+      if (img.width > 4000 || img.height > 4000) {
+        setImageError("Image dimensions must not exceed 4000x4000 pixels");
+        setFileName("");
+        setImageFile(null);
+        return;
+      }
+
+      // All validations passed
+      setFileName(fileName);
+      setImageFile(file);
+      setImageError(null);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setImageError("Invalid image file. Please upload a valid image.");
+      setFileName("");
+      setImageFile(null);
+    };
+
+    img.src = objectUrl;
+    e.target.value = "";
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/50">
@@ -446,6 +515,49 @@ const Signup = () => {
                         htmlFor="email"
                         className="text-sm font-medium text-slate-700"
                       >
+                        Complete Address *
+                      </Label>
+                      <div className="relative">
+                        <Textarea
+                          id="resident_address"
+                          name="resident_address"
+                          value={formData.resident_address}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "resident_address",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Enter your complete address"
+                          className={`h-10 transition-colors ${
+                            fieldErrors.resident_address
+                              ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                              : getFieldStatus("resident_address") === "success"
+                              ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                              : "border-slate-300 focus:border-success focus:ring-success/20"
+                          }`}
+                          required
+                          disabled={isLoading}
+                        />
+                        {getFieldStatus("resident_address") === "success" && (
+                          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                        )}
+                        {fieldErrors.resident_address && (
+                          <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                      {fieldErrors.resident_address && (
+                        <p className="text-xs text-red-600">
+                          {fieldErrors.resident_address}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm font-medium text-slate-700"
+                      >
                         Email Address *
                       </Label>
                       <div className="relative">
@@ -483,53 +595,93 @@ const Signup = () => {
                       )}
                     </div>
 
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="phone_number"
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        Phone Number
-                      </Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <Input
-                          type="tel"
-                          id="phone_number"
-                          name="phone_number"
-                          value={formData.phone_number}
-                          onChange={(e) =>
-                            handleInputChange("phone_number", e.target.value)
-                          }
-                          placeholder="+63 912 345 6789"
-                          className={`pl-10 pr-10 h-10 transition-colors ${
-                            fieldErrors.phone_number
-                              ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                              : getFieldStatus("phone_number") === "success"
-                              ? "border-green-300 focus:border-green-500 focus:ring-green-200"
-                              : "border-slate-300 focus:border-success focus:ring-success/20"
-                          }`}
-                          disabled={isLoading}
-                        />
-                        {getFieldStatus("phone_number") === "success" && (
-                          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
-                        )}
-                        {fieldErrors.phone_number && (
-                          <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                    {/* Phone Number and Residency Status */}
+                    <div className="w-full flex flex-col md:flex-row gap-3">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="phone_number"
+                          className="text-sm font-medium text-slate-700"
+                        >
+                          Phone Number
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Input
+                            type="tel"
+                            id="phone_number"
+                            name="phone_number"
+                            value={formData.phone_number}
+                            onChange={(e) =>
+                              handleInputChange("phone_number", e.target.value)
+                            }
+                            placeholder="+63 912 345 6789"
+                            className={`pl-10 pr-10 h-10 transition-colors ${
+                              fieldErrors.phone_number
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                                : getFieldStatus("phone_number") === "success"
+                                ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                                : "border-slate-300 focus:border-success focus:ring-success/20"
+                            }`}
+                            disabled={isLoading}
+                          />
+                          {getFieldStatus("phone_number") === "success" && (
+                            <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                          )}
+                          {fieldErrors.phone_number && (
+                            <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
+                          )}
+                        </div>
+                        {fieldErrors.phone_number ? (
+                          <p className="text-xs text-red-600">
+                            {fieldErrors.phone_number}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-500">Optional</p>
                         )}
                       </div>
-                      {fieldErrors.phone_number ? (
-                        <p className="text-xs text-red-600">
-                          {fieldErrors.phone_number}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-slate-500">
-                          Optional - Philippine mobile number
-                        </p>
-                      )}
+
+                      <div className="space-y-2 flex-1 mt-2 md:mt-0">
+                        <Label
+                          htmlFor="residency_status"
+                          className="text-sm font-medium text-slate-700"
+                        >
+                          Residency Status *
+                        </Label>
+                        <Select
+                          name="residency_status"
+                          value={formData.residency_status}
+                          onValueChange={(value) =>
+                            handleInputChange("residency_status", value)
+                          }
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger
+                            className={`!h-10 w-full transition-colors ${
+                              fieldErrors.residency_status
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                                : formData.residency_status
+                                ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                                : "border-slate-300 focus:border-success focus:ring-success/20"
+                            }`}
+                          >
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="resident">Resident</SelectItem>
+                            <SelectItem value="new_resident">
+                              New Resident
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {fieldErrors.residency_status && (
+                          <p className="text-xs text-red-600">
+                            {fieldErrors.residency_status}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Password Fields */}
+                    {/* Password Field */}
                     <div className="space-y-3">
                       <div className="space-y-2">
                         <Label
@@ -585,58 +737,66 @@ const Signup = () => {
                             {fieldErrors.password}
                           </p>
                         )}
+                        <p className="text-xs text-slate-500">
+                          Password must be at least 8 characters long
+                        </p>
                       </div>
 
+                      {/* Barangay ID Upload */}
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="confirmPassword"
-                          className="text-sm font-medium text-slate-700"
-                        >
-                          Confirm Password *
-                        </Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                          <Input
-                            type={showPasswords ? "text" : "password"}
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "confirmPassword",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Confirm password"
-                            className={`pl-10 pr-10 h-10 transition-colors ${
-                              fieldErrors.confirmPassword
-                                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                                : getFieldStatus("confirmPassword") ===
-                                  "success"
-                                ? "border-green-300 focus:border-green-500 focus:ring-green-200"
-                                : "border-slate-300 focus:border-success focus:ring-success/20"
+                        {!imageName && (
+                          <label
+                            htmlFor="cor-file"
+                            className={`h-14 mt-2 cursor-pointer border-dashed border-2 rounded-md w-full flex flex-col gap-y-2 items-center justify-center transition-colors ${
+                              imageError
+                                ? "border-red-300 bg-red-50"
+                                : "border-zinc-300 hover:border-success/50 hover:bg-success/5"
                             }`}
-                            required
-                            disabled={isLoading}
-                          />
-                          {getFieldStatus("confirmPassword") === "success" && (
-                            <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
-                          )}
-                          {fieldErrors.confirmPassword && (
-                            <X className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500" />
-                          )}
-                        </div>
-                        {fieldErrors.confirmPassword && (
-                          <p className="text-xs text-red-600">
-                            {fieldErrors.confirmPassword}
+                          >
+                            <span
+                              className={`text-sm ${
+                                imageError ? "text-red-600" : "text-zinc-500"
+                              }`}
+                            >
+                              Upload your Barangay ID (Optional)
+                            </span>
+                            <input
+                              id="cor-file"
+                              type="file"
+                              className="cursor-pointer sr-only"
+                              onChange={handleFile}
+                              accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                            />
+                          </label>
+                        )}
+                        {imageName && (
+                          <div className="flex min-h-[3.5rem] max-h-14 justify-center items-center pr-8 relative w-full rounded-sm border-2 border-dashed border-green-300 bg-green-50">
+                            <Check className="absolute left-3 w-4 h-4 text-green-600" />
+                            <span className="truncate text-sm px-10 text-zinc-800">
+                              {imageName}
+                            </span>
+                            <Button
+                              onClick={removeImage}
+                              className="shadow-none right-2 absolute bg-transparent text-black cursor-pointer hover:bg-transparent p-0 h-5 w-2"
+                            >
+                              <X className="size-[18px]" />
+                            </Button>
+                          </div>
+                        )}
+                        {imageError && (
+                          <p className="text-xs text-red-600 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {imageError}
+                          </p>
+                        )}
+                        {!imageError && (
+                          <p className="text-xs text-slate-500">
+                            Accepted formats: PNG, JPG, JPEG, SVG, WebP (Max
+                            5MB)
                           </p>
                         )}
                       </div>
                     </div>
-
-                    <p className="text-xs text-slate-500">
-                      Password must be at least 8 characters long
-                    </p>
 
                     <Button
                       type="submit"
