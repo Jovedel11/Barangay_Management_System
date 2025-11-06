@@ -54,32 +54,6 @@ const requestDocsValidation = [
     .isString()
     .withMessage("Specific details must be a string")
     .trim(),
-
-  body("isPregnant")
-    .optional()
-    .isBoolean()
-    .withMessage("isPregnant must be true or false")
-    .toBoolean(),
-  body("paymentSrc")
-    .optional()
-    .isString()
-    .withMessage("Payment source must be a string."),
-  body("fileSrc")
-    .optional()
-    .isString()
-    .withMessage("File source must be a string.")
-    .trim(),
-  body("fileName")
-    .optional()
-    .isString()
-    .withMessage("File name must be a string.")
-    .trim(),
-  body("fileSize")
-    .optional()
-    .isString()
-    .withMessage("File size must be a string.")
-    .trim(),
-
   body("specificDetails")
     .optional()
     .isString()
@@ -87,7 +61,6 @@ const requestDocsValidation = [
     .trim(),
   requiredString("name", "Name is required."),
   requiredString("category", "Category is required."),
-  requiredBoolean("isPregnant", "Pregnancy status is required."),
 ];
 
 const availableDocsValidation = [

@@ -14,6 +14,9 @@ import { createSearchController } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import searchItemValidation from "@/middleware/search.middleware";
+import multer from "multer";
+
+const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 // Search controller for searching specific data (reusable)
@@ -58,6 +61,7 @@ router.put(
     sendNotif: true,
     detailsToSend: "has processed your documents",
     linkToSend: "/resident/barangay-documents",
+    isDocs: true,
   })
 ); // Update request docs (resident)
 router.delete(
@@ -70,7 +74,12 @@ router.delete(
   deleteDocsValidation,
   deleteDocs({ model: DocsModel })
 ); // Resident
-router.post("/request", requestDocsValidation, requestDocs); // Insert a form for docs request
+router.post(
+  "/request",
+  upload.single("paymentImg"),
+  requestDocsValidation,
+  requestDocs
+); // Insert a form for docs request
 router.post("/available/insert", availableDocsValidation, createDocs); // Insert available docs (admin)
 
 export default router;

@@ -14,9 +14,9 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   status?: string;
   category: string;
   name: string;
+  paymentSrc?: string;
   fileSrc?: string;
   fileName?: string;
-  fileSize?: string;
 };
 
 const docsSchema = new Schema<DocumentRequest<string>>({
@@ -29,9 +29,9 @@ const docsSchema = new Schema<DocumentRequest<string>>({
   deliveryMethod: { type: String, required: true },
   contactNumber: { type: String, required: true },
   specificDetails: { type: String, required: false },
+  paymentSrc: { type: String, required: false },
   fileSrc: { type: String, required: false },
   fileName: { type: String, required: false },
-  fileSize: { type: String, required: false },
   status: { type: String, required: false, default: "pending" },
 });
 
@@ -54,7 +54,6 @@ interface IAvailableDoc {
   urgentTime: string;
   isActive: boolean;
   onlinePaymentAvailable: boolean;
-  paymentSrc?: string;
   specialNote: string;
   totalReq?: number;
   pendings?: number;
@@ -67,7 +66,6 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   fee: { type: String, required: true },
   processingTime: { type: String, required: true },
   requirements: { type: String, required: true },
-  paymentSrc: { type: String, required: false },
   purposes: { type: String, required: true },
   urgent: { type: Boolean, required: false, default: false },
   urgentFee: { type: String, required: false },
