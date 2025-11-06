@@ -7,14 +7,12 @@ interface IUploadFile {
 
 export const UploadFile = async ({ file, userId }: IUploadFile) => {
   const { originalname, mimetype, buffer } = file;
-
-  // Automatically determine destination bucket based on file type
   const isImage = mimetype.startsWith("image/");
   const bucket = isImage ? "payment" : "docs";
-
-  // Use the original file name (optionally could add timestamp for uniqueness)
+  console.log("Is image :", isImage);
+  console.log("Bucket name :", bucket);
   const newFileName = `${Date.now()}_${originalname}`;
-
+  
   // Upload file to Supabase Storage
   const { data, error } = await supabase.storage
     .from(bucket)

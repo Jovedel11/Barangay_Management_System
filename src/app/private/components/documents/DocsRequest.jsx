@@ -19,10 +19,12 @@ import {
   Phone,
   Loader2,
   Globe,
+  Download,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
 import { useAuth } from "@/hooks/useAuthProvider";
+import { CustomToast } from "@/components/custom/CustomToast";
 
 const DocsRequest = () => {
   const { user } = useAuth();
@@ -106,6 +108,24 @@ const DocsRequest = () => {
       .toString()
       .slice(-6)}`;
   };
+
+  const handleDownload = (fileSrc, fileName) => {
+    if (!fileSrc) return;
+
+    const link = document.createElement("a");
+    link.href = fileSrc;
+    link.download = fileName || "document.pdf";
+    link.target = "_blank"; // fallback if download fails
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    CustomToast({
+        description: "Download started.",
+        status: "success",
+    });
+};
 
   return (
     <Card className="bg-inherit border-none shadow-none transition-all duration-200">
@@ -224,14 +244,31 @@ const DocsRequest = () => {
 
                     {request.status === "completed" &&
                       request.deliveryMethod === "gcash" && (
-                        <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
-                          <p className="text-success font-medium">
-                            Ready for Delivery!
-                          </p>
-                          <p className="text-success/80">
-                            Your document will be delivered to your address.
-                            Cash on delivery payment required.
-                          </p>
+                        <div className="space-y-2">
+                          <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
+                            <p className="text-success font-medium">
+                              Payment Confirmed!
+                            </p>
+                            <p className="text-success/80">
+                              The admin has confirmed your payment. Your
+                              document is now ready — you can download it below.
+                            </p>
+                          </div>
+                          {request.fileSrc && request.fileName && (
+                            <Button
+                              onClick={() =>
+                                handleDownload(
+                                  request.fileSrc,
+                                  request.fileName
+                                )
+                              }
+                              className="w-full"
+                              variant="outline"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Download {request.fileName}
+                            </Button>
+                          )}
                         </div>
                       )}
                   </div>

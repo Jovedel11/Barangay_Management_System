@@ -55,6 +55,7 @@ router.put(
 ); // Update availablde docs (admin)
 router.put(
   "/update/request",
+  upload.single("file"),
   updateDocsValidation,
   updateDocs({
     model: DocsModel,

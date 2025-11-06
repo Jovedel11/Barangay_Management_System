@@ -41,7 +41,6 @@ const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
     const docs = await DocsModel.create(newDocData);
     await docs.save();
 
-    // ✅ Send notification to admin
     const result = await ProccessNotif({
       resident_id: data.user,
       data_name: data.name,
@@ -115,7 +114,7 @@ const updateDocs = ({
 }: Update) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("Request Body: ", req.body);
+      console.log("File : ", req.file);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         throw new Error("Docs : Invalid fields");
@@ -168,7 +167,7 @@ const updateDocs = ({
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
           resident_id: data.user,
-          data_name: data.name ?? data.service,
+          data_name: isItem ? data.category :  data.name ?? data.service,
           data_category: data.category,
           details: detailsToSend,
           link: linkToSend,
