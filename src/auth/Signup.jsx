@@ -639,7 +639,6 @@ const Signup = () => {
                           <p className="text-xs text-slate-500">Optional</p>
                         )}
                       </div>
-
                       <div className="space-y-2 flex-1 mt-2 md:mt-0">
                         <Label
                           htmlFor="residency_status"

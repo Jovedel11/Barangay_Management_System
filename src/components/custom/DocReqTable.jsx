@@ -317,58 +317,56 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 </div>
               </div>
               {/* File Upload for Digital delivery */}
-              {selectedRequest?.deliveryMethod?.toLowerCase() === "digitally" &&
-                selectedRequest?.deliveryMethod?.toLowerCase() !== "pickup" &&
-                selectedRequest?.status === "pending" && (
-                  <div className="flex flex-col gap-y-2">
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
-                      <FileIcon className="w-3 h-3" />
-                      Upload Document (PDF/Image)
-                    </span>
-                    {!uploadedFile ? (
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx,image/*"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                        <div className="w-full rounded-lg py-6 px-4 border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
-                          <FileIcon className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Click to upload document
-                          </p>
-                        </div>
-                      </label>
-                    ) : (
-                      <div className="pr-8 gap-x-3 h-14 flex mt-2 items-center relative truncate w-full rounded-lg py-2 px-2 border border-dashed border-purple-300 dark:border-purple-700 text-sm">
-                        <span className="p-2 border rounded-md border-purple-200 bg-purple-50 dark:bg-purple-900/80 dark:border-purple-800 text-purple-500 dark:text-purple-500">
-                          <FileIcon size={19} />
-                        </span>
-                        <div className="h-full truncate flex flex-col">
-                          <span className="text-sm max-w-[9rem] md:max-w-[13rem] truncate text-slate-900 dark:text-slate-100">
-                            {uploadedFile.name}
-                          </span>
-                          <span className="text-slate-400 dark:text-slate-500">
-                            {formatFileSize(uploadedFile.size)}
-                          </span>
-                        </div>
-                        <Button
-                          onClick={removeFile}
-                          className="shadow-none right-2 absolute bg-transparent text-slate-900 dark:text-slate-200 cursor-pointer hover:bg-transparent p-0 h-5 w-2"
-                        >
-                          <X className="size-[18px]" />
-                        </Button>
+              {selectedRequest?.digitallyAvailable && selectedRequest?.status === "pending" && (
+                <div className="flex flex-col gap-y-2">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+                    <FileIcon className="w-3 h-3" />
+                    Upload Document (PDF/Image)
+                  </span>
+                  {!uploadedFile ? (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <div className="w-full rounded-lg py-6 px-4 border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
+                        <FileIcon className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Click to upload document
+                        </p>
                       </div>
-                    )}
-                  </div>
-                )}
+                    </label>
+                  ) : (
+                    <div className="pr-8 gap-x-3 h-14 flex mt-2 items-center relative truncate w-full rounded-lg py-2 px-2 border border-dashed border-purple-300 dark:border-purple-700 text-sm">
+                      <span className="p-2 border rounded-md border-purple-200 bg-purple-50 dark:bg-purple-900/80 dark:border-purple-800 text-purple-500 dark:text-purple-500">
+                        <FileIcon size={19} />
+                      </span>
+                      <div className="h-full truncate flex flex-col">
+                        <span className="text-sm max-w-[9rem] md:max-w-[13rem] truncate text-slate-900 dark:text-slate-100">
+                          {uploadedFile.name}
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500">
+                          {formatFileSize(uploadedFile.size)}
+                        </span>
+                      </div>
+                      <Button
+                        onClick={removeFile}
+                        className="shadow-none right-2 absolute bg-transparent text-slate-900 dark:text-slate-200 cursor-pointer hover:bg-transparent p-0 h-5 w-2"
+                      >
+                        <X className="size-[18px]" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Action Buttons */}
             </div>
           )}
           <SheetFooter className="flex flex-col gap-y-2 px-4 pb-4">
-            {selectedRequest?.deliveryMethod === "pickup" &&
+            {selectedRequest?.deliveryMethod === "pickup" && !selectedRequest?.digitallyAvailable &&
               selectedRequest?.status === "pending" && (
                 <Button
                   onClick={() =>
@@ -384,7 +382,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 </Button>
               )}
 
-            {selectedRequest?.deliveryMethod === "digitally" &&
+            {selectedRequest?.digitallyAvailable &&
               selectedRequest?.status === "pending" && (
                 <Button
                   onClick={() =>

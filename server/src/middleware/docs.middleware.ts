@@ -40,9 +40,10 @@ const requestDocsValidation = [
     .withMessage("Quantity must be a whole number greater than 0."),
 
   requiredBoolean("urgentRequest", "Urgent request status is required."),
+  requiredBoolean("digitallyAvailable", " Digitally request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
     .customSanitizer((value) => value.toLowerCase())
-    .isIn(["pickup", "delivery", "digital"])
+    .isIn(["pickup", "delivery", "digitally"])
     .withMessage("Invalid delivery method."),
 
   requiredString("contactNumber", "Contact number is required.")
@@ -75,6 +76,10 @@ const availableDocsValidation = [
     .optional()
     .isBoolean()
     .withMessage("Urgent must be a boolean."),
+  body("digitallyAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Digitally available must be a boolean."),
   body("deliveryAvailable")
     .optional()
     .isBoolean()
@@ -99,7 +104,10 @@ const updateDocsValidation = [
     .withMessage("docs_id is required")
     .isMongoId()
     .withMessage("Invalid docs_id format"),
-
+  body("digitallyAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Digitally available must be a boolean."),
   // Optional fields that can be updated
   body("name")
     .optional()

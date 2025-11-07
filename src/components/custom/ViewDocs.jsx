@@ -188,6 +188,10 @@ const ViewDocs = ({ children, open, handleOpenChange, data }) => {
               label="Delivery Available"
               value={data.deliveryAvailable}
             />
+            <BooleanBadge
+              label="Digitally Available"
+              value={data.digitallyAvailable}
+            />
           </div>
         </div>
 

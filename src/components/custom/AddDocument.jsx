@@ -42,6 +42,7 @@ const AddDocument = ({
     requirements: data?.requirements ?? "",
     purposes: data?.purposes ?? "",
     deliveryAvailable: data?.deliveryAvailable ?? false,
+    digitallyAvailable: data?.digitallyAvailable ?? false,
     urgent: data?.urgent ?? false,
     urgentFee: data?.urgentFee ?? "",
     urgentTime: data?.urgentTime ?? "",
@@ -80,6 +81,7 @@ const AddDocument = ({
       data?.requirements === info.requirements &&
       data?.purposes === info.purposes &&
       data?.deliveryAvailable === info.deliveryAvailable &&
+      data?.digitallyAvailable === info.digitallyAvailable &&
       data?.urgent === info.urgent &&
       data?.urgentFee === info.urgentFee &&
       data?.urgentTime === info.urgentTime &&
@@ -125,6 +127,7 @@ const AddDocument = ({
         requirements: data.requirements ?? "",
         purposes: data.purposes ?? "",
         deliveryAvailable: data.deliveryAvailable ?? false,
+        digitallyAvailable: data.digitallyAvailable ?? false,
         urgent: data.urgent ?? false,
         urgentFee: data.urgentFee ?? "",
         urgentTime: data.urgentTime ?? "",
@@ -182,9 +185,10 @@ const AddDocument = ({
           status: "info",
         });
       }
-      const { urgentFee, ...rest } = info;
+      const { urgentFee, urgentTime,...rest } = info;
       const payload = {
         ...(urgentFee?.trim()?.length > 0 ? { urgentFee } : {}),
+        ...(urgentTime?.trim()?.length > 0 ? { urgentFee } : {}),
         ...rest,
       };
       console.log("Payload:", payload);
@@ -213,7 +217,7 @@ const AddDocument = ({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
+      <SheetContent className="sm:max-w-[500px] w-full md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
         <SheetHeader className="text-left">
           <SheetTitle className="font-inter text-xl">
             {isEdit ? "Edit Available Documents" : "Add Available Document"}
@@ -348,6 +352,21 @@ const AddDocument = ({
           <div className="w-full flex flex-col gap-y-3">
             <span className="text-sm font-medium">Service Options</span>
             <div className="flex flex-wrap gap-4">
+               <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="digitallyAvailable"
+                  checked={info.digitallyAvailable}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange("digitallyAvailable", checked)
+                  }
+                />
+                <label
+                  htmlFor="digitallyAvailable"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Digitally Available
+                </label>
+              </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="deliveryAvailable"

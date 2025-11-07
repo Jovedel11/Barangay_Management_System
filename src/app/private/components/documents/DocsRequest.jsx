@@ -122,10 +122,10 @@ const DocsRequest = () => {
     document.body.removeChild(link);
 
     CustomToast({
-        description: "Download started.",
-        status: "success",
+      description: "Download started.",
+      status: "success",
     });
-};
+  };
 
   return (
     <Card className="bg-inherit border-none shadow-none transition-all duration-200">
@@ -230,7 +230,8 @@ const DocsRequest = () => {
                       </div>
                     )}
                     {request.status === "completed" &&
-                      request.deliveryMethod === "pickup" && (
+                      request.deliveryMethod === "pickup" &&
+                      !request.digitallyAvailable && (
                         <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
                           <p className="text-success font-medium">
                             Ready for Pickup!
@@ -242,16 +243,16 @@ const DocsRequest = () => {
                         </div>
                       )}
 
-                    {request.status === "completed" &&
-                      request.deliveryMethod === "gcash" && (
+                    {request.digitallyAvailable &&
+                      request.status === "completed" && (
                         <div className="space-y-2">
                           <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
                             <p className="text-success font-medium">
-                              Payment Confirmed!
+                              Document Ready for Download!
                             </p>
                             <p className="text-success/80">
-                              The admin has confirmed your payment. Your
-                              document is now ready — you can download it below.
+                              The admin has sent your document digitally. You
+                              can download it using the button below.
                             </p>
                           </div>
                           {request.fileSrc && request.fileName && (
