@@ -33,7 +33,7 @@ const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
     if (req.file) {
       const uploadResult = await UploadFile({
         file: req.file,
-        userId: data.user, 
+        userId: data.user,
       });
       newDocData.fileName = uploadResult.fileName;
       newDocData.paymentSrc = uploadResult.filePath;
@@ -130,11 +130,7 @@ const updateDocs = ({
         });
 
         updateFields.fileName = uploadResult.fileName;
-        if (uploadResult.bucket === "payment") {
-          updateFields.paymentSrc = uploadResult.filePath;
-        } else {
-          updateFields.fileSrc = uploadResult.filePath;
-        }
+        updateFields.fileSrc = uploadResult.filePath;
       }
       Object.keys(updateFields).forEach((key) => {
         if (
@@ -167,7 +163,7 @@ const updateDocs = ({
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
           resident_id: data.user,
-          data_name: isItem ? data.category :  data.name ?? data.service,
+          data_name: isItem ? data.category : data.name ?? data.service,
           data_category: data.category,
           details: detailsToSend,
           link: linkToSend,

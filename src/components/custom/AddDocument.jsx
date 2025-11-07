@@ -41,7 +41,7 @@ const AddDocument = ({
     processingTime: data?.processingTime ?? "",
     requirements: data?.requirements ?? "",
     purposes: data?.purposes ?? "",
-    onlinePaymentAvailable: data?.onlinePaymentAvailable ?? false,
+    deliveryAvailable: data?.deliveryAvailable ?? false,
     urgent: data?.urgent ?? false,
     urgentFee: data?.urgentFee ?? "",
     urgentTime: data?.urgentTime ?? "",
@@ -67,7 +67,6 @@ const AddDocument = ({
         !info.processingTime.trim() ||
         !info.requirements.trim() ||
         !info.purposes.trim() ||
-        !info.urgentTime.trim() ||
         !info.specialNote.trim());
 
     if (anyEmpty) return true;
@@ -80,7 +79,7 @@ const AddDocument = ({
       data?.processingTime === info.processingTime &&
       data?.requirements === info.requirements &&
       data?.purposes === info.purposes &&
-      data?.onlinePaymentAvailable === info.onlinePaymentAvailable &&
+      data?.deliveryAvailable === info.deliveryAvailable &&
       data?.urgent === info.urgent &&
       data?.urgentFee === info.urgentFee &&
       data?.urgentTime === info.urgentTime &&
@@ -125,7 +124,7 @@ const AddDocument = ({
         processingTime: data.processingTime ?? "",
         requirements: data.requirements ?? "",
         purposes: data.purposes ?? "",
-        onlinePaymentAvailable: data.onlinePaymentAvailable ?? false,
+        deliveryAvailable: data.deliveryAvailable ?? false,
         urgent: data.urgent ?? false,
         urgentFee: data.urgentFee ?? "",
         urgentTime: data.urgentTime ?? "",
@@ -177,11 +176,15 @@ const AddDocument = ({
           status: "info",
         });
       }
+      if (info.urgent && info.urgentTime.trim()?.length === 0) {
+        return CustomToast({
+          description: "Please provide an urgent time for urgent document.",
+          status: "info",
+        });
+      }
       const { urgentFee, ...rest } = info;
       const payload = {
-        ...(urgentFee?.trim()?.length > 0
-          ? { urgentFee }
-          : {}),
+        ...(urgentFee?.trim()?.length > 0 ? { urgentFee } : {}),
         ...rest,
       };
       console.log("Payload:", payload);
@@ -195,7 +198,7 @@ const AddDocument = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(
-            !isEdit ? payload  : { docs_id: data?._id, ...payload }
+            !isEdit ? payload : { docs_id: data?._id, ...payload }
           ),
           credentials: "include",
         },
@@ -221,7 +224,7 @@ const AddDocument = ({
               : "View or add document service information"}
           </SheetDescription>
         </SheetHeader>
-        <div className="w-full flex flex-col gap-y-4 px-4">
+        <div className="w-full flex-1 flex flex-col gap-y-4 px-4">
           <div className="flex gap-x-2">
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Service Name</span>
@@ -305,29 +308,30 @@ const AddDocument = ({
             />
           </div>
 
-          <div className="w-full flex gap-x-3">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">Urgent Fee</span>
-              <Input
-                disabled={!info.urgent}
-                id="urgentFee"
-                value={info.urgentFee}
-                onChange={handleChange}
-                placeholder="₱ 0.00"
-              />
+          {info.urgent && (
+            <div className="w-full flex gap-x-3">
+              <div className="w-full flex flex-col gap-y-1">
+                <span className="text-sm font-medium">Urgent Fee</span>
+                <Input
+                  id="urgentFee"
+                  value={info.urgentFee}
+                  onChange={handleChange}
+                  placeholder="₱ 0.00"
+                />
+              </div>
+              <div className="w-full flex flex-col gap-y-1">
+                <span className="text-sm font-medium">
+                  Urgent Processing Time
+                </span>
+                <Input
+                  id="urgentTime"
+                  value={info.urgentTime}
+                  onChange={handleChange}
+                  placeholder="e.g., 1-2 days"
+                />
+              </div>
             </div>
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">
-                Urgent Processing Time
-              </span>
-              <Input
-                id="urgentTime"
-                value={info.urgentTime}
-                onChange={handleChange}
-                placeholder="e.g., 1-2 days"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="w-full flex flex-col gap-y-1">
             <span className="text-sm font-medium">Special Note</span>
@@ -346,17 +350,17 @@ const AddDocument = ({
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="onlinePaymentAvailable"
-                  checked={info.onlinePaymentAvailable}
+                  id="deliveryAvailable"
+                  checked={info.deliveryAvailable}
                   onCheckedChange={(checked) =>
-                    handleCheckboxChange("onlinePaymentAvailable", checked)
+                    handleCheckboxChange("deliveryAvailable", checked)
                   }
                 />
                 <label
-                  htmlFor="onlinePaymentAvailable"
+                  htmlFor="deliveryAvailable"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Online Payment Available
+                  Delivery Available
                 </label>
               </div>
 
@@ -394,7 +398,6 @@ const AddDocument = ({
             </div>
           </div>
         </div>
-
         <SheetFooter className="flex flex-row justify-end gap-x-2 mt-4">
           <SheetClose asChild>
             <Button

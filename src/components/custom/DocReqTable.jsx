@@ -111,7 +111,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
         const formData = new FormData();
 
         formData.append("docs_id", docs_id);
-        if (deliveryMethod === "gcash" && uploadedFile) {
+        if (deliveryMethod === "digitally" && uploadedFile) {
           formData.append("status", "completed");
           formData.append("file", uploadedFile);
         } else {
@@ -190,16 +190,17 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       {request.deliveryMethod}
                     </TableCell>
                     <TableCell className="pl-6">
-                      {request?.status === "completed" &&
-                        request?.deliveryMethod === "pickup" && (
-                          <Badge variant="destructive">Ready for pickup</Badge>
-                        )}
+                      {request?.status === "completed" && (
+                        <Badge variant="destructive">
+                          {request?.deliveryMethod === "pickup"
+                            ? "Ready for pickup"
+                            : request?.deliveryMethod === "delivery"
+                            ? "Delivered"
+                            : "File sent digitally"}
+                        </Badge>
+                      )}
                       {request?.status === "pending" && (
                         <Badge variant="destructive">Pending</Badge>
-                      )}
-                      {request?.status === "completed" &&
-                        request?.deliveryMethod === "gcash" && (
-                        <Badge variant="destructive">Document sent</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -231,7 +232,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
           </SheetHeader>
 
           {selectedRequest && (
-            <div className="w-full flex flex-col gap-y-6 px-4 mt-4">
+            <div className="w-full flex-1 flex flex-col gap-y-6 px-4 mt-4">
               {/* Resident Information */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <InfoRow
@@ -298,7 +299,13 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   </span>
                   <div>
                     {selectedRequest?.status === "completed" && (
-                      <Badge variant="destructive">Ready for pickup</Badge>
+                      <Badge variant="destructive">
+                        {selectedRequest?.deliveryMethod === "pickup"
+                          ? "Ready for pickup"
+                          : selectedRequest?.deliveryMethod === "delivery"
+                          ? "Delivered"
+                          : "File sent digitally"}
+                      </Badge>
                     )}
                     {selectedRequest?.status === "pending" && (
                       <Badge variant="destructive">Pending</Badge>
@@ -309,26 +316,8 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   </div>
                 </div>
               </div>
-
-              {/* Payment Screenshot */}
-              {selectedRequest?.paymentSrc && (
-                <div className="flex flex-col gap-y-2">
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
-                    <ImageIcon className="w-3 h-3" />
-                    Payment Screenshot
-                  </span>
-                  <div className="relative bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <img
-                      src={selectedRequest.paymentSrc}
-                      alt="Payment Screenshot"
-                      className="w-full h-auto object-contain"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* File Upload for GCash delivery */}
-              {selectedRequest?.deliveryMethod?.toLowerCase() === "gcash" &&
+              {/* File Upload for Digital delivery */}
+              {selectedRequest?.deliveryMethod?.toLowerCase() === "digitally" &&
                 selectedRequest?.deliveryMethod?.toLowerCase() !== "pickup" &&
                 selectedRequest?.status === "pending" && (
                   <div className="flex flex-col gap-y-2">
@@ -376,59 +365,59 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 )}
 
               {/* Action Buttons */}
-              <SheetFooter className="flex flex-col gap-y-2 p-0 pb-4">
-                {selectedRequest?.deliveryMethod === "pickup" &&
-                  selectedRequest?.status === "pending" && (
-                    <Button
-                      onClick={() =>
-                        handleUpdate({
-                          docs_id: selectedRequest?._id,
-                          status: "completed",
-                        })
-                      }
-                      className="w-full"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Mark as Ready for Pickup
-                    </Button>
-                  )}
-
-                {selectedRequest?.deliveryMethod === "gcash" &&
-                  selectedRequest?.status === "pending" && (
-                    <Button
-                      onClick={() =>
-                        handleUpdate({
-                          docs_id: selectedRequest?._id,
-                          status: "completed",
-                          deliveryMethod: "gcash",
-                        })
-                      }
-                      disabled={!uploadedFile}
-                      className="w-full"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Send Document
-                    </Button>
-                  )}
-
-                {selectedRequest?.status !== "pending" && (
-                  <Button
-                    onClick={() =>
-                      handleUpdate({
-                        docs_id: selectedRequest?._id,
-                        status: "pending",
-                      })
-                    }
-                    variant="outline"
-                    className="w-full border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
-                  >
-                    <Loader className="mr-2 h-4 w-4" />
-                    Mark as Pending
-                  </Button>
-                )}
-              </SheetFooter>
             </div>
           )}
+          <SheetFooter className="flex flex-col gap-y-2 px-4 pb-4">
+            {selectedRequest?.deliveryMethod === "pickup" &&
+              selectedRequest?.status === "pending" && (
+                <Button
+                  onClick={() =>
+                    handleUpdate({
+                      docs_id: selectedRequest?._id,
+                      status: "completed",
+                    })
+                  }
+                  className="w-full"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Mark as Ready for Pickup
+                </Button>
+              )}
+
+            {selectedRequest?.deliveryMethod === "digitally" &&
+              selectedRequest?.status === "pending" && (
+                <Button
+                  onClick={() =>
+                    handleUpdate({
+                      docs_id: selectedRequest?._id,
+                      status: "completed",
+                      deliveryMethod: "digitally",
+                    })
+                  }
+                  disabled={!uploadedFile}
+                  className="w-full"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Send Document
+                </Button>
+              )}
+
+            {selectedRequest?.status !== "pending" && (
+              <Button
+                onClick={() =>
+                  handleUpdate({
+                    docs_id: selectedRequest?._id,
+                    status: "pending",
+                  })
+                }
+                variant="outline"
+                className="w-full border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
+              >
+                <Loader className="mr-2 h-4 w-4" />
+                Mark as Pending
+              </Button>
+            )}
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </>

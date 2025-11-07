@@ -42,7 +42,7 @@ const requestDocsValidation = [
   requiredBoolean("urgentRequest", "Urgent request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
     .customSanitizer((value) => value.toLowerCase())
-    .isIn(["pickup", "gcash"])
+    .isIn(["pickup", "delivery", "digital"])
     .withMessage("Invalid delivery method."),
 
   requiredString("contactNumber", "Contact number is required.")
@@ -75,16 +75,20 @@ const availableDocsValidation = [
     .optional()
     .isBoolean()
     .withMessage("Urgent must be a boolean."),
-  body("onlinePaymentAvailable")
+  body("deliveryAvailable")
     .optional()
     .isBoolean()
-    .withMessage("Online payment availability must be a boolean."),
+    .withMessage("Delivery availability must be a boolean."),
   body("urgentFee")
     .optional()
     .isString()
     .trim()
     .withMessage("Urgent fee must be a string."),
-  requiredString("urgentTime", "Urgent time is required."),
+  body("urgentTime")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Urgent fee must be a string."),
   requiredBoolean("isActive", "IsActive status is required."),
   requiredString("specialNote", "SpecialNote status is required."),
 ];
@@ -135,10 +139,10 @@ const updateDocsValidation = [
     .optional()
     .isString()
     .withMessage("Purposes must be an array"),
-  body("onlinePaymentAvailable")
+  body("deliveryAvailable")
     .optional()
     .isBoolean()
-    .withMessage("Online payment availability must be boolean"),
+    .withMessage("Delivery availability must be boolean"),
   body("urgent").optional().isBoolean().withMessage("Urgent must be boolean"),
   body("urgentFee")
     .optional()
@@ -195,7 +199,7 @@ const updateDocsValidation = [
       "processingTime",
       "requirements",
       "purposes",
-      "onlinePaymentAvailable",
+      "deliveryAvailable",
       "urgent",
       "urgentFee",
       "urgentTime",

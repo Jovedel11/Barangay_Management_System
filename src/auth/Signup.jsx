@@ -758,7 +758,7 @@ const Signup = () => {
                                 imageError ? "text-red-600" : "text-zinc-500"
                               }`}
                             >
-                              Upload your Barangay ID (Optional)
+                              Upload your Barangay ID (Required)
                             </span>
                             <input
                               id="cor-file"
@@ -772,7 +772,7 @@ const Signup = () => {
                         {imageName && (
                           <div className="flex min-h-[3.5rem] max-h-14 justify-center items-center pr-8 relative w-full rounded-sm border-2 border-dashed border-green-300 bg-green-50">
                             <Check className="absolute left-3 w-4 h-4 text-green-600" />
-                            <span className="truncate text-sm px-10 text-zinc-800">
+                            <span className="truncate max-w-62 md:max-w-72 text-sm px-10 text-zinc-800">
                               {imageName}
                             </span>
                             <Button
