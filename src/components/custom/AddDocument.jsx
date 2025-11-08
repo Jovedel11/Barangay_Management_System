@@ -20,9 +20,11 @@ import {
 } from "@/core/components/ui/select";
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/core/components/ui/alert";
 import customRequest from "@/services/customRequest";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CustomToast } from "./CustomToast";
+import { Info } from "lucide-react";
 
 const AddDocument = ({
   children,
@@ -33,6 +35,7 @@ const AddDocument = ({
 }) => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentType, setPaymentType] = useState("paid");
   const [info, setInfo] = useState({
     name: data?.name ?? "",
     category: data?.category ?? "",
@@ -41,11 +44,12 @@ const AddDocument = ({
     processingTime: data?.processingTime ?? "",
     requirements: data?.requirements ?? "",
     purposes: data?.purposes ?? "",
-    onlinePaymentAvailable: data?.onlinePaymentAvailable ?? false,
+    deliveryAvailable: data?.deliveryAvailable ?? false,
+    digitallyAvailable: data?.digitallyAvailable ?? false,
     urgent: data?.urgent ?? false,
     urgentFee: data?.urgentFee ?? "",
     urgentTime: data?.urgentTime ?? "",
-    isActive: data?.isActive ?? false,
+    isActive: !isEdit ? true : data?.isActive ?? false,
     specialNote: data?.specialNote ?? "",
   });
 
@@ -57,17 +61,56 @@ const AddDocument = ({
     "Other",
   ];
 
+  useEffect(() => {
+    if (data) {
+      const isFree =
+        data.fee === "FREE" || data.fee === "Free" || data.fee === "free";
+      setPaymentType(isFree ? "free" : "paid");
+      setInfo({
+        name: data.name ?? "",
+        category: data.category ?? "",
+        description: data.description ?? "",
+        fee: data.fee ?? "",
+        processingTime: data.processingTime ?? "",
+        requirements: data.requirements ?? "",
+        purposes: data.purposes ?? "",
+        deliveryAvailable: data.deliveryAvailable ?? false,
+        digitallyAvailable: data.digitallyAvailable ?? false,
+        urgent: data.urgent ?? false,
+        urgentFee: data.urgentFee ?? "",
+        urgentTime: data.urgentTime ?? "",
+        isActive: data.isActive ?? false,
+        specialNote: data.specialNote ?? "",
+      });
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (paymentType === "free") {
+      setInfo((prev) => ({
+        ...prev,
+        fee: "FREE",
+        digitallyAvailable: true,
+      }));
+    } else {
+      setInfo((prev) => ({
+        ...prev,
+        fee: data?.fee && data.fee !== "FREE" ? data.fee : "",
+        digitallyAvailable: data?.digitallyAvailable ?? false,
+      }));
+    }
+  }, [paymentType, data]);
+
   const nothingChanged = useMemo(() => {
     const anyEmpty =
       !isEdit &&
       (!info.name.trim() ||
         !info.category.trim() ||
         !info.description.trim() ||
-        !info.fee.trim() ||
+        (paymentType === "paid" && !info.fee.trim()) ||
         !info.processingTime.trim() ||
         !info.requirements.trim() ||
         !info.purposes.trim() ||
-        !info.urgentTime.trim() ||
         !info.specialNote.trim());
 
     if (anyEmpty) return true;
@@ -80,7 +123,8 @@ const AddDocument = ({
       data?.processingTime === info.processingTime &&
       data?.requirements === info.requirements &&
       data?.purposes === info.purposes &&
-      data?.onlinePaymentAvailable === info.onlinePaymentAvailable &&
+      data?.deliveryAvailable === info.deliveryAvailable &&
+      data?.digitallyAvailable === info.digitallyAvailable &&
       data?.urgent === info.urgent &&
       data?.urgentFee === info.urgentFee &&
       data?.urgentTime === info.urgentTime &&
@@ -91,7 +135,7 @@ const AddDocument = ({
       return true;
     }
     return false;
-  }, [data, info, isEdit]);
+  }, [data, info, isEdit, paymentType]);
 
   const handleChange = useCallback((e) => {
     const { id, value, type, checked } = e.target;
@@ -114,26 +158,6 @@ const AddDocument = ({
       [field]: checked,
     }));
   }, []);
-
-  useEffect(() => {
-    if (data) {
-      setInfo({
-        name: data.name ?? "",
-        category: data.category ?? "",
-        description: data.description ?? "",
-        fee: data.fee ?? "",
-        processingTime: data.processingTime ?? "",
-        requirements: data.requirements ?? "",
-        purposes: data.purposes ?? "",
-        onlinePaymentAvailable: data.onlinePaymentAvailable ?? false,
-        urgent: data.urgent ?? false,
-        urgentFee: data.urgentFee ?? "",
-        urgentTime: data.urgentTime ?? "",
-        isActive: data.isActive ?? false,
-        specialNote: data.specialNote ?? "",
-      });
-    }
-  }, [data]);
 
   const submitMutation = useMutation({
     mutationFn: async (data) => {
@@ -177,11 +201,16 @@ const AddDocument = ({
           status: "info",
         });
       }
-      const { urgentFee, ...rest } = info;
+      if (info.urgent && info.urgentTime.trim()?.length === 0) {
+        return CustomToast({
+          description: "Please provide an urgent time for urgent document.",
+          status: "info",
+        });
+      }
+      const { urgentFee, urgentTime, ...rest } = info;
       const payload = {
-        ...(urgentFee?.trim()?.length > 0
-          ? { urgentFee }
-          : {}),
+        ...(urgentFee?.trim()?.length > 0 ? { urgentFee } : {}),
+        ...(urgentTime?.trim()?.length > 0 ? { urgentTime } : {}),
         ...rest,
       };
       console.log("Payload:", payload);
@@ -195,7 +224,7 @@ const AddDocument = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(
-            !isEdit ? payload  : { docs_id: data?._id, ...payload }
+            !isEdit ? payload : { docs_id: data?._id, ...payload }
           ),
           credentials: "include",
         },
@@ -210,7 +239,7 @@ const AddDocument = ({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="sm:max-w-[500px] md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
+      <SheetContent className="sm:max-w-[500px] w-full md:max-w-[28rem] overflow-y-auto gap-y-0 font-inter dark:bg-slate-900 flex flex-col">
         <SheetHeader className="text-left">
           <SheetTitle className="font-inter text-xl">
             {isEdit ? "Edit Available Documents" : "Add Available Document"}
@@ -221,7 +250,7 @@ const AddDocument = ({
               : "View or add document service information"}
           </SheetDescription>
         </SheetHeader>
-        <div className="w-full flex flex-col gap-y-4 px-4">
+        <div className="w-full flex-1 flex flex-col gap-y-4 px-4">
           <div className="flex gap-x-2">
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Service Name</span>
@@ -261,6 +290,46 @@ const AddDocument = ({
             />
           </div>
 
+          {/* Payment Type Tabs */}
+          <div className="w-full flex flex-col gap-y-2">
+            <span className="text-sm font-medium">Payment Type</span>
+            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-md">
+              <button
+                type="button"
+                onClick={() => setPaymentType("paid")}
+                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-all ${
+                  paymentType === "paid"
+                    ? "bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-50"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                With Payment
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType("free")}
+                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-all ${
+                  paymentType === "free"
+                    ? "bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-slate-50"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                Free
+              </button>
+            </div>
+          </div>
+
+          {/* Payment Notice */}
+          {paymentType === "paid" && (
+            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-900">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-sm text-blue-800 dark:text-blue-300">
+                Documents with payment can only be processed through pick-up
+                {info.deliveryAvailable && " or delivery"}.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="w-full flex gap-x-3">
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Fee</span>
@@ -269,6 +338,10 @@ const AddDocument = ({
                 value={info.fee}
                 onChange={handleChange}
                 placeholder="₱ 0.00"
+                disabled={paymentType === "free"}
+                className={
+                  paymentType === "free" ? "bg-slate-100 dark:bg-slate-800" : ""
+                }
               />
             </div>
             <div className="w-full flex flex-col gap-y-1">
@@ -305,29 +378,30 @@ const AddDocument = ({
             />
           </div>
 
-          <div className="w-full flex gap-x-3">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">Urgent Fee</span>
-              <Input
-                disabled={!info.urgent}
-                id="urgentFee"
-                value={info.urgentFee}
-                onChange={handleChange}
-                placeholder="₱ 0.00"
-              />
+          {info.urgent && (
+            <div className="w-full flex gap-x-3">
+              <div className="w-full flex flex-col gap-y-1">
+                <span className="text-sm font-medium">Urgent Fee</span>
+                <Input
+                  id="urgentFee"
+                  value={info.urgentFee}
+                  onChange={handleChange}
+                  placeholder="₱ 0.00"
+                />
+              </div>
+              <div className="w-full flex flex-col gap-y-1">
+                <span className="text-sm font-medium">
+                  Urgent Processing Time
+                </span>
+                <Input
+                  id="urgentTime"
+                  value={info.urgentTime}
+                  onChange={handleChange}
+                  placeholder="e.g., 1-2 days"
+                />
+              </div>
             </div>
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">
-                Urgent Processing Time
-              </span>
-              <Input
-                id="urgentTime"
-                value={info.urgentTime}
-                onChange={handleChange}
-                placeholder="e.g., 1-2 days"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="w-full flex flex-col gap-y-1">
             <span className="text-sm font-medium">Special Note</span>
@@ -342,59 +416,66 @@ const AddDocument = ({
           </div>
 
           <div className="w-full flex flex-col gap-y-3">
-            <span className="text-sm font-medium">Service Options</span>
+            {isEdit || info?.fee !== "FREE" ? (
+              <span className="text-sm font-medium">Service Options</span>
+            ) : null}
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="onlinePaymentAvailable"
-                  checked={info.onlinePaymentAvailable}
-                  onCheckedChange={(checked) =>
-                    handleCheckboxChange("onlinePaymentAvailable", checked)
-                  }
-                />
-                <label
-                  htmlFor="onlinePaymentAvailable"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Online Payment Available
-                </label>
-              </div>
+              {paymentType === "paid" && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="deliveryAvailable"
+                    checked={info.deliveryAvailable}
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange("deliveryAvailable", checked)
+                    }
+                  />
+                  <label
+                    htmlFor="deliveryAvailable"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Delivery Available
+                  </label>
+                </div>
+              )}
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="urgent"
-                  checked={info.urgent}
-                  onCheckedChange={(checked) =>
-                    handleCheckboxChange("urgent", checked)
-                  }
-                />
-                <label
-                  htmlFor="urgent"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Urgent Available
-                </label>
-              </div>
+              {info?.fee !== "FREE" && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="urgent"
+                    checked={info.urgent}
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange("urgent", checked)
+                    }
+                  />
+                  <label
+                    htmlFor="urgent"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Urgent Available
+                  </label>
+                </div>
+              )}
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isActive"
-                  checked={info.isActive}
-                  onCheckedChange={(checked) =>
-                    handleCheckboxChange("isActive", checked)
-                  }
-                />
-                <label
-                  htmlFor="isActive"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Active Service
-                </label>
-              </div>
+              {isEdit && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isActive"
+                    checked={info.isActive}
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange("isActive", checked)
+                    }
+                  />
+                  <label
+                    htmlFor="isActive"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Active Service
+                  </label>
+                </div>
+              )}
             </div>
           </div>
         </div>
-
         <SheetFooter className="flex flex-row justify-end gap-x-2 mt-4">
           <SheetClose asChild>
             <Button

@@ -69,9 +69,9 @@ const DocCard = ({ doc }) => {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Payment:</span>
+            <span className="text-muted-foreground">Delivery mode:</span>
             <span className="font-medium text-warning">
-              {doc?.onlinePaymentAvailable ? "Gcash Payment Available" : "Walk-in Only"}
+              {doc?.deliveryAvailable && !doc?.digitallyAvailable ? "Delivery Available" : (!doc?.deliveryAvailable && !doc?.digitallyAvailable ? "Pick up" : "Digitally Available")}
             </span>
           </div>
         </div>

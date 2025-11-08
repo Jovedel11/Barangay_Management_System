@@ -14,7 +14,7 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   status?: string;
   category: string;
   name: string;
-  paymentSrc?: string;
+  digitallyAvailable: boolean;
   fileSrc?: string;
   fileName?: string;
 };
@@ -25,11 +25,11 @@ const docsSchema = new Schema<DocumentRequest<string>>({
   name: { type: String, required: true },
   category: { type: String, required: true },
   quantity: { type: Number, required: true },
+  digitallyAvailable: { type: Boolean, required: true },
   urgentRequest: { type: Boolean, required: true },
   deliveryMethod: { type: String, required: true },
   contactNumber: { type: String, required: true },
   specificDetails: { type: String, required: false },
-  paymentSrc: { type: String, required: false },
   fileSrc: { type: String, required: false },
   fileName: { type: String, required: false },
   status: { type: String, required: false, default: "pending" },
@@ -53,7 +53,8 @@ interface IAvailableDoc {
   urgentFee: string;
   urgentTime: string;
   isActive: boolean;
-  onlinePaymentAvailable: boolean;
+  digitallyAvailable: boolean;
+  deliveryAvailable: boolean;
   specialNote: string;
   totalReq?: number;
   pendings?: number;
@@ -69,8 +70,9 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   purposes: { type: String, required: true },
   urgent: { type: Boolean, required: false, default: false },
   urgentFee: { type: String, required: false },
-  urgentTime: { type: String, required: true },
-  onlinePaymentAvailable: { type: Boolean, required: true },
+  digitallyAvailable: { type: Boolean, required: true },
+  urgentTime: { type: String, required: false },
+  deliveryAvailable: { type: Boolean, required: true },
   isActive: { type: Boolean, required: true },
   specialNote: { type: String, required: true },
   totalReq: { type: Number, required: false, default: 0 }, //No functionalities yet

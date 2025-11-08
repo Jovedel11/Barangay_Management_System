@@ -18,7 +18,6 @@ type Update = {
 
 const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("Request Body: ", req.file);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -29,17 +28,8 @@ const requestDocs = async (req: Request, res: Response, next: NextFunction) => {
 
     const data = matchedData(req);
     const newDocData: any = { ...data };
-
-    if (req.file) {
-      const uploadResult = await UploadFile({
-        file: req.file,
-        userId: data.user, 
-      });
-      newDocData.fileName = uploadResult.fileName;
-      newDocData.paymentSrc = uploadResult.filePath;
-    }
-    const docs = await DocsModel.create(newDocData);
-    await docs.save();
+    console.log("newDocData:", newDocData);
+    const docs = await DocsModel.insertOne(newDocData);
 
     const result = await ProccessNotif({
       resident_id: data.user,
@@ -69,6 +59,7 @@ const createDocs = async (req: Request, res: Response, next: NextFunction) => {
       return res.status(400).json({ errors: errors.array() });
     }
     const data = matchedData(req);
+    console.log("Data:", data);
     const availabDocs = await AvailableDocs.create({ ...data });
     availabDocs.save();
     return res.status(201).json({
@@ -114,14 +105,15 @@ const updateDocs = ({
 }: Update) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("File : ", req.file);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log("Errors : ", errors.array());
         throw new Error("Docs : Invalid fields");
       }
 
       const data = matchedData(req);
       const { docs_id, ...updateFields } = data;
+      console.log("Fileeeeeeeeeeeeeeeee :", req.file);
 
       if (isDocs && req.file) {
         const uploadResult = await UploadFile({
@@ -130,11 +122,7 @@ const updateDocs = ({
         });
 
         updateFields.fileName = uploadResult.fileName;
-        if (uploadResult.bucket === "payment") {
-          updateFields.paymentSrc = uploadResult.filePath;
-        } else {
-          updateFields.fileSrc = uploadResult.filePath;
-        }
+        updateFields.fileSrc = uploadResult.filePath;
       }
       Object.keys(updateFields).forEach((key) => {
         if (
@@ -167,7 +155,7 @@ const updateDocs = ({
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
           resident_id: data.user,
-          data_name: isItem ? data.category :  data.name ?? data.service,
+          data_name: isItem ? data.category : data.name ?? data.service,
           data_category: data.category,
           details: detailsToSend,
           link: linkToSend,

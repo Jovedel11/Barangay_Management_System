@@ -185,8 +185,12 @@ const ViewDocs = ({ children, open, handleOpenChange, data }) => {
             <BooleanBadge label="Status" value={data.isActive} />
             <BooleanBadge label="Urgent Service" value={data.urgent} />
             <BooleanBadge
-              label="Online Payment Available"
-              value={data.onlinePaymentAvailable}
+              label="Delivery Available"
+              value={data.deliveryAvailable}
+            />
+            <BooleanBadge
+              label="Digitally Available"
+              value={data.digitallyAvailable}
             />
           </div>
         </div>

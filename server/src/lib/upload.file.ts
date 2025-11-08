@@ -7,28 +7,17 @@ interface IUploadFile {
 
 export const UploadFile = async ({ file, userId }: IUploadFile) => {
   const { originalname, mimetype, buffer } = file;
-  const isImage = mimetype.startsWith("image/");
-  const bucket = isImage ? "payment" : "docs";
-  console.log("Is image :", isImage);
-  console.log("Bucket name :", bucket);
   const newFileName = `${Date.now()}_${originalname}`;
-  
-  // Upload file to Supabase Storage
   const { data, error } = await supabase.storage
-    .from(bucket)
+    .from("docs")
     .upload(`${userId}/${newFileName}`, buffer, {
       contentType: mimetype,
       upsert: false,
     });
-  console.log("UploadFile data:", data);
-  console.log("UploadFile error:", error);
   if (error) throw error;
-
-  // Construct public file URL
-  const filePath = `${process.env.SUPABASE_URL}/storage/v1/object/public/${bucket}/${data?.path}`;
+  const filePath = `${process.env.SUPABASE_URL}/storage/v1/object/public/docs/${data?.path}`;
 
   return {
-    bucket,
     filePath,
     fileName: originalname,
   };

@@ -40,9 +40,10 @@ const requestDocsValidation = [
     .withMessage("Quantity must be a whole number greater than 0."),
 
   requiredBoolean("urgentRequest", "Urgent request status is required."),
+  requiredBoolean("digitallyAvailable", " Digitally request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
     .customSanitizer((value) => value.toLowerCase())
-    .isIn(["pickup", "gcash"])
+    .isIn(["pickup", "delivery", "digitally","online"])
     .withMessage("Invalid delivery method."),
 
   requiredString("contactNumber", "Contact number is required.")
@@ -75,16 +76,24 @@ const availableDocsValidation = [
     .optional()
     .isBoolean()
     .withMessage("Urgent must be a boolean."),
-  body("onlinePaymentAvailable")
+  body("digitallyAvailable")
     .optional()
     .isBoolean()
-    .withMessage("Online payment availability must be a boolean."),
+    .withMessage("Digitally available must be a boolean."),
+  body("deliveryAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Delivery availability must be a boolean."),
   body("urgentFee")
     .optional()
     .isString()
     .trim()
     .withMessage("Urgent fee must be a string."),
-  requiredString("urgentTime", "Urgent time is required."),
+  body("urgentTime")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("Urgent fee must be a string."),
   requiredBoolean("isActive", "IsActive status is required."),
   requiredString("specialNote", "SpecialNote status is required."),
 ];
@@ -95,7 +104,10 @@ const updateDocsValidation = [
     .withMessage("docs_id is required")
     .isMongoId()
     .withMessage("Invalid docs_id format"),
-
+  body("digitallyAvailable")
+    .optional()
+    .isBoolean()
+    .withMessage("Digitally available must be a boolean."),
   // Optional fields that can be updated
   body("name")
     .optional()
@@ -135,10 +147,10 @@ const updateDocsValidation = [
     .optional()
     .isString()
     .withMessage("Purposes must be an array"),
-  body("onlinePaymentAvailable")
+  body("deliveryAvailable")
     .optional()
     .isBoolean()
-    .withMessage("Online payment availability must be boolean"),
+    .withMessage("Delivery availability must be boolean"),
   body("urgent").optional().isBoolean().withMessage("Urgent must be boolean"),
   body("urgentFee")
     .optional()
@@ -174,6 +186,7 @@ const updateDocsValidation = [
           "processing",
           "completed",
           "rejected",
+          "digital",
           "approved",
         ];
         if (allowed.includes(value.toLocaleLowerCase())) {
@@ -195,7 +208,7 @@ const updateDocsValidation = [
       "processingTime",
       "requirements",
       "purposes",
-      "onlinePaymentAvailable",
+      "deliveryAvailable",
       "urgent",
       "urgentFee",
       "urgentTime",
