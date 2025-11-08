@@ -136,7 +136,7 @@ const updateDocs = ({
 
       const { matchedCount, modifiedCount } = await CollectionModel.updateOne(
         { _id: docs_id },
-        { $set: updateFields }
+        { $set: {...updateFields, ...(isDocs ? { recieveDate: new Date() } : {}) } }
       );
 
       if (matchedCount === 0) {

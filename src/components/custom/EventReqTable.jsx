@@ -197,9 +197,6 @@ export default function EventParticipantTable({ participants = [], refetch }) {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1.5">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadgeStyle(participant.status)}`}>
-                          {participant.status}
-                        </span>
                         {participant.payment && (
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getPaymentBadgeStyle(participant.paymentStatus)}`}>
                             {participant.paymentStatus}
