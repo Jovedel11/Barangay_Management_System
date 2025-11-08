@@ -9,8 +9,8 @@ import {
   FileText,
   Hash,
   Truck,
-  FileIcon,
-  ImageIcon,
+  File,
+  Image,
 } from "lucide-react";
 import {
   Table,
@@ -30,6 +30,13 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/core/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 import { CustomToast } from "./CustomToast";
 import customRequest from "@/services/customRequest";
 import { useCallback, useState } from "react";
@@ -51,11 +58,13 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const handleViewDetails = (request) => {
     setSelectedRequest(request);
     setIsSheetOpen(true);
     setUploadedFile(null);
+    setSelectedStatus("");
   };
 
   const handleFileUpload = (event) => {
@@ -106,16 +115,27 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
   });
 
   const handleUpdate = useCallback(
-    async ({ docs_id, status, deliveryMethod }) => {
+    async () => {
       try {
         const formData = new FormData();
 
-        formData.append("docs_id", docs_id);
-        if (deliveryMethod === "digitally" && uploadedFile) {
+        formData.append("docs_id", selectedRequest?._id);
+        
+        // Determine the status based on selectedStatus
+        let statusToSend = "";
+        if (selectedStatus === "ready-for-pickup" || selectedStatus === "ready-for-delivery" || selectedStatus === "document-done") {
+          statusToSend = "completed";
+        } else if (selectedStatus === "processing") {
+          statusToSend = "processing";
+        } else if (selectedStatus === "rejected") {
+          statusToSend = "rejected";
+        }
+
+        if (selectedRequest?.digitallyAvailable && uploadedFile && selectedStatus === "document-done") {
           formData.append("status", "completed");
           formData.append("file", uploadedFile);
         } else {
-          formData.append("status", status);
+          formData.append("status", statusToSend);
         }
 
         await updateMutation.mutateAsync({
@@ -128,11 +148,12 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
         });
 
         setIsSheetOpen(false);
+        setSelectedStatus("");
       } catch (error) {
         console.error("Error submitting:", error);
       }
     },
-    [updateMutation, uploadedFile]
+    [updateMutation, uploadedFile, selectedRequest, selectedStatus]
   );
 
   return (
@@ -146,7 +167,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 <TableHead>Purpose</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead className="w-42">Mode of Delivery</TableHead>
+                <TableHead className="w-42">Mode of Transaction</TableHead>
                 <TableHead>Request Status</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
@@ -191,16 +212,16 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     </TableCell>
                     <TableCell className="pl-6">
                       {request?.status === "completed" && (
-                        <Badge variant="destructive">
-                          {request?.deliveryMethod === "pickup"
-                            ? "Ready for pickup"
-                            : request?.deliveryMethod === "delivery"
-                            ? "Delivered"
-                            : "File sent digitally"}
-                        </Badge>
+                        <Badge variant="default">Completed</Badge>
                       )}
                       {request?.status === "pending" && (
-                        <Badge variant="destructive">Pending</Badge>
+                        <Badge variant="secondary">Pending</Badge>
+                      )}
+                      {request?.status === "processing" && (
+                        <Badge variant="outline">Processing</Badge>
+                      )}
+                      {request?.status === "rejected" && (
+                        <Badge variant="destructive">Rejected</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -275,7 +296,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   icon={Hash}
                 />
                 <InfoRow
-                  label="Delivery Method"
+                  label="Mode of Transaction"
                   value={selectedRequest?.deliveryMethod}
                   icon={Truck}
                 />
@@ -299,30 +320,31 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   </span>
                   <div>
                     {selectedRequest?.status === "completed" && (
-                      <Badge variant="destructive">
-                        {selectedRequest?.deliveryMethod === "pickup"
-                          ? "Ready for pickup"
-                          : selectedRequest?.deliveryMethod === "delivery"
-                          ? "Delivered"
-                          : "File sent digitally"}
-                      </Badge>
+                      <Badge variant="default">Completed</Badge>
                     )}
                     {selectedRequest?.status === "pending" && (
-                      <Badge variant="destructive">Pending</Badge>
+                      <Badge variant="secondary">Pending</Badge>
                     )}
-                    {selectedRequest?.status === "delivered" && (
-                      <Badge variant="destructive">Delivered</Badge>
+                    {selectedRequest?.status === "processing" && (
+                      <Badge variant="outline">Processing</Badge>
+                    )}
+                    {selectedRequest?.status === "rejected" && (
+                      <Badge variant="destructive">Rejected</Badge>
                     )}
                   </div>
                 </div>
               </div>
+
               {/* File Upload for Digital delivery */}
-              {selectedRequest?.digitallyAvailable && selectedRequest?.status === "pending" && (
+              {selectedRequest?.digitallyAvailable && (selectedRequest?.status === "pending" || selectedRequest?.status === "completed") && (
                 <div className="flex flex-col gap-y-2">
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
-                    <FileIcon className="w-3 h-3" />
+                    <File className="w-3 h-3" />
                     Upload Document (PDF/Image)
                   </span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Note: File upload is only available for documents that can be sent digitally.
+                  </p>
                   {!uploadedFile ? (
                     <label className="cursor-pointer">
                       <input
@@ -332,7 +354,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                         className="hidden"
                       />
                       <div className="w-full rounded-lg py-6 px-4 border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
-                        <FileIcon className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                        <File className="w-8 h-8 mx-auto mb-2 text-slate-400" />
                         <p className="text-sm text-slate-600 dark:text-slate-400">
                           Click to upload document
                         </p>
@@ -341,7 +363,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   ) : (
                     <div className="pr-8 gap-x-3 h-14 flex mt-2 items-center relative truncate w-full rounded-lg py-2 px-2 border border-dashed border-purple-300 dark:border-purple-700 text-sm">
                       <span className="p-2 border rounded-md border-purple-200 bg-purple-50 dark:bg-purple-900/80 dark:border-purple-800 text-purple-500 dark:text-purple-500">
-                        <FileIcon size={19} />
+                        <File size={19} />
                       </span>
                       <div className="h-full truncate flex flex-col">
                         <span className="text-sm max-w-[9rem] md:max-w-[13rem] truncate text-slate-900 dark:text-slate-100">
@@ -362,59 +384,79 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Status Selection Dropdown */}
+              <div className="flex flex-col gap-y-2">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  Set Status
+                </span>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="w-fit min-w-[200px]">
+                    <SelectValue placeholder="Choose action to process" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedRequest?.deliveryMethod === "pickup" && (
+                      <>
+                        {selectedRequest?.status !== "completed" && (
+                          <SelectItem value="ready-for-pickup">Mark as Ready for Pickup</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "processing" && (
+                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "rejected" && (
+                          <SelectItem value="rejected">Reject Request</SelectItem>
+                        )}
+                      </>
+                    )}
+                    {selectedRequest?.deliveryMethod === "delivery" && (
+                      <>
+                        {selectedRequest?.status !== "completed" && (
+                          <SelectItem value="ready-for-delivery">Mark as Ready for Delivery</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "processing" && (
+                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "rejected" && (
+                          <SelectItem value="rejected">Reject Request</SelectItem>
+                        )}
+                      </>
+                    )}
+                    {selectedRequest?.digitallyAvailable && (
+                      <>
+                        {selectedRequest?.status !== "completed" && (
+                          <SelectItem value="document-done">Document Done</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "processing" && (
+                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                        )}
+                        {selectedRequest?.status !== "rejected" && (
+                          <SelectItem value="rejected">Reject Request</SelectItem>
+                        )}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
+
           <SheetFooter className="flex flex-col gap-y-2 px-4 pb-4">
-            {selectedRequest?.deliveryMethod === "pickup" && !selectedRequest?.digitallyAvailable &&
-              selectedRequest?.status === "pending" && (
-                <Button
-                  onClick={() =>
-                    handleUpdate({
-                      docs_id: selectedRequest?._id,
-                      status: "completed",
-                    })
-                  }
-                  className="w-full"
-                >
+            <Button
+              onClick={handleUpdate}
+              disabled={!selectedStatus || (selectedRequest?.digitallyAvailable && selectedStatus === "document-done" && !uploadedFile && selectedRequest?.deliveryMethod === "digitally") || updateMutation.isPending}
+              className="w-full"
+            >
+              {updateMutation.isPending ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Mark as Ready for Pickup
-                </Button>
+                  Process Document
+                </>
               )}
-
-            {selectedRequest?.digitallyAvailable &&
-              selectedRequest?.status === "pending" && (
-                <Button
-                  onClick={() =>
-                    handleUpdate({
-                      docs_id: selectedRequest?._id,
-                      status: "completed",
-                      deliveryMethod: "digitally",
-                    })
-                  }
-                  disabled={!uploadedFile}
-                  className="w-full"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Send Document
-                </Button>
-              )}
-
-            {selectedRequest?.status !== "pending" && (
-              <Button
-                onClick={() =>
-                  handleUpdate({
-                    docs_id: selectedRequest?._id,
-                    status: "pending",
-                  })
-                }
-                variant="outline"
-                className="w-full border border-slate-200 bg-slate-100/30 dark:bg-slate-800 dark:border-slate-700 shadow-none text-slate-600 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-800/70"
-              >
-                <Loader className="mr-2 h-4 w-4" />
-                Mark as Pending
-              </Button>
-            )}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

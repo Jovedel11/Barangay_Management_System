@@ -56,7 +56,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
       !requestForm.purpose.trim() ||
       requestForm.quantity === 0 ||
       !requestForm.contactNumber ||
-      !requestForm.deliveryMethod.trim();
+      (!requestForm.deliveryMethod.trim() && !digitallyAvailable);
 
     if (anyEmpty) return true;
 
@@ -66,7 +66,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
       !requestForm.contactNumber &&
       !requestForm.specificDetails.trim()
     );
-  }, [requestForm]);
+  }, [requestForm, digitallyAvailable]);
 
   useEffect(() => {
     if (selectedDocument) {
@@ -114,18 +114,20 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
       } else if (requestForm.deliveryMethod === "cod") {
         status = "delivery";
       } else if (requestForm.deliveryMethod === "digitally") {
-        status = "digitally";
+        status = "online";
       }
 
       // ✅ use JSON instead of FormData
+      const deliveryMode = digitallyAvailable ? "online" : status
       const payload = {
         user: user._id,
         name: selectedDocument.name,
         category: selectedDocument.category,
         digitallyAvailable: requestForm.digitallyAvailable,
-        status,
+        status: digitallyAvailable ? "digital" : status,
         ...requestForm,
       };
+      console.log("Submitting payload:", payload);
 
       const result = await customRequest({
         path: "/api/brgy-docs/request",
@@ -134,7 +136,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ ...payload, deliveryMethod: deliveryMode }),
           credentials: "include",
         },
       });
@@ -159,7 +161,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         status: "error",
       });
     }
-  }, [requestForm, onOpenChange, user, queryClient, selectedDocument]);
+  }, [requestForm, onOpenChange, user, queryClient, selectedDocument, digitallyAvailable]);
 
   if (!selectedDocument) return null;
 
@@ -233,9 +235,9 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
           </div>
 
           {/* Urgent Checkbox */}
-          {selectedDocument.urgent && (
+          {selectedDocument.urgent &&(
             <div className="flex items-center space-x-2 p-3 bg-accent/5 border border-accent/20 rounded-lg">
-              <Checkbox
+               <Checkbox
                 id="urgentRequest"
                 onCheckedChange={(checked) =>
                   setRequestForm((prev) => ({
@@ -243,6 +245,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                     urgentRequest: checked,
                   }))
                 }
+                className="mt-0.5"
               />
               <div className="flex-1">
                 <Label
@@ -267,35 +270,37 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
             <Label>Collection Method</Label>
             <div className="flex flex-col space-y-2">
               {/* Pickup */}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setRequestForm((prev) => ({
-                    ...prev,
-                    deliveryMethod:
-                      prev.deliveryMethod === "pickup" ? "" : "pickup",
-                  }))
-                }
-                className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
-                  requestForm.deliveryMethod === "pickup"
-                    ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
-                    : "border-muted bg-transparent"
-                }`}
-              >
-                <Home className="h-4 w-4 text-primary" />
-                <div className="flex flex-col items-start">
-                  <span className="font-medium text-sm">
-                    Walk-in Pickup at Barangay Office
-                  </span>
-                  <p className="text-xs text-muted-foreground">
-                    Pay cash and collect at barangay hall
-                  </p>
-                </div>
-              </Button>
+              {deliveryAvailable && !selectedDocument.digitallyAvailable && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setRequestForm((prev) => ({
+                      ...prev,
+                      deliveryMethod:
+                        prev.deliveryMethod === "pickup" ? "" : "pickup",
+                    }))
+                  }
+                  className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
+                    requestForm.deliveryMethod === "pickup"
+                      ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
+                      : "border-muted bg-transparent"
+                  }`}
+                >
+                  <Home className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium text-sm">
+                      Walk-in Pickup at Barangay Office
+                    </span>
+                    <p className="text-xs text-muted-foreground">
+                      Pay cash and collect at barangay hall
+                    </p>
+                  </div>
+                </Button>
+              )}
 
               {/* COD */}
-              {deliveryAvailable && (
+              {deliveryAvailable && !selectedDocument.digitallyAvailable && (
                 <Button
                   type="button"
                   variant="outline"
@@ -326,9 +331,8 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
 
               {/* Digital Availability */}
               {digitallyAvailable && (
-                <div className="p-3 bg-blue-50 border border-blue-200 dark:border-blue-600 dark:bg-blue-900/30 rounded-lg">
+                <div className="py-3 px-4 bg-blue-50 border border-blue-200 dark:border-blue-600 dark:bg-blue-900/30 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
                         Online Available
@@ -373,14 +377,6 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                 <div className="text-sm text-muted-foreground mt-1 space-y-1">
                   <p>
                     <strong>Total Amount:</strong> {calculateTotalFee()}
-                  </p>
-                  <p>
-                    <strong>Payment Method:</strong>{" "}
-                    {requestForm.deliveryMethod === "cod"
-                      ? "Cash on Delivery"
-                      : requestForm.deliveryMethod === "digitally"
-                      ? "Free / Digital"
-                      : "Cash at barangay office"}
                   </p>
                   <p>
                     <strong>Processing:</strong>{" "}

@@ -14,12 +14,11 @@ import {
   XCircle,
   Home,
   Truck,
-  Wallet,
-  Eye,
   Phone,
   Loader2,
   Globe,
   Download,
+  LoaderIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
@@ -44,27 +43,27 @@ const DocsRequest = () => {
 
   const myRequests = Array.isArray(data?.response) ? data.response : [];
 
-  const getStatusBadge = (status, deliveryMethod) => {
+  const getStatusBadge = (status) => {
     switch (status) {
       case "completed":
         return (
           <Badge className="bg-success/10 text-success border-success/30">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Ready for Pickup
+            Completed
           </Badge>
         );
-      /*case "delivered":
-        return (
-          <Badge className="bg-success/10 text-success border-success/30">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Delivered
-          </Badge>
-        );*/
       case "pending":
         return (
           <Badge className="bg-warning/10 text-warning border-warning/30">
             <AlertTriangle className="h-3 w-3 mr-1" />
-            Pending Review
+            Pending
+          </Badge>
+        );
+      case "processing":
+        return (
+          <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+            <Clock className="h-3 w-3 mr-1" />
+            Processing
           </Badge>
         );
       case "rejected":
@@ -79,25 +78,45 @@ const DocsRequest = () => {
     }
   };
 
-  const getDeliveryBadge = (method) => {
-    if (method === "pickup") {
-      return (
-        <Badge
-          variant="outline"
-          className="bg-primary/10 text-primary border-primary/30"
-        >
-          <Home className="h-3 w-3 mr-1" />
-          Walk-in Pickup
-        </Badge>
-      );
-    } else {
+  const getDeliveryBadge = (method, digitallyAvailable, status) => {
+    if (digitallyAvailable || method === "online") {
       return (
         <Badge
           variant="outline"
           className="bg-accent/10 text-accent border-accent/30"
         >
           <Globe className="h-3 w-3 mr-1" />
-          Gcash Payment
+          Digitally
+        </Badge>
+      );
+    } else if (method === "delivery" && status === "completed") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-purple-500/10 text-purple-500 border-purple-500/30"
+        >
+          <Truck className="h-3 w-3 mr-1" />
+          Delivered
+        </Badge>
+      );
+    } else if (method === "pickup" && status === "completed") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-primary/10 text-primary border-primary/30"
+        >
+          <Home className="h-3 w-3 mr-1" />
+          Ready for Pickup
+        </Badge>
+      );
+    } else if (status === "pending") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-warning/10 text-warning border-warning/30"
+        >
+          <LoaderIcon className="h-3 w-3 mr-1" />
+          Waiting for admin
         </Badge>
       );
     }
@@ -115,7 +134,7 @@ const DocsRequest = () => {
     const link = document.createElement("a");
     link.href = fileSrc;
     link.download = fileName || "document.pdf";
-    link.target = "_blank"; // fallback if download fails
+    link.target = "_blank";
     link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
@@ -152,8 +171,6 @@ const DocsRequest = () => {
           <div className="text-center text-destructive py-10">
             <XCircle className="h-6 w-6 mx-auto mb-2" />
             <p>Failed to load the data. Please try again later.</p>
-            {/* Optionally show error message */}
-            {/* <p className="text-xs text-muted-foreground mt-1">{error.message}</p> */}
           </div>
         )}
 
@@ -176,12 +193,22 @@ const DocsRequest = () => {
                           {generateTrackingNumber(index)}
                         </p>
                       </div>
-                      {getStatusBadge(request.status, request.deliveryMethod)}
+                      {getStatusBadge(request.status)}
                     </div>
 
-                    {getDeliveryBadge(request.deliveryMethod)}
+                    {getDeliveryBadge(
+                      request.deliveryMethod,
+                      request.digitallyAvailable,
+                      request.status
+                    )}
 
                     <div className="space-y-1 text-sm text-muted-foreground">
+                      <div className="flex justify-between">
+                        <span>Document:</span>
+                        <span className="text-foreground font-medium">
+                          {request.name}
+                        </span>
+                      </div>
                       <div className="flex justify-between">
                         <span>Purpose:</span>
                         <span className="text-foreground font-medium">
@@ -229,6 +256,32 @@ const DocsRequest = () => {
                         </p>
                       </div>
                     )}
+
+                    {/* Status Messages */}
+                    {request.status === "pending" && (
+                      <div className="p-2 bg-warning/10 border border-warning/20 rounded text-sm">
+                        <p className="text-warning font-medium">
+                          Pending Review
+                        </p>
+                        <p className="text-warning/80">
+                          Your request is waiting to be reviewed by the barangay
+                          office.
+                        </p>
+                      </div>
+                    )}
+
+                    {request.status === "processing" && (
+                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                        <p className="text-blue-500 font-medium">
+                          Processing Document
+                        </p>
+                        <p className="text-blue-500/80">
+                          Your document is currently being processed. Please
+                          wait for further updates.
+                        </p>
+                      </div>
+                    )}
+
                     {request.status === "completed" &&
                       request.deliveryMethod === "pickup" &&
                       !request.digitallyAvailable && (
@@ -238,7 +291,19 @@ const DocsRequest = () => {
                           </p>
                           <p className="text-success/80">
                             Visit barangay office to pay and collect your
-                            document
+                            document.
+                          </p>
+                        </div>
+                      )}
+
+                    {request.status === "completed" &&
+                      request.deliveryMethod === "delivery" && (
+                        <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
+                          <p className="text-success font-medium">
+                            Document Delivered!
+                          </p>
+                          <p className="text-success/80">
+                            Your document has been delivered to your address.
                           </p>
                         </div>
                       )}
@@ -272,6 +337,18 @@ const DocsRequest = () => {
                           )}
                         </div>
                       )}
+
+                    {request.status === "rejected" && (
+                      <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-sm">
+                        <p className="text-destructive font-medium">
+                          Request Rejected
+                        </p>
+                        <p className="text-destructive/80">
+                          Your document request has been rejected. Please
+                          contact the barangay office for more information.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

@@ -43,7 +43,7 @@ const requestDocsValidation = [
   requiredBoolean("digitallyAvailable", " Digitally request status is required."),
   requiredString("deliveryMethod", "Delivery method is required.")
     .customSanitizer((value) => value.toLowerCase())
-    .isIn(["pickup", "delivery", "digitally"])
+    .isIn(["pickup", "delivery", "digitally","online"])
     .withMessage("Invalid delivery method."),
 
   requiredString("contactNumber", "Contact number is required.")
@@ -186,6 +186,7 @@ const updateDocsValidation = [
           "processing",
           "completed",
           "rejected",
+          "digital",
           "approved",
         ];
         if (allowed.includes(value.toLocaleLowerCase())) {
