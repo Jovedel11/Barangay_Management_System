@@ -397,35 +397,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                   </div>
                 )}
 
-              {/* Payment Info */}
-              <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <Wallet className="h-4 w-4 text-yellow-600 mt-0.5" />
-                  <div className="flex-1">
-                    <Label className="text-sm font-medium text-yellow-600">
-                      Payment Information:
-                    </Label>
-                    <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                      <p>
-                        <strong>Fee:</strong> ₱{selectedItem?.borrowingFee}
-                      </p>
-                      <p>
-                        <strong>Payment:</strong> Cash only at barangay office
-                      </p>
-                      {bookingForm.deliveryMethod === "delivery" && (
-                        <p>
-                          <strong>Delivery:</strong>{" "}
-                        </p>
-                      )}
-                      <p>
-                        <strong>Max period:</strong>{" "}
-                        {selectedItem?.maxBorrowDays} days
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Notes */}
               {selectedItem?.notes && selectedItem?.notes !== "N/A" && (
                 <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg text-sm">
