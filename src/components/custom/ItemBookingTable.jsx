@@ -1,6 +1,5 @@
 import {
   CheckCircle,
-  Eye,
   Loader,
   MoreHorizontal,
   Trash2,
@@ -37,14 +36,35 @@ import {
 } from "@/core/components/ui/select";
 import { CustomToast } from "./CustomToast";
 import customRequest from "@/services/customRequest";
-import { Fragment, useCallback, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ItemBookingTable({ bookings = [], refetch }) {
   const queryClient = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
+
+  // Only fetch item details when sheet is open and we have a selected booking
+  const {
+    data: itemData,
+    isLoading: itemLoading,
+    error: itemError,
+    refetch: refetchItemData,
+  } = useQuery({
+    queryKey: ["request/items", selectedBooking?._id],
+    queryFn: () =>
+      customRequest({
+        path: `/api/borrow-item/request/specific/item?item_id=${selectedBooking?._id}`,
+        attributes: {
+          method: "GET",
+          credentials: "include",
+        },
+      }),
+    staleTime: 1000 * 60,
+    refetchOnWindowFocus: false,
+    enabled: isSheetOpen && !!selectedBooking?._id,
+  });
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
@@ -131,8 +151,12 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     onSuccess: ({ success }) => {
       if (success) {
         refetch();
+        refetchItemData();
         queryClient.invalidateQueries({
           queryKey: ["available/items"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["request/items", selectedBooking?.main_item],
         });
         setIsSheetOpen(false);
         return CustomToast({
@@ -201,6 +225,22 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     }
   };
 
+  // Check if there's enough stock available for approval
+  // Fixed: Access main_item directly from itemData since the API returns it at the root level
+  const hasAvailableStock = (booking) => {
+    if (!itemData?.response?.main_item) return false;
+    return itemData.response.main_item.available >= booking.quantity;
+  };
+
+  // Get available stock count
+  const getAvailableStock = () => {
+    if (!itemData?.response?.main_item) return { available: 0, total: 0 };
+    return {
+      available: itemData.response.main_item.available,
+      total: itemData.response.main_item.total,
+    };
+  };
+
   return (
     <>
       <div className="w-full mt-4 space-y-4">
@@ -245,7 +285,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{booking.category}</span>
+                          <span className="font-medium">
+                            {booking.category}
+                          </span>
                           <span className="text-sm text-zinc-400">
                             Qty: {booking.quantity}
                           </span>
@@ -298,75 +340,162 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
 
           {selectedBooking && (
             <div className="space-y-6">
-              {/* Status Update Section */}
-              <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4 mb-10">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold">Update Status</h4>
-                  <Badge variant={getBookingStatus(selectedBooking).variant}>
-                    {getBookingStatus(selectedBooking).label}
-                  </Badge>
+              {/* Loading State for Item Data */}
+              {itemLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                  disabled={updateMutation.isPending}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="processing">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>Mark as Processing</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="rejected">
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-4 w-4" />
-                        <span>Mark as Rejected</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="approved">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Mark as Approved</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="reserved">
-                      <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        <span>Mark as Reserved</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="returned">
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4" />
-                        <span>Mark as Returned</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={
-                    updateMutation.isPending ||
-                    selectedStatus === selectedBooking.status
-                  }
-                  className="w-full"
-                >
-                  {updateMutation.isPending ? (
-                    <>
-                      <Loader className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
-                </Button>
-              </div>
+              )}
 
-              {/* Booking Details */}
+              {/* Error State for Item Data */}
+              {itemError && (
+                <div className="mx-4 mb-4 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                        Failed to load item details
+                      </p>
+                      <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                        Please try again or contact support if the issue
+                        persists.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show content only when item data is loaded */}
+              {!itemLoading && !itemError && (
+                <>
+                  {/* Stock Availability Warning - Custom Notice */}
+                  {!hasAvailableStock(selectedBooking) && (
+                    <div className="mx-4 mb-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                            Insufficient Stock Available
+                          </p>
+                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                            Current available stock:{" "}
+                            <strong>{getAvailableStock().available}</strong> |
+                            Requested quantity:{" "}
+                            <strong>{selectedBooking.quantity}</strong>
+                          </p>
+                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+                            You can only mark this as "Reserved" until stock
+                            becomes available.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold">Update Status</h4>
+                      <Badge
+                        variant={getBookingStatus(selectedBooking).variant}
+                      >
+                        {getBookingStatus(selectedBooking).label}
+                      </Badge>
+                    </div>
+                    <Select
+                      value={selectedStatus}
+                      onValueChange={setSelectedStatus}
+                      disabled={updateMutation.isPending}
+                    >
+                      <SelectTrigger className="w-full relative border! border-slate-300! dark:border-slate-700!">
+                        <SelectValue placeholder="Select status" />
+                        {selectedStatus === "pending" && (
+                          <span className="absolute left-5">Select status</span>
+                        )}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rejected">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4" />
+                            <span>Mark as Rejected</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem
+                          value="approved"
+                          disabled={!hasAvailableStock(selectedBooking)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            <span>Mark as Approved</span>
+                            {!hasAvailableStock(selectedBooking) && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                (Insufficient stock)
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="reserved">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            <span>Mark as Reserved</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="returned">
+                          <div className="flex items-center gap-2">
+                            <Check className="h-4 w-4" />
+                            <span>Mark as Returned</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={handleStatusUpdate}
+                      disabled={
+                        updateMutation.isPending ||
+                        selectedStatus === selectedBooking.status
+                      }
+                      className="w-full"
+                    >
+                      {updateMutation.isPending ? (
+                        <>
+                          <Loader className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Status"
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Stock Information */}
+                  {itemData?.response?.main_item && (
+                    <div className="space-y-4 px-5 pb-4 border-b">
+                      <h4 className="text-sm font-semibold text-muted-foreground">
+                        Stock Information
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Available Stock
+                          </p>
+                          <p className="text-sm font-medium">
+                            {getAvailableStock().available} /{" "}
+                            {getAvailableStock().total}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Requested Quantity
+                          </p>
+                          <p className="text-sm font-medium">
+                            {selectedBooking.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Booking Details - Always show these */}
               <div className="space-y-4 px-5">
                 <h4 className="text-sm font-semibold text-muted-foreground">
                   Resident Information
@@ -473,7 +602,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
 
               {/* Delete Section (only for completed bookings) */}
               {selectedBooking.status === "completed" && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t px-5">
                   <Button
                     variant="destructive"
                     className="w-full"

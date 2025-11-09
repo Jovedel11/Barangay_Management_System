@@ -140,6 +140,27 @@ const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const getSpecificItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new Error("Book item: Invalid fields");
+    }
+    const { item_id } = matchedData(req);
+    console.log("Item ID", item_id)
+    const item = await BorrowRequestModel.findOne({ _id: item_id}).populate('main_item');
+    console.log("Item found :", item);
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    return res.status(200).json(item);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+
 // Search specific item (reusable)
 const createSearchController = (
   CollectionModel: Model<any>,
@@ -184,6 +205,7 @@ const createSearchController = (
 
 export {
   bookItem,
+  getSpecificItem,
   addAvailableBooking,
   getAvailableBooking,
   updateItem,

@@ -43,7 +43,7 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
     isPregnant: { type: Boolean, required: false, default: false },
   },*/
   status: { type: String, required: false, default: "pending" },
-  main_item: { type: String, required: true },
+  main_item: { type: Schema.Types.ObjectId, required: true, ref: "AvailableItems" },
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({

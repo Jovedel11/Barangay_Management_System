@@ -10,6 +10,7 @@ import {
   addAvailableBooking,
   deleteItem,
   createSearchController,
+  getSpecificItem,
 } from "@/controller/booking.item.controller";
 import { Router } from "express";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/models/borrow.items";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
+import { query } from "express-validator";
 const router = Router();
 
 // Search controller for searching specific data (reusable)
@@ -50,6 +52,15 @@ const retreieveItemRequests = createSearchController(
 );
 
 router.get("/request/items", searchItemValidation, retreieveItemRequests); // Retrieve (resident)
+router.get(
+  "/request/specific/item",
+  query("item_id")
+    .isMongoId()
+    .withMessage("Invalid item id")
+    .notEmpty()
+    .withMessage("Item id is required"),
+  getSpecificItem
+); // Retrieve (resident)
 router.get("/available/items", searchItemValidation, retreiveAllItems); // Retrieve all
 router.put(
   "/update/available",
