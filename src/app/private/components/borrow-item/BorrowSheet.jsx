@@ -309,39 +309,49 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
               </div>
 
               {/* Collection Method */}
-              {selectedItem?.deliveryAvailable && (
-                <div className="w-full flex flex-col gap-y-3">
-                  <Label>Collection Method</Label>
-                  <div className="flex flex-col space-y-2">
-                    {/* Pickup Button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        setBookingForm((prev) => ({
-                          ...prev,
-                          deliveryMethod:
-                            prev.deliveryMethod === "pickup" ? "" : "pickup",
-                        }))
-                      }
-                      className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
-                        bookingForm.deliveryMethod === "pickup"
-                          ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
-                          : "border-muted bg-transparent"
-                      }`}
-                    >
-                      <Home className="h-4 w-4 text-primary" />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium text-sm">
-                          Walk-in Pickup at Barangay Office
-                        </span>
-                        <p className="text-xs text-muted-foreground">
-                          Pay cash and collect at barangay hall
-                        </p>
-                      </div>
-                    </Button>
+              <div className="w-full flex flex-col gap-y-3">
+                <Label>Collection Method</Label>
+                <div className="flex flex-col space-y-2">
+                  {/* Pickup Button */}
 
-                    {/* Delivery Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setBookingForm((prev) => ({
+                        ...prev,
+                        deliveryMethod:
+                          prev.deliveryMethod === "pickup" ? "" : "pickup",
+                      }))
+                    }
+                    className={`flex items-center justify-start gap-3 p-8 border rounded-lg transition-colors text-left ${
+                      bookingForm.deliveryMethod === "pickup"
+                        ? "border-blue-400 bg-blue-50 dark:bg-blue-800/30 dark:border-blue-600"
+                        : "border-muted bg-transparent"
+                    }`}
+                  >
+                    <Home className="h-4 w-4 text-primary" />
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium text-sm">
+                        Walk-in Pickup at Barangay Office
+                      </span>
+                      <p className="text-xs text-muted-foreground">
+                        Pay cash and collect at barangay hall
+                      </p>
+                    </div>
+                  </Button>
+
+                  {!selectedItem?.deliveryAvailable && (
+                    <div className="p-4 border rounded-md border-slate-300 dark:border-slate-800 bg-blue-50 dark:bg-blue-950/40">
+                      <p className="text-sm text-blue-900 dark:text-blue-100">
+                        <span className="font-semibold">Pickup only</span> –
+                        Delivery is not available at this time.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Delivery Button */}
+                  {selectedItem?.deliveryAvailable && (
                     <Button
                       type="button"
                       variant="outline"
@@ -370,9 +380,9 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                         </p>
                       </div>
                     </Button>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Requirements */}
               {selectedItem?.requirements &&

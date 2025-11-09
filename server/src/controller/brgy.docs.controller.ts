@@ -136,7 +136,12 @@ const updateDocs = ({
 
       const { matchedCount, modifiedCount } = await CollectionModel.updateOne(
         { _id: docs_id },
-        { $set: {...updateFields, ...(isDocs ? { recieveDate: new Date() } : {}) } }
+        {
+          $set: {
+            ...updateFields,
+            ...(isDocs ? { recieveDate: new Date() } : {}),
+          },
+        }
       );
 
       if (matchedCount === 0) {
@@ -165,10 +170,15 @@ const updateDocs = ({
       }
 
       // If returning item, increase available count
-      if (isItem && data.status === "returned") {
+      if (isItem) {
         const update_result = await BorrowableItemsModel.updateOne(
           { _id: data.main_item },
-          { $inc: { available: data.quantity } }
+          {
+            $inc:
+              data.status === "returned"
+                ? { available: data.quantity }
+                : { available: -data.quantity },
+          }
         );
         if (update_result.modifiedCount === 0) {
           throw new Error("Failed to update item");

@@ -66,12 +66,6 @@ const ItemCard = ({ item, refetch }) => {
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Fee:</span>
-            <span className="font-medium text-primary">
-              ₱{item?.borrowingFee}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Max Days:</span>
             <span className="font-medium text-foreground">
               {item?.maxBorrowDays} days

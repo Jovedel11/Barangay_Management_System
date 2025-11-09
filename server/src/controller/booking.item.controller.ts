@@ -24,7 +24,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     await BorrowRequestModel.create({ ...item });
     console.log("Main item :", item.main_item);
-    const update_result = await BorrowableItemsModel.updateOne(
+    /*const update_result = await BorrowableItemsModel.updateOne(
       {
         _id: item.main_item,
       },
@@ -33,7 +33,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
       }
     );  
     console.log("Item category :", item.category);
-    if (update_result.modifiedCount === 0) throw new Error("Not enough stack");
+    if (update_result.modifiedCount === 0) throw new Error("Not enough stack");*/
     const result = await ProccessNotif({
       resident_id: item.user,
       data_name: item.category,
