@@ -351,7 +351,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
               {itemError && (
                 <div className="mx-4 mb-4 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-red-800 dark:text-red-200">
                         Failed to load item details
@@ -369,28 +369,45 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
               {!itemLoading && !itemError && (
                 <>
                   {/* Stock Availability Warning - Custom Notice */}
-                  {!hasAvailableStock(selectedBooking) && (
-                    <div className="mx-4 mb-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                            Insufficient Stock Available
-                          </p>
-                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                            Current available stock:{" "}
-                            <strong>{getAvailableStock().available}</strong> |
-                            Requested quantity:{" "}
-                            <strong>{selectedBooking.quantity}</strong>
-                          </p>
-                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
-                            You can only mark this as "Reserved" until stock
-                            becomes available.
-                          </p>
+                  {!["returned", "rejected"].includes(selectedBooking.status) &&
+                    !hasAvailableStock(selectedBooking) && (
+                      <div className="mx-4 mb-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div>
+                            {selectedBooking.status === "approved" ? (
+                              <>
+                                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                  Item Currently Unavailable
+                                </p>
+                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                                  This item is currently{" "}
+                                  <strong>out of stock</strong>. It will only
+                                  become available again once it has been{" "}
+                                  <strong>marked as returned</strong> or the
+                                  <strong> resident has returned it</strong>.
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                  Item Currently Unavailable
+                                </p>
+                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                                  This item is temporarily out of stock and
+                                  cannot be approved for borrowing right now.
+                                </p>
+                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+                                  You may still mark this request as{" "}
+                                  <strong>"Reserved"</strong> until it becomes
+                                  available.
+                                </p>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+
                   <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold">Update Status</h4>
@@ -407,43 +424,52 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                     >
                       <SelectTrigger className="w-full relative border! border-slate-300! dark:border-slate-700!">
                         <SelectValue placeholder="Select status" />
-                        {selectedStatus === "pending" && (
-                          <span className="absolute left-5">Select status</span>
-                        )}
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="rejected">
-                          <div className="flex items-center gap-2">
-                            <XCircle className="h-4 w-4" />
-                            <span>Mark as Rejected</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem
-                          value="approved"
-                          disabled={!hasAvailableStock(selectedBooking)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            <span>Mark as Approved</span>
-                            {!hasAvailableStock(selectedBooking) && (
-                              <span className="text-xs text-muted-foreground ml-1">
-                                (Insufficient stock)
-                              </span>
-                            )}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="reserved">
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            <span>Mark as Reserved</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="returned">
-                          <div className="flex items-center gap-2">
-                            <Check className="h-4 w-4" />
-                            <span>Mark as Returned</span>
-                          </div>
-                        </SelectItem>
+                        {selectedBooking?.status !== "rejected" && (
+                          <SelectItem value="rejected">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4" />
+                              <span>Mark as Rejected</span>
+                            </div>
+                          </SelectItem>
+                        )}
+                        {selectedBooking?.status !== "approved" &&
+                          selectedBooking?.status !== "returned" && (
+                            <SelectItem
+                              value="approved"
+                              disabled={!hasAvailableStock(selectedBooking)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                <span>Mark as Approved</span>
+                                {!hasAvailableStock(selectedBooking) && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    (Insufficient stock)
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          )}
+                        {selectedBooking?.status !== "reserved" &&
+                          selectedBooking?.status !== "returned" &&
+                          selectedBooking?.status !== "approved" && (
+                            <SelectItem value="reserved">
+                              <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                <span>Mark as Reserved</span>
+                              </div>
+                            </SelectItem>
+                          )}
+                        {selectedBooking?.status !== "pending" &&
+                          selectedBooking?.status !== "rejected" && (
+                            <SelectItem value="returned">
+                              <div className="flex items-center gap-2">
+                                <Check className="h-4 w-4" />
+                                <span>Mark as Returned</span>
+                              </div>
+                            </SelectItem>
+                          )}
                       </SelectContent>
                     </Select>
                     <Button
