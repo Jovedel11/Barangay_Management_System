@@ -6,6 +6,10 @@ import {
   Trash2,
   AlertCircle,
   Check,
+  X,
+  Clock,
+  Package,
+  XCircle,
 } from "lucide-react";
 import {
   Table,
@@ -16,24 +20,21 @@ import {
   TableRow,
 } from "@/core/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/core/components/ui/dropdown-menu";
 import { Button } from "@/core/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/core/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 import { CustomToast } from "./CustomToast";
 import customRequest from "@/services/customRequest";
 import { Fragment, useCallback, useState } from "react";
@@ -42,11 +43,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 export default function ItemBookingTable({ bookings = [], refetch }) {
   const queryClient = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
-    setIsDialogOpen(true);
+    setSelectedStatus(booking.status);
+    setIsSheetOpen(true);
   };
 
   const getBookingStatus = (booking) => {
@@ -54,18 +57,30 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     const returnDate = new Date(booking.returnDate);
 
     if (booking.status === "returned") {
-      return { label: "Returned" };
+      return { label: "Returned", variant: "returned" };
+    }
+
+    if (booking.status === "rejected") {
+      return { label: "Rejected", variant: "rejected" };
+    }
+
+    if (booking.status === "reserved") {
+      return { label: "Reserved", variant: "reserved" };
+    }
+
+    if (booking.status === "processing") {
+      return { label: "Processing", variant: "processing" };
     }
 
     if (booking.status === "approved" && currentDate > returnDate) {
-      return { label: "Overdue" };
+      return { label: "Overdue", variant: "overdue" };
     }
 
     if (booking.status === "approved") {
-      return { label: "Approved" };
+      return { label: "Approved", variant: "approved" };
     }
 
-    return { label: "Pending" };
+    return { label: "Pending", variant: "pending" };
   };
 
   const getDeliveryMethod = (booking) => {
@@ -119,8 +134,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
         queryClient.invalidateQueries({
           queryKey: ["available/items"],
         });
+        setIsSheetOpen(false);
         return CustomToast({
-          description: "Booking status has been updated!",
+          description: "Booking status has been updated successfully!",
           status: "success",
         });
       }
@@ -138,42 +154,26 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     },
   });
 
-  const handleProcessBooking = useCallback(
-    async (booking, status) => {
-      try {
-        /*let newStatus;
-        if (booking.status === "pending") {
-          newStatus = "approved";
-        } else if (booking.status === "returned") {
-          console.log("Booking : ", booking);
-          newStatus = "returned";
-        } else if (booking.status === "approved" && currentDate > returnDate) {
-          newStatus = "overdue";
-        } else {
-          newStatus = "pending";
-        }*/
-        updateMutation.mutate({
-          path: "/api/borrow-item/update/item-request",
-          attributes: {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              docs_id: booking._id,
-              status,
-              main_item: booking.main_item,
-              quantity: booking.quantity,
-            }),
-            credentials: "include",
-          },
-        });
-      } catch (error) {
-        console.error("Error updating booking:", error);
-      }
-    },
-    [updateMutation]
-  );
+  const handleStatusUpdate = useCallback(() => {
+    if (!selectedBooking || !selectedStatus) return;
+
+    updateMutation.mutate({
+      path: "/api/borrow-item/update/item-request",
+      attributes: {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          docs_id: selectedBooking._id,
+          status: selectedStatus,
+          main_item: selectedBooking.main_item,
+          quantity: selectedBooking.quantity,
+        }),
+        credentials: "include",
+      },
+    });
+  }, [selectedBooking, selectedStatus, updateMutation]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -182,6 +182,23 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "processing":
+        return <Clock className="h-4 w-4" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4" />;
+      case "approved":
+        return <CheckCircle className="h-4 w-4" />;
+      case "reserved":
+        return <Package className="h-4 w-4" />;
+      case "returned":
+        return <Check className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
+    }
   };
 
   return (
@@ -221,7 +238,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                               booking?.user?.lastName || ""
                             }`}
                           </span>
-                          <span className="text-zinc-400">
+                          <span className="text-zinc-400 text-sm">
                             {booking?.user?.email || "N/A"}
                           </span>
                         </div>
@@ -235,14 +252,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            booking.status === "approved" &&
-                            new Date() > new Date(booking.returnDate)
-                              ? "overdue"
-                              : statusInfo?.label?.toLowerCase()
-                          }
-                        >
+                        <Badge variant={statusInfo.variant}>
                           {statusInfo.label}
                         </Badge>
                       </TableCell>
@@ -260,69 +270,13 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                         {getDeliveryMethod(booking)}
                       </TableCell>
                       <TableCell className="text-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-46">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleViewDetails(booking)}
-                            >
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
-                            {booking.status !== "approved" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleProcessBooking(booking, "approved")
-                                }
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Approve Booking
-                              </DropdownMenuItem>
-                            )}
-                            {booking.status !== "pending" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleProcessBooking(booking, "pending")
-                                }
-                              >
-                                <Loader className="mr-2 h-4 w-4" />
-                                Set to Pending
-                              </DropdownMenuItem>
-                            )}
-                            {booking.status !== "returned" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleProcessBooking(booking, "returned")
-                                }
-                              >
-                                <Fragment>
-                                  <Check className="mr-2 h-4 w-4" />
-                                  Mark as Returned
-                                </Fragment>
-                              </DropdownMenuItem>
-                            )}
-                            {booking.status === "completed" && (
-                              <Fragment>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() =>
-                                    handleBookingDeletion(booking._id)
-                                  }
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </Fragment>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewDetails(booking)}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
@@ -333,133 +287,210 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
         </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Booking Details</DialogTitle>
-            <DialogDescription>
-              View complete information about this equipment booking
-            </DialogDescription>
-          </DialogHeader>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-full md:max-w-100 sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Booking Details</SheetTitle>
+            <SheetDescription>
+              View and manage equipment booking information
+            </SheetDescription>
+          </SheetHeader>
 
           {selectedBooking && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Resident Name
-                    </h4>
-                    <p className="text-base">
-                      {`${selectedBooking?.user?.firstName || ""} ${
-                        selectedBooking?.user?.lastName || ""
-                      }`}
-                    </p>
+            <div className="space-y-6">
+              {/* Status Update Section */}
+              <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4 mb-10">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold">Update Status</h4>
+                  <Badge variant={getBookingStatus(selectedBooking).variant}>
+                    {getBookingStatus(selectedBooking).label}
+                  </Badge>
+                </div>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                  disabled={updateMutation.isPending}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="processing">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>Mark as Processing</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="rejected">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4" />
+                        <span>Mark as Rejected</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="approved">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Mark as Approved</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="reserved">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        <span>Mark as Reserved</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="returned">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4" />
+                        <span>Mark as Returned</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleStatusUpdate}
+                  disabled={
+                    updateMutation.isPending ||
+                    selectedStatus === selectedBooking.status
+                  }
+                  className="w-full"
+                >
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Status"
+                  )}
+                </Button>
+              </div>
+
+              {/* Booking Details */}
+              <div className="space-y-4 px-5">
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Resident Information
+                </h4>
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Full Name
+                      </p>
+                      <p className="text-sm font-medium">
+                        {`${selectedBooking?.user?.firstName || ""} ${
+                          selectedBooking?.user?.lastName || ""
+                        }`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Contact Number
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedBooking?.contactNumber}
+                      </p>
+                    </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Email
-                    </h4>
-                    <p className="text-base">
+                    <p className="text-xs text-muted-foreground mb-1">Email</p>
+                    <p className="text-sm font-medium">
                       {selectedBooking?.user?.email || "N/A"}
                     </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Contact Number
-                    </h4>
-                    <p className="text-base">
-                      {selectedBooking?.contactNumber}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Delivery Method
-                    </h4>
-                    <p className="text-base capitalize">
-                      {getDeliveryMethod(selectedBooking)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Category
-                    </h4>
-                    <p className="text-base">{selectedBooking?.category}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Event Location
-                    </h4>
-                    <p className="text-base">
-                      {selectedBooking?.eventLocation || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Quantity
-                    </h4>
-                    <p className="text-base">{selectedBooking?.quantity}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Booking Status
-                    </h4>
-                    <div className="mt-1">
-                      <Badge
-                        variant={getBookingStatus(selectedBooking).variant}
-                      >
-                        {getBookingStatus(selectedBooking).label}
-                      </Badge>
+              <div className="space-y-4 px-5">
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Booking Information
+                </h4>
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Category
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedBooking?.category}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Quantity
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedBooking?.quantity}
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Borrow Date
-                    </h4>
-                    <p className="text-base">
-                      {formatDate(selectedBooking?.borrowDate)}
-                    </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Borrow Date
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formatDate(selectedBooking?.borrowDate)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Return Date
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formatDate(selectedBooking?.returnDate)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Delivery Method
+                      </p>
+                      <p className="text-sm font-medium capitalize">
+                        {getDeliveryMethod(selectedBooking)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Event Location
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedBooking?.eventLocation || "N/A"}
+                      </p>
+                    </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                      Return Date
-                    </h4>
-                    <p className="text-base">
-                      {formatDate(selectedBooking?.returnDate)}
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Purpose
+                    </p>
+                    <p className="text-sm font-medium">
+                      {selectedBooking?.purpose ?? "N/A"}
                     </p>
                   </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-1">
-                    Purpose
-                  </h4>
-                  <p className="text-base">
-                    {selectedBooking?.purpose ?? "N/A"}
-                  </p>
                 </div>
               </div>
+
+              {/* Delete Section (only for completed bookings) */}
+              {selectedBooking.status === "completed" && (
+                <div className="pt-4 border-t">
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => {
+                      handleBookingDeletion(selectedBooking._id);
+                      setIsSheetOpen(false);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Booking
+                  </Button>
+                </div>
+              )}
             </div>
           )}
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

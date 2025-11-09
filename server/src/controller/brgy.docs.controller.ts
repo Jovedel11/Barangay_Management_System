@@ -169,19 +169,35 @@ const updateDocs = ({
         if (!result?.success) throw new Error("Error in processing notif");
       }
 
-      // If returning item, increase available count
       if (isItem) {
-        const update_result = await BorrowableItemsModel.updateOne(
-          { _id: data.main_item },
-          {
-            $inc:
-              data.status === "returned"
-                ? { available: data.quantity }
-                : { available: -data.quantity },
+        let quantityChange = 0;
+        switch (data.status) {
+          case "returned":
+          case "rejected":
+            quantityChange = data.quantity;
+            break;
+          case "approved":
+          case "reserved":
+            quantityChange = -data.quantity;
+            break;
+          case "processing":
+          case "pending":
+            quantityChange = 0;
+            break;
+          default:
+            quantityChange = 0;
+        }
+        if (quantityChange !== 0) {
+          const update_result = await BorrowableItemsModel.updateOne(
+            { _id: data.main_item },
+            {
+              $inc: { available: quantityChange },
+            }
+          );
+
+          if (update_result.modifiedCount === 0) {
+            throw new Error("Failed to update item");
           }
-        );
-        if (update_result.modifiedCount === 0) {
-          throw new Error("Failed to update item");
         }
       }
 

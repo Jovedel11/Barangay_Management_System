@@ -166,9 +166,16 @@ const updateBorrowRequestValidation = [
     .optional()
     .isString()
     .withMessage("Status must be a string")
-    .isIn(["pending", "approved", "rejected", "returned"])
+    .isIn([
+      "pending",
+      "approved",
+      "rejected",
+      "returned",
+      "processing",
+      "reserved",
+    ])
     .withMessage(
-      "Status must be one of: pending, approved, rejected, completed"
+      "Status must be one of: pending, approved, rejected, completed, processing, reserved"
     ),
   body("quantity").isNumeric().withMessage("Quantity must be a number"),
   body("main_item")

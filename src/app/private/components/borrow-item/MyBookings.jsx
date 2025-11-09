@@ -14,6 +14,8 @@ import {
   Truck,
   Home,
   XCircle,
+  Package,
+  Loader,
 } from "lucide-react";
 import customRequest from "@/services/customRequest";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -67,7 +69,7 @@ const BookingCard = () => {
           queryClient.invalidateQueries({ queryKey: ["available-items"] });
           return CustomToast({
             description: "Booking request successfully updated!",
-            status: "error",
+            status: "success",
           });
         }
         CustomToast({
@@ -137,6 +139,20 @@ const BookingCard = () => {
             Pending Approval
           </Badge>
         );
+      case "processing":
+        return (
+          <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+            <Loader className="h-3 w-3 mr-1" />
+            Processing
+          </Badge>
+        );
+      case "reserved":
+        return (
+          <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/30">
+            <Package className="h-3 w-3 mr-1" />
+            Reserved
+          </Badge>
+        );
       case "rejected":
         return (
           <Badge className="bg-destructive/10 text-destructive border-destructive/30">
@@ -146,7 +162,7 @@ const BookingCard = () => {
         );
       case "returned":
         return (
-          <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+          <Badge className="bg-green-500/10 text-green-500 border-green-500/30">
             <CheckCircle className="h-3 w-3 mr-1" />
             Returned
           </Badge>
@@ -276,6 +292,39 @@ const BookingCard = () => {
                       </div>
                     )}
 
+                    {booking.status === "processing" && (
+                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                        <p className="text-blue-500 font-medium">
+                          Processing Request
+                        </p>
+                        <p className="text-blue-500/80">
+                          Your booking is currently being processed
+                        </p>
+                      </div>
+                    )}
+
+                    {booking.status === "reserved" && (
+                      <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded text-sm">
+                        <p className="text-purple-500 font-medium">
+                          Reserved
+                        </p>
+                        <p className="text-purple-500/80">
+                          Item is reserved for you. Please pick up on time.
+                        </p>
+                      </div>
+                    )}
+
+                    {booking.status === "rejected" && (
+                      <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-sm">
+                        <p className="text-destructive font-medium">
+                          Request Rejected
+                        </p>
+                        <p className="text-destructive/80">
+                          Your booking request was not approved
+                        </p>
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       {booking.status === "approved" && !isOverdue && (
                         <Button
@@ -293,16 +342,6 @@ const BookingCard = () => {
                           Mark as Returned
                         </Button>
                       )}
-                      {isOverdue && (
-                        <Button
-                          size="sm"
-                          className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-none"
-                          onClick={() => {}}
-                        >
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          Return Now
-                        </Button>
-                      )}
                       {booking.status === "pending" && (
                         <Button
                           size="sm"
@@ -312,6 +351,17 @@ const BookingCard = () => {
                         >
                           <Clock className="h-3 w-3 mr-1" />
                           Awaiting Approval
+                        </Button>
+                      )}
+                      {booking.status === "processing" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
+                          disabled
+                        >
+                          <Loader className="h-3 w-3 mr-1" />
+                          Processing
                         </Button>
                       )}
                     </div>
