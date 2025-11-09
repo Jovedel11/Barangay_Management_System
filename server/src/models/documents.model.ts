@@ -17,23 +17,30 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   digitallyAvailable: boolean;
   fileSrc?: string;
   fileName?: string;
+  recieveDate?: Date;
 };
 
-const docsSchema = new Schema<DocumentRequest<string>>({
-  user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
-  purpose: { type: String, required: true },
-  name: { type: String, required: true },
-  category: { type: String, required: true },
-  quantity: { type: Number, required: true },
-  digitallyAvailable: { type: Boolean, required: true },
-  urgentRequest: { type: Boolean, required: true },
-  deliveryMethod: { type: String, required: true },
-  contactNumber: { type: String, required: true },
-  specificDetails: { type: String, required: false },
-  fileSrc: { type: String, required: false },
-  fileName: { type: String, required: false },
-  status: { type: String, required: false, default: "pending" },
-});
+const docsSchema = new Schema<DocumentRequest<string>>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
+    purpose: { type: String, required: true },
+    name: { type: String, required: true },
+    category: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    digitallyAvailable: { type: Boolean, required: true },
+    urgentRequest: { type: Boolean, required: true },
+    deliveryMethod: { type: String, required: true },
+    contactNumber: { type: String, required: true },
+    specificDetails: { type: String, required: false },
+    fileSrc: { type: String, required: false },
+    fileName: { type: String, required: false },
+    recieveDate: { type: Date, required: false },
+    status: { type: String, required: false, default: "pending" },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Reused interface for both purposes and requirements
 interface IDocumentItem {

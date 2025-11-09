@@ -53,6 +53,15 @@ const InfoRow = ({ label, value, icon: Icon, fullWidth = false }) => (
   </div>
 );
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 export default function DocumentRequestsTable({ requests = [], refetch }) {
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -114,47 +123,52 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
     },
   });
 
-  const handleUpdate = useCallback(
-    async () => {
-      try {
-        const formData = new FormData();
+  const handleUpdate = useCallback(async () => {
+    try {
+      const formData = new FormData();
 
-        formData.append("docs_id", selectedRequest?._id);
-        
-        // Determine the status based on selectedStatus
-        let statusToSend = "";
-        if (selectedStatus === "ready-for-pickup" || selectedStatus === "ready-for-delivery" || selectedStatus === "document-done") {
-          statusToSend = "completed";
-        } else if (selectedStatus === "processing") {
-          statusToSend = "processing";
-        } else if (selectedStatus === "rejected") {
-          statusToSend = "rejected";
-        }
+      formData.append("docs_id", selectedRequest?._id);
 
-        if (selectedRequest?.digitallyAvailable && uploadedFile && selectedStatus === "document-done") {
-          formData.append("status", "completed");
-          formData.append("file", uploadedFile);
-        } else {
-          formData.append("status", statusToSend);
-        }
-
-        await updateMutation.mutateAsync({
-          path: "/api/brgy-docs/update/request",
-          attributes: {
-            method: "PUT",
-            body: formData,
-            credentials: "include",
-          },
-        });
-
-        setIsSheetOpen(false);
-        setSelectedStatus("");
-      } catch (error) {
-        console.error("Error submitting:", error);
+      // Determine the status based on selectedStatus
+      let statusToSend = "";
+      if (
+        selectedStatus === "ready-for-pickup" ||
+        selectedStatus === "ready-for-delivery" ||
+        selectedStatus === "document-done"
+      ) {
+        statusToSend = "completed";
+      } else if (selectedStatus === "processing") {
+        statusToSend = "processing";
+      } else if (selectedStatus === "rejected") {
+        statusToSend = "rejected";
       }
-    },
-    [updateMutation, uploadedFile, selectedRequest, selectedStatus]
-  );
+
+      if (
+        selectedRequest?.digitallyAvailable &&
+        uploadedFile &&
+        selectedStatus === "document-done"
+      ) {
+        formData.append("status", "completed");
+        formData.append("file", uploadedFile);
+      } else {
+        formData.append("status", statusToSend);
+      }
+
+      await updateMutation.mutateAsync({
+        path: "/api/brgy-docs/update/request",
+        attributes: {
+          method: "PUT",
+          body: formData,
+          credentials: "include",
+        },
+      });
+
+      setIsSheetOpen(false);
+      setSelectedStatus("");
+    } catch (error) {
+      console.error("Error submitting:", error);
+    }
+  }, [updateMutation, uploadedFile, selectedRequest, selectedStatus]);
 
   return (
     <>
@@ -169,6 +183,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 <TableHead>Contact</TableHead>
                 <TableHead className="w-42">Mode of Transaction</TableHead>
                 <TableHead>Request Status</TableHead>
+                <TableHead className="text-center">Timestamp</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -223,6 +238,18 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       {request?.status === "rejected" && (
                         <Badge variant="destructive">Rejected</Badge>
                       )}
+                    </TableCell>
+                    <TableCell className="capitalize text-center w-42 md:pr-8">
+                      <div className="flex flex-col text-sm">
+                        <span>
+                          Request : {formatDate(request?.createdAt)}
+                        </span>
+                        {request.recieveDate && (
+                          <span>
+                            Receive : {formatDate(request?.recieveDate)}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <Button
@@ -336,60 +363,65 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
               </div>
 
               {/* File Upload for Digital delivery */}
-              {selectedRequest?.digitallyAvailable && (selectedRequest?.status === "pending" || selectedRequest?.status === "completed") && (
-                <div className="flex flex-col gap-y-2">
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
-                    <File className="w-3 h-3" />
-                    Upload Document (PDF/Image)
-                  </span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Note: File upload is only available for documents that can be sent digitally.
-                  </p>
-                  {!uploadedFile ? (
-                    <label className="cursor-pointer">
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                      <div className="w-full rounded-lg py-6 px-4 border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
-                        <File className="w-8 h-8 mx-auto mb-2 text-slate-400" />
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Click to upload document
-                        </p>
-                      </div>
-                    </label>
-                  ) : (
-                    <div className="pr-8 gap-x-3 h-14 flex mt-2 items-center relative truncate w-full rounded-lg py-2 px-2 border border-dashed border-purple-300 dark:border-purple-700 text-sm">
-                      <span className="p-2 border rounded-md border-purple-200 bg-purple-50 dark:bg-purple-900/80 dark:border-purple-800 text-purple-500 dark:text-purple-500">
-                        <File size={19} />
-                      </span>
-                      <div className="h-full truncate flex flex-col">
-                        <span className="text-sm max-w-[9rem] md:max-w-[13rem] truncate text-slate-900 dark:text-slate-100">
-                          {uploadedFile.name}
+              {selectedRequest?.digitallyAvailable &&
+                (selectedRequest?.status === "pending" ||
+                  selectedRequest?.status === "completed") && (
+                  <div className="flex flex-col gap-y-2">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
+                      <File className="w-3 h-3" />
+                      Upload Document (PDF/Image)
+                    </span>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Note: File upload is only available for documents that can
+                      be sent digitally.
+                    </p>
+                    {!uploadedFile ? (
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <div className="w-full rounded-lg py-6 px-4 border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
+                          <File className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Click to upload document
+                          </p>
+                        </div>
+                      </label>
+                    ) : (
+                      <div className="pr-8 gap-x-3 h-14 flex mt-2 items-center relative truncate w-full rounded-lg py-2 px-2 border border-dashed border-purple-300 dark:border-purple-700 text-sm">
+                        <span className="p-2 border rounded-md border-purple-200 bg-purple-50 dark:bg-purple-900/80 dark:border-purple-800 text-purple-500 dark:text-purple-500">
+                          <File size={19} />
                         </span>
-                        <span className="text-slate-400 dark:text-slate-500">
-                          {formatFileSize(uploadedFile.size)}
-                        </span>
+                        <div className="h-full truncate flex flex-col">
+                          <span className="text-sm max-w-[9rem] md:max-w-[13rem] truncate text-slate-900 dark:text-slate-100">
+                            {uploadedFile.name}
+                          </span>
+                          <span className="text-slate-400 dark:text-slate-500">
+                            {formatFileSize(uploadedFile.size)}
+                          </span>
+                        </div>
+                        <Button
+                          onClick={removeFile}
+                          className="shadow-none right-2 absolute bg-transparent text-slate-900 dark:text-slate-200 cursor-pointer hover:bg-transparent p-0 h-5 w-2"
+                        >
+                          <X className="size-[18px]" />
+                        </Button>
                       </div>
-                      <Button
-                        onClick={removeFile}
-                        className="shadow-none right-2 absolute bg-transparent text-slate-900 dark:text-slate-200 cursor-pointer hover:bg-transparent p-0 h-5 w-2"
-                      >
-                        <X className="size-[18px]" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-
+                    )}
+                  </div>
+                )}
               {/* Status Selection Dropdown */}
               <div className="flex flex-col gap-y-2">
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Set Status
                 </span>
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                >
                   <SelectTrigger className="w-fit min-w-[200px]">
                     <SelectValue placeholder="Choose action to process" />
                   </SelectTrigger>
@@ -397,39 +429,57 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     {selectedRequest?.deliveryMethod === "pickup" && (
                       <>
                         {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="ready-for-pickup">Mark as Ready for Pickup</SelectItem>
+                          <SelectItem value="ready-for-pickup">
+                            Mark as Ready for Pickup
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                          <SelectItem value="processing">
+                            Mark as Processing
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">Reject Request</SelectItem>
+                          <SelectItem value="rejected">
+                            Reject Request
+                          </SelectItem>
                         )}
                       </>
                     )}
                     {selectedRequest?.deliveryMethod === "delivery" && (
                       <>
                         {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="ready-for-delivery">Mark as Ready for Delivery</SelectItem>
+                          <SelectItem value="ready-for-delivery">
+                            Mark as Ready for Delivery
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                          <SelectItem value="processing">
+                            Mark as Processing
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">Reject Request</SelectItem>
+                          <SelectItem value="rejected">
+                            Reject Request
+                          </SelectItem>
                         )}
                       </>
                     )}
                     {selectedRequest?.digitallyAvailable && (
                       <>
                         {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="document-done">Document Done</SelectItem>
+                          <SelectItem value="document-done">
+                            Document Done
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">Mark as Processing</SelectItem>
+                          <SelectItem value="processing">
+                            Mark as Processing
+                          </SelectItem>
                         )}
                         {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">Reject Request</SelectItem>
+                          <SelectItem value="rejected">
+                            Reject Request
+                          </SelectItem>
                         )}
                       </>
                     )}
@@ -442,7 +492,14 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
           <SheetFooter className="flex flex-col gap-y-2 px-4 pb-4">
             <Button
               onClick={handleUpdate}
-              disabled={!selectedStatus || (selectedRequest?.digitallyAvailable && selectedStatus === "document-done" && !uploadedFile && selectedRequest?.deliveryMethod === "digitally") || updateMutation.isPending}
+              disabled={
+                !selectedStatus ||
+                (selectedRequest?.digitallyAvailable &&
+                  selectedStatus === "document-done" &&
+                  !uploadedFile &&
+                  selectedRequest?.deliveryMethod === "digitally") ||
+                updateMutation.isPending
+              }
               className="w-full"
             >
               {updateMutation.isPending ? (

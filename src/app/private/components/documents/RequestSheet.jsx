@@ -51,6 +51,12 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
     [selectedDocument]
   );
 
+  // Check if pickup has a fee (not free)
+  const pickupHasFee = useMemo(() => {
+    if (!selectedDocument) return false;
+    return selectedDocument.fee !== "free" && selectedDocument.fee !== 0;
+  }, [selectedDocument]);
+
   const nothingChanged = useMemo(() => {
     const anyEmpty =
       !requestForm.purpose.trim() ||
@@ -75,7 +81,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         digitallyAvailable: selectedDocument.digitallyAvailable || false,
       }));
     }
-  }, [selectedDocument]); // ✅ fixed dependency
+  }, [selectedDocument]);
 
   const calculateTotalFee = useCallback(() => {
     if (!selectedDocument) return "₱0";
@@ -117,8 +123,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         status = "online";
       }
 
-      // ✅ use JSON instead of FormData
-      const deliveryMode = digitallyAvailable ? "online" : status
+      const deliveryMode = digitallyAvailable ? "online" : status;
       const payload = {
         user: user._id,
         name: selectedDocument.name,
@@ -161,8 +166,16 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
         status: "error",
       });
     }
-  }, [requestForm, onOpenChange, user, queryClient, selectedDocument, digitallyAvailable]);
+  }, [
+    requestForm,
+    onOpenChange,
+    user,
+    queryClient,
+    selectedDocument,
+    digitallyAvailable,
+  ]);
 
+  console.log("Request Form State:", selectedDocument);
   if (!selectedDocument) return null;
 
   return (
@@ -177,7 +190,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="w-full flex flex-col gap-y-4 px-4 mt-2">
+        <div className="w-full flex-1 flex flex-col gap-y-4 px-4 mt-2">
           {/* Quantity + Fee */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-y-1">
@@ -235,9 +248,9 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
           </div>
 
           {/* Urgent Checkbox */}
-          {selectedDocument.urgent &&(
+          {selectedDocument.urgent && (
             <div className="flex items-center space-x-2 p-3 bg-accent/5 border border-accent/20 rounded-lg">
-               <Checkbox
+              <Checkbox
                 id="urgentRequest"
                 onCheckedChange={(checked) =>
                   setRequestForm((prev) => ({
@@ -269,8 +282,8 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
           <div className="flex flex-col gap-y-3">
             <Label>Collection Method</Label>
             <div className="flex flex-col space-y-2">
-              {/* Pickup */}
-              {deliveryAvailable && !selectedDocument.digitallyAvailable && (
+              {/* Pickup - Only show if it has a fee (not free) */}
+              {pickupHasFee && !digitallyAvailable && (
                 <Button
                   type="button"
                   variant="outline"
@@ -299,8 +312,8 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                 </Button>
               )}
 
-              {/* COD */}
-              {deliveryAvailable && !selectedDocument.digitallyAvailable && (
+              {/* COD - Only show if delivery is available */}
+              {deliveryAvailable && !digitallyAvailable && (
                 <Button
                   type="button"
                   variant="outline"
@@ -329,7 +342,7 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                 </Button>
               )}
 
-              {/* Digital Availability */}
+              {/* Digital Availability - Only show when digitally available */}
               {digitallyAvailable && (
                 <div className="py-3 px-4 bg-blue-50 border border-blue-200 dark:border-blue-600 dark:bg-blue-900/30 rounded-lg">
                   <div className="flex items-start gap-2">

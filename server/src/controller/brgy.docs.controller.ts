@@ -93,7 +93,6 @@ const deleteDocs = ({ model: CollectionModel }: Record<string, Model<any>>) => {
   };
 };
 
-// Updating Docs (reusable)
 const updateDocs = ({
   model: CollectionModel,
   sendNotif = false,
@@ -113,8 +112,8 @@ const updateDocs = ({
 
       const data = matchedData(req);
       const { docs_id, ...updateFields } = data;
-      console.log("Fileeeeeeeeeeeeeeeee :", req.file);
 
+  
       if (isDocs && req.file) {
         const uploadResult = await UploadFile({
           file: req.file,
@@ -124,6 +123,8 @@ const updateDocs = ({
         updateFields.fileName = uploadResult.fileName;
         updateFields.fileSrc = uploadResult.filePath;
       }
+
+    
       Object.keys(updateFields).forEach((key) => {
         if (
           updateFields[key] &&
@@ -134,14 +135,27 @@ const updateDocs = ({
         }
       });
 
-      const { matchedCount, modifiedCount } = await CollectionModel.updateOne(
-        { _id: docs_id },
-        { $set: updateFields }
-      );
+      let prevStatus: string | undefined;
 
-      if (matchedCount === 0) {
-        return res.status(404).json({ message: "Document not found" });
+  
+      if (isItem) {
+        const oldDoc = await CollectionModel.findById(docs_id);
+        if (!oldDoc) {
+          return res.status(404).json({ message: "Document not found" });
+        }
+        prevStatus = oldDoc.status;
       }
+
+   
+      const { modifiedCount } = await CollectionModel.updateOne(
+        { _id: docs_id },
+        {
+          $set: {
+            ...updateFields,
+            ...(isDocs ? { recieveDate: new Date() } : {}),
+          },
+        }
+      );
 
       if (modifiedCount === 0) {
         return res.status(400).json({
@@ -150,7 +164,6 @@ const updateDocs = ({
         });
       }
 
-      // Send notification if required
       if (sendNotif && linkToSend) {
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
@@ -164,14 +177,51 @@ const updateDocs = ({
         if (!result?.success) throw new Error("Error in processing notif");
       }
 
-      // If returning item, increase available count
-      if (isItem && data.status === "returned") {
-        const update_result = await BorrowableItemsModel.updateOne(
-          { _id: data.main_item },
-          { $inc: { available: data.quantity } }
-        );
-        if (update_result.modifiedCount === 0) {
-          throw new Error("Failed to update item");
+      if (isItem) {
+        const currStatus = updateFields.status ?? prevStatus;
+        const oldDoc = await CollectionModel.findById(docs_id);
+        if (!oldDoc) {
+          throw new Error("Document not found after update");
+        }
+
+        let quantityChange = 0;
+
+        switch (currStatus) {
+          case "approved":
+            if (prevStatus !== "approved") {
+              quantityChange = -oldDoc.quantity;
+            }
+            break;
+
+          case "returned":
+            if (prevStatus === "approved") {
+              quantityChange = oldDoc.quantity;
+            }
+            break;
+
+          case "rejected":
+            if (prevStatus === "approved") {
+              quantityChange = oldDoc.quantity;
+            }
+            break;
+
+          case "reserved":
+            quantityChange = 0;
+            break;
+
+          default:
+            quantityChange = 0;
+        }
+
+        if (quantityChange !== 0) {
+          const update_result = await BorrowableItemsModel.updateOne(
+            { _id: oldDoc.main_item },
+            { $inc: { available: quantityChange } }
+          );
+
+          if (update_result.modifiedCount === 0) {
+            throw new Error("Failed to update item quantity");
+          }
         }
       }
 
@@ -185,6 +235,7 @@ const updateDocs = ({
     }
   };
 };
+
 
 // Retrieve all docs (reusable)
 const retrieveAllDocs = async (

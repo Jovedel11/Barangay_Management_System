@@ -24,7 +24,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
     const item = matchedData(req);
     await BorrowRequestModel.create({ ...item });
     console.log("Main item :", item.main_item);
-    const update_result = await BorrowableItemsModel.updateOne(
+    /*const update_result = await BorrowableItemsModel.updateOne(
       {
         _id: item.main_item,
       },
@@ -33,7 +33,7 @@ const bookItem = async (req: Request, res: Response, next: NextFunction) => {
       }
     );  
     console.log("Item category :", item.category);
-    if (update_result.modifiedCount === 0) throw new Error("Not enough stack");
+    if (update_result.modifiedCount === 0) throw new Error("Not enough stack");*/
     const result = await ProccessNotif({
       resident_id: item.user,
       data_name: item.category,
@@ -140,6 +140,27 @@ const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const getSpecificItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new Error("Book item: Invalid fields");
+    }
+    const { item_id } = matchedData(req);
+    console.log("Item ID", item_id)
+    const item = await BorrowRequestModel.findOne({ _id: item_id}).populate('main_item');
+    console.log("Item found :", item);
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    return res.status(200).json(item);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+
 // Search specific item (reusable)
 const createSearchController = (
   CollectionModel: Model<any>,
@@ -184,6 +205,7 @@ const createSearchController = (
 
 export {
   bookItem,
+  getSpecificItem,
   addAvailableBooking,
   getAvailableBooking,
   updateItem,
