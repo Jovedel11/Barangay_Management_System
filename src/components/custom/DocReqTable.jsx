@@ -413,7 +413,6 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     )}
                   </div>
                 )}
-
               {/* Status Selection Dropdown */}
               <div className="flex flex-col gap-y-2">
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
