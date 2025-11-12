@@ -240,13 +240,14 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       )}
                     </TableCell>
                     <TableCell className="capitalize text-center w-42 md:pr-8">
-                      <div className="flex flex-col text-sm">
-                        <span>
-                          Request : {formatDate(request?.createdAt)}
-                        </span>
+                      <div className="flex flex-col justify-start items-start text-sm">
+                        <span>Request : {formatDate(request?.createdAt)}</span>
                         {request.recieveDate && (
                           <span>
-                            Receive : {formatDate(request?.recieveDate)}
+                            Receive :{" "}
+                            {request?.status === "processing"
+                              ? "—"
+                              : formatDate(request?.recieveDate)}
                           </span>
                         )}
                       </div>
@@ -364,8 +365,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
 
               {/* File Upload for Digital delivery */}
               {selectedRequest?.digitallyAvailable &&
-                (selectedRequest?.status === "pending" ||
-                  selectedRequest?.status === "completed") && (
+                selectedRequest?.status === "pending" && (
                   <div className="flex flex-col gap-y-2">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
                       <File className="w-3 h-3" />
@@ -433,11 +433,11 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             Mark as Ready for Pickup
                           </SelectItem>
                         )}
-                        {selectedRequest?.status !== "processing" && (
+                        {selectedRequest?.status === "pending" ? (
                           <SelectItem value="processing">
                             Mark as Processing
                           </SelectItem>
-                        )}
+                        ) : null}
                         {selectedRequest?.status !== "rejected" && (
                           <SelectItem value="rejected">
                             Reject Request
@@ -452,11 +452,11 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             Mark as Ready for Delivery
                           </SelectItem>
                         )}
-                        {selectedRequest?.status !== "processing" && (
+                        {selectedRequest?.status === "pending" ? (
                           <SelectItem value="processing">
                             Mark as Processing
                           </SelectItem>
-                        )}
+                        ) : null}
                         {selectedRequest?.status !== "rejected" && (
                           <SelectItem value="rejected">
                             Reject Request
@@ -471,11 +471,11 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                             Document Done
                           </SelectItem>
                         )}
-                        {selectedRequest?.status !== "processing" && (
+                        {selectedRequest?.status === "pending" ? (
                           <SelectItem value="processing">
                             Mark as Processing
                           </SelectItem>
-                        )}
+                        ) : null}
                         {selectedRequest?.status !== "rejected" && (
                           <SelectItem value="rejected">
                             Reject Request
