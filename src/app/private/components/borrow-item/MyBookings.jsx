@@ -34,7 +34,7 @@ const BookingCard = () => {
     queryKey: ["my-bookings"],
     queryFn: () =>
       customRequest({
-        path: `/api/borrow-item/request/items?userID=${user._id}`,
+        path: `/api/borrow-item/request/resident/items?userID=${user._id}`,
         attributes: {
           method: "GET",
           credentials: "include",

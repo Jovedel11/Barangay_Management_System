@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 const itemBorrowValidation = [
   body("user")
@@ -184,6 +184,23 @@ const updateBorrowRequestValidation = [
     }
     return true;
   }),
+];
+
+export const validateBorrowRequest = [
+  body('main_item').isMongoId().withMessage('Invalid item ID'),
+  body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('borrowDate').isISO8601().withMessage('Invalid borrow date'),
+  body('returnDate').isISO8601().withMessage('Invalid return date'),
+  body('purpose').notEmpty().withMessage('Purpose is required'),
+  body('eventLocation').notEmpty().withMessage('Event location is required'),
+  body('contactNumber').notEmpty().withMessage('Contact number is required'),
+  body('category').notEmpty().withMessage('Category is required'),
+];
+
+export const validateAvailability = [
+  param('item_id').isMongoId().withMessage('Invalid item ID'),
+  body('borrowDate').isISO8601().withMessage('Invalid borrow date'),
+  body('returnDate').isISO8601().withMessage('Invalid return date'),
 ];
 
 const updateItemValidation = [

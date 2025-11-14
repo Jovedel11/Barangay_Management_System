@@ -3,8 +3,8 @@ import { AvailableDocs, DocsModel } from "@/models/documents.model";
 import { matchedData, validationResult } from "express-validator";
 import type { Model } from "mongoose";
 import ProccessNotif from "@/lib/process.notif";
-import { BorrowableItemsModel } from "@/models/borrow.items";
 import { UploadFile } from "@/lib/upload.file";
+import { getAvailableQuantity } from "@/lib/check.availability";
 
 type Update = {
   model: Model<any>;
@@ -113,7 +113,6 @@ const updateDocs = ({
       const data = matchedData(req);
       const { docs_id, ...updateFields } = data;
 
-  
       if (isDocs && req.file) {
         const uploadResult = await UploadFile({
           file: req.file,
@@ -124,7 +123,6 @@ const updateDocs = ({
         updateFields.fileSrc = uploadResult.filePath;
       }
 
-    
       Object.keys(updateFields).forEach((key) => {
         if (
           updateFields[key] &&
@@ -137,16 +135,31 @@ const updateDocs = ({
 
       let prevStatus: string | undefined;
 
-  
       if (isItem) {
         const oldDoc = await CollectionModel.findById(docs_id);
         if (!oldDoc) {
           return res.status(404).json({ message: "Document not found" });
         }
         prevStatus = oldDoc.status;
+
+        // ✅ NEW: Check availability before approving
+        if (updateFields.status === "approved" && prevStatus !== "approved") {
+          const available = await getAvailableQuantity({
+            itemId: oldDoc.main_item.toString(),
+            startDate: oldDoc.borrowDate,
+            endDate: oldDoc.returnDate,
+            excludeRequestId: docs_id, // Exclude current request
+          });
+
+          if (oldDoc.quantity > available) {
+            return res.status(400).json({
+              success: false,
+              message: `Only ${available} units available for the selected dates. Cannot approve request.`,
+            });
+          }
+        }
       }
 
-   
       const { modifiedCount } = await CollectionModel.updateOne(
         { _id: docs_id },
         {
@@ -177,53 +190,12 @@ const updateDocs = ({
         if (!result?.success) throw new Error("Error in processing notif");
       }
 
-      if (isItem) {
-        const currStatus = updateFields.status ?? prevStatus;
-        const oldDoc = await CollectionModel.findById(docs_id);
-        if (!oldDoc) {
-          throw new Error("Document not found after update");
-        }
-
-        let quantityChange = 0;
-
-        switch (currStatus) {
-          case "approved":
-            if (prevStatus !== "approved") {
-              quantityChange = -oldDoc.quantity;
-            }
-            break;
-
-          case "returned":
-            if (prevStatus === "approved") {
-              quantityChange = oldDoc.quantity;
-            }
-            break;
-
-          case "rejected":
-            if (prevStatus === "approved") {
-              quantityChange = oldDoc.quantity;
-            }
-            break;
-
-          case "reserved":
-            quantityChange = 0;
-            break;
-
-          default:
-            quantityChange = 0;
-        }
-
-        if (quantityChange !== 0) {
-          const update_result = await BorrowableItemsModel.updateOne(
-            { _id: oldDoc.main_item },
-            { $inc: { available: quantityChange } }
-          );
-
-          if (update_result.modifiedCount === 0) {
-            throw new Error("Failed to update item quantity");
-          }
-        }
-      }
+      // ❌ REMOVE ALL THIS QUANTITY UPDATE LOGIC
+      // No more $inc on available field since we calculate it dynamically
+      // if (isItem) {
+      //   const currStatus = updateFields.status ?? prevStatus;
+      //   ...
+      // }
 
       return res.status(200).json({
         success: true,
@@ -235,7 +207,6 @@ const updateDocs = ({
     }
   };
 };
-
 
 // Retrieve all docs (reusable)
 const retrieveAllDocs = async (
