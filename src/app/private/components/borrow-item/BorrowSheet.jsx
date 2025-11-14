@@ -331,6 +331,28 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                   />
                 </div>
               </div>
+              {bookingForm.borrowDate &&
+                bookingForm.returnDate &&
+                bookingForm.borrowDate === bookingForm.returnDate && (
+                  <div className="p-3 border rounded-lg bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-red-900 dark:text-red-100">
+                          Borrow and return dates cannot be the same day
+                        </p>
+
+                        <p className="text-xs mt-1 text-red-700 dark:text-red-300">
+                          Choosing the same day for borrowing and returning may
+                          cause scheduling conflicts, since items are reserved
+                          for the entire day. Please select a different return
+                          date.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               {/* Availability Status */}
               {checkingAvailability && (
@@ -354,11 +376,13 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 >
                   <div className="flex items-start gap-2">
                     {availability.available > 0 ? (
-                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                     )}
+
                     <div className="flex-1">
+                      {/* Main message */}
                       <p
                         className={`font-medium text-sm ${
                           availability.available > 0
@@ -368,8 +392,10 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                       >
                         {availability.available > 0
                           ? `${availability.available} of ${availability.total} units available`
-                          : "Not available for selected dates"}
+                          : "No units available for the selected dates"}
                       </p>
+
+                      {/* Reservation summary */}
                       <p
                         className={`text-xs mt-1 ${
                           availability.available > 0
@@ -378,16 +404,24 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                         }`}
                       >
                         {availability.available > 0
-                          ? `${availability.reserved} unit(s) already reserved`
-                          : "All units are reserved for this period"}
+                          ? `${availability.reserved} unit(s) reserved during this period.`
+                          : "All units are already reserved or not yet returned."}
                       </p>
-                      {availability.conflicts &&
-                        availability.conflicts.length > 0 && (
-                          <p className="text-xs mt-1 text-muted-foreground">
-                            {availability.conflicts.length} active booking(s)
-                            during this period
-                          </p>
-                        )}
+
+                      {/* Extra instruction when unavailable */}
+                      {availability.available === 0 && (
+                        <p className="text-xs mt-1 text-red-700 dark:text-red-300">
+                          Please choose a different borrow and return date.
+                        </p>
+                      )}
+
+                      {/* Conflict count */}
+                      {availability.conflicts?.length > 0 && (
+                        <p className="text-xs mt-1 text-muted-foreground">
+                          {availability.conflicts.length} conflicting booking(s)
+                          found.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
