@@ -376,7 +376,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full md:max-w-100 sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full md:max-w-100 sm:max-w-lg overflow-y-auto pb-10">
           <SheetHeader>
             <SheetTitle>Booking Details</SheetTitle>
             <SheetDescription>
@@ -540,16 +540,6 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                                 (Insufficient stock)
                               </span>
                             )}
-                          </div>
-                        </SelectItem>
-                      )}
-                    {selectedBooking?.status !== "reserved" &&
-                      selectedBooking?.status !== "returned" &&
-                      selectedBooking?.status !== "approved" && (
-                        <SelectItem value="reserved">
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            <span>Mark as Reserved</span>
                           </div>
                         </SelectItem>
                       )}

@@ -23,7 +23,7 @@ import {
 } from "@/models/borrow.items";
 import searchItemValidation from "@/middleware/search.middleware";
 import { updateDocs } from "@/controller/brgy.docs.controller";
-import { query, body } from "express-validator";
+import { query, body, param } from "express-validator";
 
 const router = Router();
 
@@ -71,7 +71,7 @@ router.post(
 router.post(
   "/items/:item_id/check-availability",
   [
-    query("item_id").isMongoId().withMessage("Invalid item ID"),
+    param("item_id").isMongoId().withMessage("Invalid item ID"),
     body("borrowDate").isISO8601().withMessage("Invalid borrow date"),
     body("returnDate").isISO8601().withMessage("Invalid return date"),
   ],

@@ -19,9 +19,11 @@ import {
   Wrench,
   Home,
   Truck,
-  Wallet,
   Info,
   Plus,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import customRequest from "@/services/customRequest";
 import { CustomToast } from "@/components/custom/CustomToast";
@@ -30,7 +32,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
   const queryClient = useQueryClient();
-  const { user } = useAuth(); // Retreiving the User when they successfully login
+  const { user } = useAuth();
   const [bookingForm, setBookingForm] = useState({
     category: "",
     quantity: 1,
@@ -41,6 +43,10 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
     contactNumber: "",
     deliveryMethod: "",
   });
+
+  const [availability, setAvailability] = useState(null);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(null);
 
   const getCategoryIcon = (category) => {
     const iconMap = {
@@ -74,9 +80,70 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
     }));
   }, []);
 
+  // Check availability when dates change
+  const checkAvailability = useCallback(async () => {
+    if (
+      !selectedItem?._id ||
+      !bookingForm.borrowDate ||
+      !bookingForm.returnDate
+    ) {
+      setAvailability(null);
+      return;
+    }
+
+    const borrowDate = new Date(bookingForm.borrowDate);
+    const returnDate = new Date(bookingForm.returnDate);
+
+    if (returnDate <= borrowDate) {
+      setAvailability(null);
+      return;
+    }
+
+    setCheckingAvailability(true);
+    setAvailabilityError(null);
+
+    try {
+      const result = await customRequest({
+        path: `/api/borrow-item/items/${selectedItem._id}/check-availability`,
+        attributes: {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            borrowDate: bookingForm.borrowDate,
+            returnDate: bookingForm.returnDate,
+          }),
+          credentials: "include",
+        },
+      });
+
+      if (result?.success) {
+        setAvailability(result?.response?.data);
+      } else {
+        setAvailabilityError("Failed to check availability");
+      }
+    } catch (error) {
+      console.error("Error checking availability:", error);
+      setAvailabilityError("Unable to verify availability");
+    } finally {
+      setCheckingAvailability(false);
+    }
+  }, [selectedItem, bookingForm.borrowDate, bookingForm.returnDate]);
+
+  // Trigger availability check when dates change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      checkAvailability();
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [checkAvailability]);
+
   const nothingChanged = useMemo(() => {
     const anyEmpty =
-      !bookingForm.quantity === 0 ||
+      !bookingForm.quantity ||
+      bookingForm.quantity === 0 ||
       !bookingForm.borrowDate.trim() ||
       !bookingForm.returnDate ||
       !bookingForm.purpose ||
@@ -84,14 +151,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
       !bookingForm.deliveryMethod.trim();
 
     if (anyEmpty) return true;
-    return (
-      bookingForm.quantity === 1 &&
-      !bookingForm.borrowDate &&
-      !bookingForm.returnDate &&
-      !bookingForm.purpose.trim() &&
-      !bookingForm.eventLocation.trim() &&
-      !bookingForm.contactNumber.trim()
-    );
+    return false;
   }, [bookingForm]);
 
   useEffect(() => {
@@ -106,6 +166,8 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         contactNumber: "",
         deliveryMethod: selectedItem?.deliveryAvailable ? "delivery" : "pickup",
       });
+      setAvailability(null);
+      setAvailabilityError(null);
     }
   }, [selectedItem]);
 
@@ -126,6 +188,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
       const returnDate = new Date(bookingForm.returnDate);
       const diffInTime = returnDate.getTime() - borrowDate.getTime();
       const diffInDays = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
+
       if (diffInDays > selectedItem.maxBorrowDays) {
         return CustomToast({
           description: `Return date must not be longer than ${
@@ -158,12 +221,14 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         });
       }
 
-      if (bookingForm.quantity > selectedItem.available) {
+      // Check against real-time availability
+      if (availability && bookingForm.quantity > availability.available) {
         return CustomToast({
-          description: "Your request exceeded the available items",
+          description: `Only ${availability.available} unit(s) available for the selected dates`,
           status: "error",
         });
       }
+
       const payload = {
         user: user._id,
         main_item: selectedItem._id,
@@ -171,7 +236,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         borrowDate: new Date(bookingForm.borrowDate).toISOString(),
         returnDate: new Date(bookingForm.returnDate).toISOString(),
       };
-      console.log(payload);
+
       const result = await customRequest({
         path: "/api/borrow-item/request/insert",
         attributes: {
@@ -183,6 +248,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
           credentials: "include",
         },
       });
+
       if (result?.success) {
         refetch();
         queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
@@ -197,14 +263,26 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
         status: "error",
       });
     } catch (error) {
-      console.log(user._id);
       console.error("Error submitting:", error);
       CustomToast({
         description: "Something went wrong",
         status: "error",
       });
     }
-  }, [bookingForm, refetch, onOpenChange, user, queryClient, selectedItem]);
+  }, [
+    bookingForm,
+    refetch,
+    onOpenChange,
+    user,
+    queryClient,
+    selectedItem,
+    availability,
+  ]);
+
+  const isQuantityExceeded =
+    availability && bookingForm.quantity > availability.available;
+  const canSubmit =
+    !nothingChanged && !isQuantityExceeded && availability !== null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -232,28 +310,7 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                 </p>
               </div>
 
-              {/* Quantity */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="w-full flex flex-col gap-y-1">
-                  <Label htmlFor="quantity">Quantity</Label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    min="1"
-                    max={selectedItem?.available}
-                    value={bookingForm.quantity}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="w-full flex flex-col gap-y-1">
-                  <Label>Available</Label>
-                  <p className="text-lg font-bold text-green-600 mt-2">
-                    {selectedItem?.available} / {selectedItem?.total} units
-                  </p>
-                </div>
-              </div>
-
-              {/* Dates */}
+              {/* Dates - Moved before Quantity */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="w-full flex flex-col gap-y-1">
                   <Label htmlFor="borrowDate">Borrow Date</Label>
@@ -272,6 +329,123 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                     value={bookingForm.returnDate}
                     onChange={handleChange}
                   />
+                </div>
+              </div>
+
+              {/* Availability Status */}
+              {checkingAvailability && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                    <span className="text-sm text-blue-900 dark:text-blue-100">
+                      Checking availability...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {!checkingAvailability && availability && (
+                <div
+                  className={`p-3 border rounded-lg ${
+                    availability.available > 0
+                      ? "bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    {availability.available > 0 ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    )}
+                    <div className="flex-1">
+                      <p
+                        className={`font-medium text-sm ${
+                          availability.available > 0
+                            ? "text-green-900 dark:text-green-100"
+                            : "text-red-900 dark:text-red-100"
+                        }`}
+                      >
+                        {availability.available > 0
+                          ? `${availability.available} of ${availability.total} units available`
+                          : "Not available for selected dates"}
+                      </p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          availability.available > 0
+                            ? "text-green-700 dark:text-green-200"
+                            : "text-red-700 dark:text-red-200"
+                        }`}
+                      >
+                        {availability.available > 0
+                          ? `${availability.reserved} unit(s) already reserved`
+                          : "All units are reserved for this period"}
+                      </p>
+                      {availability.conflicts &&
+                        availability.conflicts.length > 0 && (
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            {availability.conflicts.length} active booking(s)
+                            during this period
+                          </p>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {availabilityError && (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <span className="text-sm text-yellow-900 dark:text-yellow-100">
+                      {availabilityError}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="w-full flex flex-col gap-y-1">
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    max={availability?.available || selectedItem?.available}
+                    value={bookingForm.quantity}
+                    onChange={handleChange}
+                    className={
+                      isQuantityExceeded
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    }
+                  />
+                  {isQuantityExceeded && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Exceeds available quantity
+                    </p>
+                  )}
+                </div>
+                <div className="w-full flex flex-col gap-y-1">
+                  <Label>Currently Available</Label>
+                  <p
+                    className={`text-lg font-bold mt-2 ${
+                      availability
+                        ? availability.available > 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {availability
+                      ? `${availability?.available ?? selectedItem?.total} / ${
+                          availability?.total ?? 0
+                        } units`
+                      : `${selectedItem?.available ?? selectedItem?.total} / ${
+                          selectedItem?.total ?? 0
+                        } units`}
+                  </p>
                 </div>
               </div>
 
@@ -312,8 +486,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
               <div className="w-full flex flex-col gap-y-3">
                 <Label>Collection Method</Label>
                 <div className="flex flex-col space-y-2">
-                  {/* Pickup Button */}
-
                   <Button
                     type="button"
                     variant="outline"
@@ -350,7 +522,6 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
                     </div>
                   )}
 
-                  {/* Delivery Button */}
                   {selectedItem?.deliveryAvailable && (
                     <Button
                       type="button"
@@ -427,10 +598,19 @@ const BorrowSheet = ({ selectedItem, open, onOpenChange, refetch }) => {
               <Button
                 className="rounded-sm transition-all active:scale-95"
                 onClick={handleSubmit}
-                disabled={nothingChanged || selectedItem?.available === 0}
+                disabled={!canSubmit || checkingAvailability}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Submit Booking Request
+                {checkingAvailability ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Submit Booking Request
+                  </>
+                )}
               </Button>
             </SheetFooter>
           </>
