@@ -17,7 +17,6 @@ type IBorrowableItem<T extends string> = {
   //user: Schema.Types.ObjectId;
   category: T;
   description: T;
-  available: number;
   total: number;
   condition: T;
   maxBorrowDays: number;
@@ -37,20 +36,17 @@ const itemBorrowSchema = new Schema<ItemBorrowRequest<string>>({
   contactNumber: { type: String, required: true },
   deliveryMethod: { type: String, required: false },
   category: { type: String, required: true },
-  /*specialRequirements: {
-    isSenior: { type: Boolean, required: false, default: false },
-    isFemale: { type: Boolean, required: false, default: false },
-    isPregnant: { type: Boolean, required: false, default: false },
-  },*/
   status: { type: String, required: false, default: "pending" },
-  main_item: { type: Schema.Types.ObjectId, required: true, ref: "AvailableItems" },
+  main_item: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "AvailableItems",
+  },
 });
 
 const borrowableItemSchema = new Schema<IBorrowableItem<string>>({
-  //user: { type: Schema.Types.ObjectId, ref: "Account", required: true },
   category: { type: String, required: true },
   description: { type: String, required: true },
-  available: { type: Number, required: true },
   total: { type: Number, required: true },
   condition: { type: String, required: true },
   maxBorrowDays: { type: Number, required: true },

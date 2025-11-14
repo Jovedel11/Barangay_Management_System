@@ -53,18 +53,18 @@ const ItemCard = ({ item, refetch }) => {
         </div>
 
         <div className="space-y-2 mb-4">
-          {item?.available !== 0 && <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Available:</span>
-            <span
-              className={`font-medium ${
-                item?.available === 0 ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {item?.available === 0
-                ? "Not Available"
-                : `${item?.available} / ${item?.total} units`}
-            </span>
-          </div>}
+          {item?.available !== 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Available:</span>
+              <span
+                className={`font-medium ${
+                  item?.available === 0 ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {item?.total}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Max Days:</span>
             <span className="font-medium text-foreground">
@@ -83,10 +83,12 @@ const ItemCard = ({ item, refetch }) => {
           </div>
         </div>
 
-        {item?.available === 0 && (
+        {item?.total === 0 && (
           <div className="p-3 mb-4 border rounded-md border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40">
             <p className="text-xs text-amber-900 dark:text-amber-100">
-              <span className="font-semibold">Currently unavailable</span> – You can still book for a future date. Your reservation will be pending admin approval.
+              <span className="font-semibold">Currently unavailable</span> – You
+              can still book for a future date. Your reservation will be pending
+              admin approval.
             </p>
           </div>
         )}

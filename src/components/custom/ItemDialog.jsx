@@ -36,7 +36,6 @@ const ItemDialog = ({
   const [info, setInfo] = useState({
     category: data?.category ?? "",
     description: data?.description ?? "",
-    available: data?.available ?? "",
     total: data?.total ?? "",
     condition: data?.condition ?? "",
     maxBorrowDays: data?.maxBorrowDays ?? "",
@@ -60,7 +59,6 @@ const ItemDialog = ({
       !isEdit &&
       (!info.category.trim() ||
         !info.description.trim() ||
-        !info.available.toString().trim() ||
         !info.total.toString().trim() ||
         !info.condition.trim() ||
         !info.maxBorrowDays.toString().trim() ||
@@ -72,7 +70,6 @@ const ItemDialog = ({
     const isSameAsData =
       data?.category === info.category &&
       data?.description === info.description &&
-      data?.available === info.available &&
       data?.total === info.total &&
       data?.condition === info.condition &&
       data?.maxBorrowDays === info.maxBorrowDays &&
@@ -114,7 +111,6 @@ const ItemDialog = ({
       setInfo({
         category: data.category ?? "",
         description: data.description ?? "",
-        available: data.available ?? "",
         total: data.total ?? "",
         condition: data.condition ?? "",
         maxBorrowDays: data.maxBorrowDays ?? "",
@@ -231,17 +227,6 @@ const ItemDialog = ({
           </div>
 
           <div className="w-full flex gap-x-3">
-            <div className="w-full flex flex-col gap-y-1">
-              <span className="text-sm font-medium">Available</span>
-              <Input
-                id="available"
-                type="number"
-                value={info.available}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
-              />
-            </div>
             <div className="w-full flex flex-col gap-y-1">
               <span className="text-sm font-medium">Total</span>
               <Input

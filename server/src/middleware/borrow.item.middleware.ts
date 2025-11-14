@@ -109,13 +109,6 @@ const borrowableItemValidation = [
     .withMessage("Description is required.")
     .notEmpty()
     .withMessage("Description cannot be empty."),
-  body("available")
-    .exists()
-    .withMessage("Available quantity is required.")
-    .notEmpty()
-    .withMessage("Available quantity cannot be empty.")
-    .isInt({ min: 0 })
-    .withMessage("Available quantity must be a non-negative integer."),
   body("total")
     .exists()
     .withMessage("Total quantity is required.")
@@ -208,10 +201,6 @@ const updateItemValidation = [
     .optional()
     .isString()
     .withMessage("Description must be a string"),
-  body("available")
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage("Available must be a non-negative integer"),
   body("total")
     .optional()
     .isInt({ gt: 0 })
@@ -260,7 +249,6 @@ const updateItemValidation = [
       "name",
       "category",
       "description",
-      "available",
       "total",
       "condition",
       "maxBorrowDays",
