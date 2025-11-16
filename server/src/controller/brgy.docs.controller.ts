@@ -111,8 +111,9 @@ const updateDocs = ({
       }
 
       const data = matchedData(req);
-      const { docs_id, ...updateFields } = data;
+      const { docs_id, timestampField, ...updateFields } = data;
 
+      // Handle file upload for documents
       if (isDocs && req.file) {
         const uploadResult = await UploadFile({
           file: req.file,
@@ -123,6 +124,7 @@ const updateDocs = ({
         updateFields.fileSrc = uploadResult.filePath;
       }
 
+      // Clean up empty objects
       Object.keys(updateFields).forEach((key) => {
         if (
           updateFields[key] &&
@@ -142,13 +144,13 @@ const updateDocs = ({
         }
         prevStatus = oldDoc.status;
 
-        // ✅ NEW: Check availability before approving
+        // ✅ Check availability before approving
         if (updateFields.status === "approved" && prevStatus !== "approved") {
           const available = await getAvailableQuantity({
             itemId: oldDoc.main_item.toString(),
             startDate: oldDoc.borrowDate,
             endDate: oldDoc.returnDate,
-            excludeRequestId: docs_id, // Exclude current request
+            excludeRequestId: docs_id,
           });
 
           if (oldDoc.quantity > available) {
@@ -160,13 +162,32 @@ const updateDocs = ({
         }
       }
 
+      // NEW: Handle timestamp updates for document requests
+      if (isDocs) {
+        const currentDoc = await CollectionModel.findById(docs_id);
+        
+        // Ensure requestAt is set (if not already)
+        if (!currentDoc.requestAt) {
+          updateFields.requestAt = currentDoc.createdAt || new Date();
+        }
+
+        // Set appropriate timestamp based on timestampField parameter
+        if (timestampField) {
+          updateFields[timestampField] = new Date();
+        }
+        
+        // Legacy support: if status is being set to "completed", also set receiveAt
+        // (You can remove this if you're fully migrated to the new system)
+        if (updateFields.status === "completed" && !updateFields.receiveAt) {
+          updateFields.receiveAt = new Date();
+        }
+      }
+
+      // Perform the update
       const { modifiedCount } = await CollectionModel.updateOne(
         { _id: docs_id },
         {
-          $set: {
-            ...updateFields,
-            ...(isDocs ? { recieveDate: new Date() } : {}),
-          },
+          $set: updateFields,
         }
       );
 
@@ -177,6 +198,7 @@ const updateDocs = ({
         });
       }
 
+      // Send notification if required
       if (sendNotif && linkToSend) {
         const data = await CollectionModel.findById(docs_id);
         const result = await ProccessNotif({
@@ -189,13 +211,6 @@ const updateDocs = ({
         });
         if (!result?.success) throw new Error("Error in processing notif");
       }
-
-      // ❌ REMOVE ALL THIS QUANTITY UPDATE LOGIC
-      // No more $inc on available field since we calculate it dynamically
-      // if (isItem) {
-      //   const currStatus = updateFields.status ?? prevStatus;
-      //   ...
-      // }
 
       return res.status(200).json({
         success: true,

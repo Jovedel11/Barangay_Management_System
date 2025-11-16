@@ -342,8 +342,8 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-sm text-muted-foreground">
-                            -
+                          <span className="text-sm w-full text-muted-foreground">
+                            —
                           </span>
                         )}
                       </TableCell>
