@@ -389,7 +389,10 @@ const RequestSheet = ({ open, onOpenChange, selectedDocument }) => {
                 </Label>
                 <div className="text-sm text-muted-foreground mt-1 space-y-1">
                   <p>
-                    <strong>Total Amount:</strong> {calculateTotalFee()}
+                    <strong>Total Amount:</strong>{" "}
+                    {selectedDocument?.digitallyAvailable
+                      ? "FREE"
+                      : calculateTotalFee()}
                   </p>
                   <p>
                     <strong>Processing:</strong>{" "}

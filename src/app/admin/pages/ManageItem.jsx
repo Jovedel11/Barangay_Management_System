@@ -118,7 +118,7 @@ const ManageDocuments = () => {
                 View and manage resident item bookings
               </span>
               {data && (
-                <ItemBookingTable refetch={refetch} bookings={data?.response} />
+                <ItemBookingTable refetch={refetch} bookings={data?.response?.data} />
               )}
             </div>
           </TabsContent>

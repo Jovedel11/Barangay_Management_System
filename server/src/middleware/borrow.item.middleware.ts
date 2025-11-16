@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 const itemBorrowValidation = [
   body("user")
@@ -109,13 +109,6 @@ const borrowableItemValidation = [
     .withMessage("Description is required.")
     .notEmpty()
     .withMessage("Description cannot be empty."),
-  body("available")
-    .exists()
-    .withMessage("Available quantity is required.")
-    .notEmpty()
-    .withMessage("Available quantity cannot be empty.")
-    .isInt({ min: 0 })
-    .withMessage("Available quantity must be a non-negative integer."),
   body("total")
     .exists()
     .withMessage("Total quantity is required.")
@@ -193,6 +186,23 @@ const updateBorrowRequestValidation = [
   }),
 ];
 
+export const validateBorrowRequest = [
+  body('main_item').isMongoId().withMessage('Invalid item ID'),
+  body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
+  body('borrowDate').isISO8601().withMessage('Invalid borrow date'),
+  body('returnDate').isISO8601().withMessage('Invalid return date'),
+  body('purpose').notEmpty().withMessage('Purpose is required'),
+  body('eventLocation').notEmpty().withMessage('Event location is required'),
+  body('contactNumber').notEmpty().withMessage('Contact number is required'),
+  body('category').notEmpty().withMessage('Category is required'),
+];
+
+export const validateAvailability = [
+  param('item_id').isMongoId().withMessage('Invalid item ID'),
+  body('borrowDate').isISO8601().withMessage('Invalid borrow date'),
+  body('returnDate').isISO8601().withMessage('Invalid return date'),
+];
+
 const updateItemValidation = [
   body("docs_id")
     .exists()
@@ -208,10 +218,6 @@ const updateItemValidation = [
     .optional()
     .isString()
     .withMessage("Description must be a string"),
-  body("available")
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage("Available must be a non-negative integer"),
   body("total")
     .optional()
     .isInt({ gt: 0 })
@@ -260,7 +266,6 @@ const updateItemValidation = [
       "name",
       "category",
       "description",
-      "available",
       "total",
       "condition",
       "maxBorrowDays",

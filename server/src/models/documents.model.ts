@@ -3,7 +3,7 @@ import { model, Schema } from "mongoose";
 export type BaseTypes<U extends string> = {
   purpose?: U;
   quantity: number;
-  deliveryMethod: U;
+  deliveryMethod: U; // This will now be "online" | "pickup" | "delivery"
 };
 
 type DocumentRequest<T extends string> = BaseTypes<T> & {
@@ -17,7 +17,12 @@ type DocumentRequest<T extends string> = BaseTypes<T> & {
   digitallyAvailable: boolean;
   fileSrc?: string;
   fileName?: string;
-  recieveDate?: Date;
+  // NEW: 4 timestamp fields
+  requestAt?: Date;
+  releaseAt?: Date;
+  handoverAt?: Date;
+  receiveAt?: Date;
+  // REMOVED: recieveDate (replaced by receiveAt)
 };
 
 const docsSchema = new Schema<DocumentRequest<string>>(
@@ -29,16 +34,20 @@ const docsSchema = new Schema<DocumentRequest<string>>(
     quantity: { type: Number, required: true },
     digitallyAvailable: { type: Boolean, required: true },
     urgentRequest: { type: Boolean, required: true },
-    deliveryMethod: { type: String, required: true },
+    deliveryMethod: { type: String, required: true }, // "online" | "pickup" | "delivery"
     contactNumber: { type: String, required: true },
     specificDetails: { type: String, required: false },
     fileSrc: { type: String, required: false },
     fileName: { type: String, required: false },
-    recieveDate: { type: Date, required: false },
     status: { type: String, required: false, default: "pending" },
+    // NEW: 4 timestamp fields
+    requestAt: { type: Date, required: false },
+    releaseAt: { type: Date, required: false },
+    handoverAt: { type: Date, required: false },
+    receiveAt: { type: Date, required: false },
   },
   {
-    timestamps: true,
+    timestamps: true, // This still creates createdAt and updatedAt
   }
 );
 
@@ -82,8 +91,8 @@ const AvailableDocsSchema = new Schema<IAvailableDoc>({
   deliveryAvailable: { type: Boolean, required: true },
   isActive: { type: Boolean, required: true },
   specialNote: { type: String, required: true },
-  totalReq: { type: Number, required: false, default: 0 }, //No functionalities yet
-  pendings: { type: Number, required: false, default: 0 }, //No functionalities yet
+  totalReq: { type: Number, required: false, default: 0 },
+  pendings: { type: Number, required: false, default: 0 },
 });
 
 const AvailableDocs = model<IAvailableDoc>(

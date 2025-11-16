@@ -104,10 +104,12 @@ const updateDocsValidation = [
     .withMessage("docs_id is required")
     .isMongoId()
     .withMessage("Invalid docs_id format"),
+  
   body("digitallyAvailable")
     .optional()
     .isBoolean()
     .withMessage("Digitally available must be a boolean."),
+  
   // Optional fields that can be updated
   body("name")
     .optional()
@@ -115,65 +117,81 @@ const updateDocsValidation = [
     .trim()
     .notEmpty()
     .withMessage("Name cannot be empty"),
+  
   body("category")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Category cannot be empty"),
+  
   body("description")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Description cannot be empty"),
+  
   body("fee")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Fee cannot be empty"),
+  
   body("processingTime")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Processing time cannot be empty"),
+  
   body("requirements")
     .optional()
     .isString()
     .withMessage("Requirements must be an array"),
+  
   body("purposes")
     .optional()
     .isString()
     .withMessage("Purposes must be an array"),
+  
   body("deliveryAvailable")
     .optional()
     .isBoolean()
     .withMessage("Delivery availability must be boolean"),
-  body("urgent").optional().isBoolean().withMessage("Urgent must be boolean"),
+  
+  body("urgent")
+    .optional()
+    .isBoolean()
+    .withMessage("Urgent must be boolean"),
+  
   body("urgentFee")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Urgent fee cannot be empty"),
+  
   body("urgentTime")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Urgent time cannot be empty"),
+  
   body("specialNote")
     .optional()
     .isString()
     .trim()
     .notEmpty()
     .withMessage("Special note cannot be empty"),
+  
   body("isActive")
     .optional()
     .isBoolean()
     .withMessage("isActive must be boolean"),
+  
   body("status")
     .optional()
     .custom((value) => {
@@ -184,20 +202,55 @@ const updateDocsValidation = [
         const allowed = [
           "pending",
           "processing",
-          "completed",
+          "released",
+          "handover",
+          "received",
           "rejected",
-          "digital",
           "approved",
         ];
-        if (allowed.includes(value.toLocaleLowerCase())) {
-          console.log("Allowed");
+        if (allowed.includes(value.toLowerCase())) {
           return true;
         }
       }
       throw new Error(
-        "Status must be a boolean or one of: pending, processing, completed, rejected, approved"
+        "Status must be a boolean or one of: pending, processing, released, handover, received, rejected, approved"
       );
     }),
+  
+  // NEW: Validate timestampField parameter
+  body("timestampField")
+    .optional()
+    .isString()
+    .custom((value) => {
+      const allowedTimestamps = ["releaseAt", "handoverAt", "receiveAt"];
+      if (allowedTimestamps.includes(value)) {
+        return true;
+      }
+      throw new Error(
+        "timestampField must be one of: releaseAt, handoverAt, receiveAt"
+      );
+    }),
+  
+  // NEW: Optional timestamp fields (for direct updates if needed)
+  body("requestAt")
+    .optional()
+    .isISO8601()
+    .withMessage("requestAt must be a valid date"),
+  
+  body("releaseAt")
+    .optional()
+    .isISO8601()
+    .withMessage("releaseAt must be a valid date"),
+  
+  body("handoverAt")
+    .optional()
+    .isISO8601()
+    .withMessage("handoverAt must be a valid date"),
+  
+  body("receiveAt")
+    .optional()
+    .isISO8601()
+    .withMessage("receiveAt must be a valid date"),
 
   body().custom((value) => {
     const availableDocsFields = [
@@ -216,7 +269,15 @@ const updateDocsValidation = [
       "isActive",
     ];
 
-    const docsModelFields = ["status"];
+    const docsModelFields = [
+      "status",
+      "timestampField",
+      "requestAt",
+      "releaseAt",
+      "handoverAt",
+      "receiveAt",
+    ];
+    
     const hasUpdateField = [...availableDocsFields, ...docsModelFields].some(
       (field) => value[field] !== undefined
     );
@@ -227,6 +288,7 @@ const updateDocsValidation = [
     return true;
   }),
 ];
+
 
 const deleteDocsValidation = [
   body("docs_id")

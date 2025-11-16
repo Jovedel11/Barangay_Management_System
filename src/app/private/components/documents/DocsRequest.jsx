@@ -19,6 +19,7 @@ import {
   Globe,
   Download,
   LoaderIcon,
+  Package,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import customRequest from "@/services/customRequest";
@@ -43,32 +44,55 @@ const DocsRequest = () => {
 
   const myRequests = Array.isArray(data?.response) ? data.response : [];
 
+  // UPDATED: Match new status system
   const getStatusBadge = (status) => {
     switch (status) {
-      case "completed":
+      case "received":
         return (
-          <Badge className="bg-success/10 text-success border-success/30">
+          <Badge variant="default">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Received
+          </Badge>
+        );
+      case "completed": // Legacy support
+        return (
+          <Badge variant="default">
             <CheckCircle className="h-3 w-3 mr-1" />
             Completed
           </Badge>
         );
       case "pending":
         return (
-          <Badge className="bg-warning/10 text-warning border-warning/30">
+          <Badge variant="secondary">
             <AlertTriangle className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         );
       case "processing":
         return (
-          <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+          <Badge variant="outline">
             <Clock className="h-3 w-3 mr-1" />
             Processing
           </Badge>
         );
+      case "released":
+        return (
+          <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+            <Package className="h-3 w-3 mr-1" />
+            Released
+          </Badge>
+        );
+      case "handover":
+        return (
+          <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/30">
+            <Truck className="h-3 w-3 mr-1" />
+            {/* Dynamic label based on delivery method would go here */}
+            Handover
+          </Badge>
+        );
       case "rejected":
         return (
-          <Badge className="bg-destructive/10 text-destructive border-destructive/30">
+          <Badge variant="destructive">
             <XCircle className="h-3 w-3 mr-1" />
             Rejected
           </Badge>
@@ -78,7 +102,7 @@ const DocsRequest = () => {
     }
   };
 
-  const getDeliveryBadge = (method, digitallyAvailable, status) => {
+  const getDeliveryBadge = (method, digitallyAvailable) => {
     if (digitallyAvailable || method === "online") {
       return (
         <Badge
@@ -86,37 +110,27 @@ const DocsRequest = () => {
           className="bg-accent/10 text-accent border-accent/30"
         >
           <Globe className="h-3 w-3 mr-1" />
-          Digitally
+          Online
         </Badge>
       );
-    } else if (method === "delivery" && status === "completed") {
+    } else if (method === "delivery") {
       return (
         <Badge
           variant="outline"
           className="bg-purple-500/10 text-purple-500 border-purple-500/30"
         >
           <Truck className="h-3 w-3 mr-1" />
-          Delivered
+          Delivery
         </Badge>
       );
-    } else if (method === "pickup" && status === "completed") {
+    } else if (method === "pickup") {
       return (
         <Badge
           variant="outline"
           className="bg-primary/10 text-primary border-primary/30"
         >
           <Home className="h-3 w-3 mr-1" />
-          Ready for Pickup
-        </Badge>
-      );
-    } else if (status === "pending") {
-      return (
-        <Badge
-          variant="outline"
-          className="bg-warning/10 text-warning border-warning/30"
-        >
-          <LoaderIcon className="h-3 w-3 mr-1" />
-          Waiting for admin
+          Pickup
         </Badge>
       );
     }
@@ -126,6 +140,20 @@ const DocsRequest = () => {
     return `DOC-${String(index + 1).padStart(4, "0")}-${Date.now()
       .toString()
       .slice(-6)}`;
+  };
+
+  // NEW: Format datetime with time
+  const formatDateTime = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   const handleDownload = (fileSrc, fileName) => {
@@ -198,8 +226,7 @@ const DocsRequest = () => {
 
                     {getDeliveryBadge(
                       request.deliveryMethod,
-                      request.digitallyAvailable,
-                      request.status
+                      request.digitallyAvailable
                     )}
 
                     <div className="space-y-1 text-sm text-muted-foreground">
@@ -248,6 +275,64 @@ const DocsRequest = () => {
                       )}
                     </div>
 
+                    {/* NEW: Timestamp Tracking Section */}
+                    {(request.requestAt || request.releaseAt || request.handoverAt || request.receiveAt) && (
+                      <div className="p-3 bg-muted/30 border border-muted rounded-lg">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                          Request Timeline
+                        </p>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          {/* Request timestamp - always show */}
+                          {(request.requestAt || request.createdAt) && (
+                            <div className="flex justify-between">
+                              <span>Request:</span>
+                              <span className="text-foreground font-medium">
+                                {formatDateTime(request.requestAt || request.createdAt)}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Release timestamp */}
+                          {request.releaseAt && (
+                            <div className="flex justify-between">
+                              <span>Release:</span>
+                              <span className="text-foreground font-medium">
+                                {formatDateTime(request.releaseAt)}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Handover timestamp - label changes based on delivery method */}
+                          {request.handoverAt && request.deliveryMethod === "pickup" && (
+                            <div className="flex justify-between">
+                              <span>Pickup:</span>
+                              <span className="text-foreground font-medium">
+                                {formatDateTime(request.handoverAt)}
+                              </span>
+                            </div>
+                          )}
+                          {request.handoverAt && request.deliveryMethod === "delivery" && (
+                            <div className="flex justify-between">
+                              <span>Delivery:</span>
+                              <span className="text-foreground font-medium">
+                                {formatDateTime(request.handoverAt)}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Receive timestamp */}
+                          {request.receiveAt && (
+                            <div className="flex justify-between">
+                              <span>Receive:</span>
+                              <span className="text-foreground font-medium">
+                                {formatDateTime(request.receiveAt)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {request.specificDetails && (
                       <div className="p-2 bg-primary/10 border border-primary/20 rounded text-sm">
                         <p className="text-primary font-medium">Details:</p>
@@ -257,13 +342,13 @@ const DocsRequest = () => {
                       </div>
                     )}
 
-                    {/* Status Messages */}
+                    {/* Status Messages - UPDATED */}
                     {request.status === "pending" && (
-                      <div className="p-2 bg-warning/10 border border-warning/20 rounded text-sm">
-                        <p className="text-warning font-medium">
+                      <div className="p-2 bg-muted/50 border border-muted rounded text-sm">
+                        <p className="text-muted-foreground font-medium">
                           Pending Review
                         </p>
-                        <p className="text-warning/80">
+                        <p className="text-muted-foreground/80">
                           Your request is waiting to be reviewed by the barangay
                           office.
                         </p>
@@ -271,17 +356,75 @@ const DocsRequest = () => {
                     )}
 
                     {request.status === "processing" && (
-                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
-                        <p className="text-blue-500 font-medium">
+                      <div className="p-2 bg-muted/50 border border-muted rounded text-sm">
+                        <p className="text-muted-foreground font-medium">
                           Processing Document
                         </p>
-                        <p className="text-blue-500/80">
+                        <p className="text-muted-foreground/80">
                           Your document is currently being processed. Please
                           wait for further updates.
                         </p>
                       </div>
                     )}
 
+                    {/* NEW: Released status */}
+                    {request.status === "released" && request.deliveryMethod === "pickup" && (
+                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                        <p className="text-blue-500 font-medium">
+                          Ready for Pickup!
+                        </p>
+                        <p className="text-blue-500/80">
+                          Visit barangay office to pay and collect your document.
+                        </p>
+                      </div>
+                    )}
+
+                    {request.status === "released" && request.deliveryMethod === "delivery" && (
+                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                        <p className="text-blue-500 font-medium">
+                          Ready for Delivery!
+                        </p>
+                        <p className="text-blue-500/80">
+                          Your document is ready and will be delivered soon.
+                        </p>
+                      </div>
+                    )}
+
+                    {request.status === "released" && request.deliveryMethod === "online" && (
+                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                        <p className="text-blue-500 font-medium">
+                          Document Ready!
+                        </p>
+                        <p className="text-blue-500/80">
+                          Your document is ready for download.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* NEW: Handover status */}
+                    {request.status === "handover" && request.deliveryMethod === "pickup" && (
+                      <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded text-sm">
+                        <p className="text-purple-500 font-medium">
+                          Picked Up!
+                        </p>
+                        <p className="text-purple-500/80">
+                          Document has been picked up. Waiting for final confirmation.
+                        </p>
+                      </div>
+                    )}
+
+                    {request.status === "handover" && request.deliveryMethod === "delivery" && (
+                      <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded text-sm">
+                        <p className="text-purple-500 font-medium">
+                          Out for Delivery!
+                        </p>
+                        <p className="text-purple-500/80">
+                          Your document is on its way to your address.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Legacy completed status support */}
                     {request.status === "completed" &&
                       request.deliveryMethod === "pickup" &&
                       !request.digitallyAvailable && (
@@ -308,18 +451,22 @@ const DocsRequest = () => {
                         </div>
                       )}
 
-                    {request.digitallyAvailable &&
-                      request.status === "completed" && (
+                    {/* NEW: Received status */}
+                    {request.status === "received" && (
+                      <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
+                        <p className="text-success font-medium">
+                          Document Received!
+                        </p>
+                        <p className="text-success/80">
+                          You have successfully received your document.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Download button for online/digital documents */}
+                    {(request.digitallyAvailable || request.deliveryMethod === "online") &&
+                      (request.status === "released" || request.status === "received" || request.status === "completed") && (
                         <div className="space-y-2">
-                          <div className="p-2 bg-success/10 border border-success/20 rounded text-sm">
-                            <p className="text-success font-medium">
-                              Document Ready for Download!
-                            </p>
-                            <p className="text-success/80">
-                              The admin has sent your document digitally. You
-                              can download it using the button below.
-                            </p>
-                          </div>
                           {request.fileSrc && request.fileName && (
                             <Button
                               onClick={() =>

@@ -9,6 +9,9 @@ import {
   Clock,
   Package,
   XCircle,
+  AlertTriangle,
+  CalendarX,
+  Users,
 } from "lucide-react";
 import {
   Table,
@@ -34,37 +37,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/components/ui/select";
-import { CustomToast } from "./CustomToast";
-import customRequest from "@/services/customRequest";
 import { useCallback, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import customRequest from "@/services/customRequest";
+import { CustomToast } from "./CustomToast";
 
 export default function ItemBookingTable({ bookings = [], refetch }) {
-  const queryClient = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
-
-  // Only fetch item details when sheet is open and we have a selected booking
-  const {
-    data: itemData,
-    isLoading: itemLoading,
-    error: itemError,
-    refetch: refetchItemData,
-  } = useQuery({
-    queryKey: ["request/items", selectedBooking?._id],
-    queryFn: () =>
-      customRequest({
-        path: `/api/borrow-item/request/specific/item?item_id=${selectedBooking?._id}`,
-        attributes: {
-          method: "GET",
-          credentials: "include",
-        },
-      }),
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false,
-    enabled: isSheetOpen && !!selectedBooking?._id,
-  });
+  const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
@@ -103,45 +86,117 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     return { label: "Pending", variant: "pending" };
   };
 
-  const getDeliveryMethod = (booking) => {
-    const specialReqs = booking.specialRequirements || {};
-    if (specialReqs.isSenior || specialReqs.isPregnant) {
-      return "COD Delivery";
+  // ✅ FIXED: Safely get availability info with proper fallbacks
+  const getAvailabilityInfo = (booking) => {
+    // If availabilityInfo exists, use it
+    if (booking.availabilityInfo) {
+      return {
+        available: booking.availabilityInfo.available || 0,
+        total: booking.availabilityInfo.total || 0,
+        reserved: booking.availabilityInfo.reserved || 0,
+        canApprove: booking.availabilityInfo.canApprove || false,
+        conflicts: booking.availabilityInfo.conflicts || [],
+      };
     }
-    return booking.deliveryMethod;
+
+    // ✅ Fallback: Use item data if available
+    if (booking.item && typeof booking.item.total === "number") {
+      return {
+        available: 0, // We don't know without calculation
+        total: booking.item.total,
+        reserved: 0,
+        canApprove: false,
+        conflicts: [],
+      };
+    }
+
+    // ✅ Final fallback: Return zeros
+    console.warn(`Missing availability data for booking ${booking._id}`);
+    return {
+      available: 0,
+      total: 0,
+      reserved: 0,
+      canApprove: false,
+      conflicts: [],
+    };
   };
 
-  const handleBookingDeletion = async (bookingId) => {
-    try {
-      if (!bookingId) throw new Error();
-      const result = await customRequest({
-        path: "/api/borrow-item/delete",
-        attributes: {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ item_id: bookingId }),
-        },
-      });
-      if (!result?.success) {
-        return CustomToast({
-          description: "Failed to delete the booking",
-          status: "error",
-        });
-      }
-      refetch();
-      CustomToast({
-        description: "Booking has been deleted successfully",
-        status: "success",
-      });
-    } catch (error) {
-      console.log(error);
-      CustomToast({
-        description: "Internal server error",
-        status: "error",
-      });
+  // ✅ FIXED: Determine if this booking can be approved
+  const canApproveBooking = (booking) => {
+    if (booking.status !== "pending") return false;
+    const info = getAvailabilityInfo(booking);
+
+    // If we have availabilityInfo from backend, trust it
+    if (booking.availabilityInfo) {
+      return info.canApprove;
     }
+
+    // Otherwise, do basic check if we have item data
+    if (booking.item && typeof booking.item.total === "number") {
+      // Conservative check: only approve if we have total data
+      return booking.quantity <= booking.item.total;
+    }
+
+    return false;
+  };
+
+  // ✅ FIXED: Get availability status for display
+  const getAvailabilityStatus = (booking) => {
+    if (["returned", "rejected"].includes(booking.status)) {
+      return null;
+    }
+
+    const info = getAvailabilityInfo(booking);
+
+    // If no total data available, show warning
+    if (info.total === 0) {
+      return {
+        type: "error",
+        message: "Item data unavailable",
+        icon: <AlertCircle className="h-4 w-4" />,
+        variant: "error",
+      };
+    }
+
+    if (booking.status === "approved") {
+      return {
+        type: "approved",
+        message: `Reserved: ${booking.quantity}/${info.total} units`,
+        icon: <CheckCircle className="h-4 w-4" />,
+        variant: "success",
+      };
+    }
+
+    if (booking.status === "pending") {
+      // If we have availabilityInfo from backend, use it
+      if (booking.availabilityInfo) {
+        if (info.canApprove) {
+          return {
+            type: "available",
+            message: `Available: ${info.available}/${info.total} units`,
+            icon: <CheckCircle className="h-4 w-4" />,
+            variant: "success",
+          };
+        } else {
+          return {
+            type: "unavailable",
+            message: `Only ${info.available}/${info.total} available (needs ${booking.quantity})`,
+            icon: <AlertTriangle className="h-4 w-4" />,
+            variant: "warning",
+          };
+        }
+      } else {
+        // No availabilityInfo, show basic stock info
+        return {
+          type: "unknown",
+          message: `Total stock: ${info.total} units`,
+          icon: <AlertCircle className="h-4 w-4" />,
+          variant: "default",
+        };
+      }
+    }
+
+    return null;
   };
 
   const updateMutation = useMutation({
@@ -150,13 +205,12 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     },
     onSuccess: ({ success }) => {
       if (success) {
-        refetch();
-        refetchItemData();
+        setIsUpdating(false);
         queryClient.invalidateQueries({
           queryKey: ["available/items"],
         });
         queryClient.invalidateQueries({
-          queryKey: ["request/items", selectedBooking?.main_item],
+          queryKey: ["request/items"],
         });
         setIsSheetOpen(false);
         return CustomToast({
@@ -180,6 +234,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
 
   const handleStatusUpdate = useCallback(() => {
     if (!selectedBooking || !selectedStatus) return;
+    setIsUpdating(true);
 
     updateMutation.mutate({
       path: "/api/borrow-item/update/item-request",
@@ -208,39 +263,6 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
     });
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "processing":
-        return <Clock className="h-4 w-4" />;
-      case "rejected":
-        return <XCircle className="h-4 w-4" />;
-      case "approved":
-        return <CheckCircle className="h-4 w-4" />;
-      case "reserved":
-        return <Package className="h-4 w-4" />;
-      case "returned":
-        return <Check className="h-4 w-4" />;
-      default:
-        return <AlertCircle className="h-4 w-4" />;
-    }
-  };
-
-  // Check if there's enough stock available for approval
-  // Fixed: Access main_item directly from itemData since the API returns it at the root level
-  const hasAvailableStock = (booking) => {
-    if (!itemData?.response?.main_item) return false;
-    return itemData.response.main_item.available >= booking.quantity;
-  };
-
-  // Get available stock count
-  const getAvailableStock = () => {
-    if (!itemData?.response?.main_item) return { available: 0, total: 0 };
-    return {
-      available: itemData.response.main_item.available,
-      total: itemData.response.main_item.total,
-    };
-  };
-
   return (
     <>
       <div className="w-full mt-4 space-y-4">
@@ -251,8 +273,8 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                 <TableHead>Resident</TableHead>
                 <TableHead>Item</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Availability</TableHead>
                 <TableHead>Dates</TableHead>
-                <TableHead>Mode of Delivery</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -269,6 +291,9 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
               ) : (
                 bookings?.map((booking) => {
                   const statusInfo = getBookingStatus(booking);
+                  const availabilityStatus = getAvailabilityStatus(booking);
+                  const info = getAvailabilityInfo(booking);
+
                   return (
                     <TableRow key={booking._id}>
                       <TableCell className="font-medium">
@@ -299,17 +324,38 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                         </Badge>
                       </TableCell>
                       <TableCell>
+                        {availabilityStatus ? (
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
+                                availabilityStatus.variant === "success"
+                                  ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                                  : availabilityStatus.variant === "warning"
+                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                                  : availabilityStatus.variant === "error"
+                                  ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                                  : "bg-gray-50 text-gray-700 dark:bg-gray-950/30 dark:text-gray-400"
+                              }`}
+                            >
+                              {availabilityStatus.icon}
+                              <span>{availabilityStatus.message}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm w-full text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <div className="flex flex-col">
                           <span className="text-sm">
-                            Borrow: {formatDate(booking.borrowDate)}
+                            {formatDate(booking.borrowDate)}
                           </span>
                           <span className="text-sm text-zinc-400">
-                            Return: {formatDate(booking.returnDate)}
+                            to {formatDate(booking.returnDate)}
                           </span>
                         </div>
-                      </TableCell>
-                      <TableCell className="capitalize pl-10">
-                        {getDeliveryMethod(booking)}
                       </TableCell>
                       <TableCell className="text-center">
                         <Button
@@ -330,7 +376,7 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full md:max-w-100 sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full md:max-w-100 sm:max-w-lg overflow-y-auto pb-10">
           <SheetHeader>
             <SheetTitle>Booking Details</SheetTitle>
             <SheetDescription>
@@ -339,181 +385,115 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
           </SheetHeader>
 
           {selectedBooking && (
-            <div className="space-y-6">
-              {/* Loading State for Item Data */}
-              {itemLoading && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              )}
-
-              {/* Error State for Item Data */}
-              {itemError && (
-                <div className="mx-4 mb-4 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                        Failed to load item details
-                      </p>
-                      <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                        Please try again or contact support if the issue
-                        persists.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Show content only when item data is loaded */}
-              {!itemLoading && !itemError && (
+            <div className="space-y-6 mt-6">
+              {/* Availability Warning/Info - Top Priority */}
+              {!["returned", "rejected"].includes(selectedBooking.status) && (
                 <>
-                  {/* Stock Availability Warning - Custom Notice */}
-                  {!["returned", "rejected"].includes(selectedBooking.status) &&
-                    !hasAvailableStock(selectedBooking) && (
-                      <div className="mx-4 mb-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                  {!canApproveBooking(selectedBooking) &&
+                  selectedBooking.status === "pending" ? (
+                    <div className="mx-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                            Insufficient Stock
+                          </p>
+                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                            Only{" "}
+                            <strong>
+                              {getAvailabilityInfo(selectedBooking).available}
+                            </strong>{" "}
+                            unit(s) available for these dates. Request needs{" "}
+                            <strong>{selectedBooking.quantity}</strong> unit(s).
+                          </p>
+                          {getAvailabilityInfo(selectedBooking).conflicts
+                            ?.length > 0 && (
+                            <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+                              <strong>
+                                {getAvailabilityInfo(selectedBooking).reserved}
+                              </strong>{" "}
+                              unit(s) are already reserved by other bookings
+                              during this period.
+                            </p>
+                          )}
+                          <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
+                            You may mark this as <strong>"Reserved"</strong>{" "}
+                            until stock becomes available.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedBooking.status === "approved" ? (
+                    <div className="mx-4 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                            Booking Confirmed
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                            <strong>{selectedBooking.quantity}</strong> unit(s)
+                            reserved for this booking.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    canApproveBooking(selectedBooking) && (
+                      <div className="mx-4 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <div>
-                            {selectedBooking.status === "approved" ? (
-                              <>
-                                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                                  Item Currently Unavailable
-                                </p>
-                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                                  This item is currently{" "}
-                                  <strong>out of stock</strong>. It will only
-                                  become available again once it has been{" "}
-                                  <strong>marked as returned</strong> or the
-                                  <strong> resident has returned it</strong>.
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                                  Item Currently Unavailable
-                                </p>
-                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                                  This item is temporarily out of stock and
-                                  cannot be approved for borrowing right now.
-                                </p>
-                                <p className="text-sm text-amber-700 dark:text-amber-300 mt-2">
-                                  You may still mark this request as{" "}
-                                  <strong>"Reserved"</strong> until it becomes
-                                  available.
-                                </p>
-                              </>
-                            )}
+                          <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                              Stock Available
+                            </p>
+                            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                              <strong>
+                                {getAvailabilityInfo(selectedBooking).available}
+                              </strong>{" "}
+                              unit(s) available. This request can be approved.
+                            </p>
                           </div>
                         </div>
                       </div>
-                    )}
+                    )
+                  )}
 
-                  <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold">Update Status</h4>
-                      <Badge
-                        variant={getBookingStatus(selectedBooking).variant}
-                      >
-                        {getBookingStatus(selectedBooking).label}
-                      </Badge>
-                    </div>
-                    <Select
-                      value={selectedStatus}
-                      onValueChange={setSelectedStatus}
-                      disabled={updateMutation.isPending}
-                    >
-                      <SelectTrigger className="w-full relative border! border-slate-300! dark:border-slate-700!">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectedBooking?.status !== "rejected" && (
-                          <SelectItem value="rejected">
-                            <div className="flex items-center gap-2">
-                              <XCircle className="h-4 w-4" />
-                              <span>Mark as Rejected</span>
-                            </div>
-                          </SelectItem>
-                        )}
-                        {selectedBooking?.status !== "approved" &&
-                          selectedBooking?.status !== "returned" && (
-                            <SelectItem
-                              value="approved"
-                              disabled={!hasAvailableStock(selectedBooking)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4" />
-                                <span>Mark as Approved</span>
-                                {!hasAvailableStock(selectedBooking) && (
-                                  <span className="text-xs text-muted-foreground ml-1">
-                                    (Insufficient stock)
-                                  </span>
-                                )}
-                              </div>
-                            </SelectItem>
-                          )}
-                        {selectedBooking?.status !== "reserved" &&
-                          selectedBooking?.status !== "returned" &&
-                          selectedBooking?.status !== "approved" && (
-                            <SelectItem value="reserved">
-                              <div className="flex items-center gap-2">
-                                <Package className="h-4 w-4" />
-                                <span>Mark as Reserved</span>
-                              </div>
-                            </SelectItem>
-                          )}
-                        {selectedBooking?.status !== "pending" &&
-                          selectedBooking?.status !== "rejected" && (
-                            <SelectItem value="returned">
-                              <div className="flex items-center gap-2">
-                                <Check className="h-4 w-4" />
-                                <span>Mark as Returned</span>
-                              </div>
-                            </SelectItem>
-                          )}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      onClick={handleStatusUpdate}
-                      disabled={
-                        updateMutation.isPending ||
-                        selectedStatus === selectedBooking.status
-                      }
-                      className="w-full"
-                    >
-                      {updateMutation.isPending ? (
-                        <>
-                          <Loader className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
-                        </>
-                      ) : (
-                        "Update Status"
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Stock Information */}
-                  {itemData?.response?.main_item && (
-                    <div className="space-y-4 px-5 pb-4 border-b">
-                      <h4 className="text-sm font-semibold text-muted-foreground">
-                        Stock Information
-                      </h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Available Stock
+                  {/* Conflicts Section */}
+                  {getAvailabilityInfo(selectedBooking).conflicts?.length >
+                    0 && (
+                    <div className="mx-4 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                            Overlapping Bookings (
+                            {
+                              getAvailabilityInfo(selectedBooking).conflicts
+                                .length
+                            }
+                            )
                           </p>
-                          <p className="text-sm font-medium">
-                            {getAvailableStock().available} /{" "}
-                            {getAvailableStock().total}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Requested Quantity
-                          </p>
-                          <p className="text-sm font-medium">
-                            {selectedBooking.quantity}
-                          </p>
+                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {getAvailabilityInfo(selectedBooking).conflicts.map(
+                              (conflict, idx) => (
+                                <div
+                                  key={idx}
+                                  className="text-sm text-blue-800 dark:text-blue-200 pb-2 border-b border-blue-200 dark:border-blue-800 last:border-0"
+                                >
+                                  <p className="font-medium">
+                                    {conflict.user?.firstName}{" "}
+                                    {conflict.user?.lastName} -{" "}
+                                    {conflict.quantity} unit(s)
+                                  </p>
+                                  <p className="text-xs text-blue-600 dark:text-blue-300 mt-0.5">
+                                    {formatDate(conflict.borrowDate)} to{" "}
+                                    {formatDate(conflict.returnDate)}
+                                  </p>
+                                </div>
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -521,7 +501,119 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                 </>
               )}
 
-              {/* Booking Details - Always show these */}
+              {/* Status Update Section */}
+              <div className="space-y-3 p-4 bg-muted/50 rounded-lg mx-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold">Update Status</h4>
+                  <Badge variant={getBookingStatus(selectedBooking).variant}>
+                    {getBookingStatus(selectedBooking).label}
+                  </Badge>
+                </div>
+                <Select
+                  value={selectedStatus}
+                  onValueChange={setSelectedStatus}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger className="w-full border border-zinc-300 dark:border-slate-700">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedBooking?.status !== "rejected" && (
+                      <SelectItem value="rejected">
+                        <div className="flex items-center gap-2">
+                          <XCircle className="h-4 w-4" />
+                          <span>Mark as Rejected</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {selectedBooking?.status !== "approved" &&
+                      selectedBooking?.status !== "returned" && (
+                        <SelectItem
+                          value="approved"
+                          disabled={!canApproveBooking(selectedBooking)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            <span>Mark as Approved</span>
+                            {!canApproveBooking(selectedBooking) && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                (Insufficient stock)
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      )}
+                    {selectedBooking?.status !== "pending" &&
+                      selectedBooking?.status !== "rejected" && (
+                        <SelectItem value="returned">
+                          <div className="flex items-center gap-2">
+                            <Check className="h-4 w-4" />
+                            <span>Mark as Returned</span>
+                          </div>
+                        </SelectItem>
+                      )}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleStatusUpdate}
+                  disabled={
+                    isUpdating || selectedStatus === selectedBooking.status
+                  }
+                  className="w-full"
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Status"
+                  )}
+                </Button>
+              </div>
+
+              {/* Stock Information */}
+              <div className="space-y-4 px-5 pb-4 border-b">
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Stock Information
+                </h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Total Stock
+                    </p>
+                    <p className="text-sm font-medium">
+                      {getAvailabilityInfo(selectedBooking).total}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Available
+                    </p>
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                      {getAvailabilityInfo(selectedBooking).available}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Reserved
+                    </p>
+                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                      {getAvailabilityInfo(selectedBooking).reserved}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Requested Quantity
+                  </p>
+                  <p className="text-sm font-medium">
+                    {selectedBooking.quantity}
+                  </p>
+                </div>
+              </div>
+
+              {/* Resident & Booking Information */}
               <div className="space-y-4 px-5">
                 <h4 className="text-sm font-semibold text-muted-foreground">
                   Resident Information
@@ -597,24 +689,6 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                       </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        Delivery Method
-                      </p>
-                      <p className="text-sm font-medium capitalize">
-                        {getDeliveryMethod(selectedBooking)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        Event Location
-                      </p>
-                      <p className="text-sm font-medium">
-                        {selectedBooking?.eventLocation || "N/A"}
-                      </p>
-                    </div>
-                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">
                       Purpose
@@ -625,23 +699,6 @@ export default function ItemBookingTable({ bookings = [], refetch }) {
                   </div>
                 </div>
               </div>
-
-              {/* Delete Section (only for completed bookings) */}
-              {selectedBooking.status === "completed" && (
-                <div className="pt-4 border-t px-5">
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={() => {
-                      handleBookingDeletion(selectedBooking._id);
-                      setIsSheetOpen(false);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Booking
-                  </Button>
-                </div>
-              )}
             </div>
           )}
         </SheetContent>

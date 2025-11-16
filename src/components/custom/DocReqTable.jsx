@@ -62,6 +62,18 @@ const formatDate = (dateString) => {
   });
 };
 
+const formatDateTime = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 export default function DocumentRequestsTable({ requests = [], refetch }) {
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -126,32 +138,54 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
   const handleUpdate = useCallback(async () => {
     try {
       const formData = new FormData();
-
       formData.append("docs_id", selectedRequest?._id);
 
-      // Determine the status based on selectedStatus
+      // UPDATED: Map selected actions to status + timestamp
       let statusToSend = "";
-      if (
-        selectedStatus === "ready-for-pickup" ||
-        selectedStatus === "ready-for-delivery" ||
-        selectedStatus === "document-done"
-      ) {
-        statusToSend = "completed";
-      } else if (selectedStatus === "processing") {
-        statusToSend = "processing";
-      } else if (selectedStatus === "rejected") {
-        statusToSend = "rejected";
+      let timestampField = null;
+
+      switch (selectedStatus) {
+        case "mark-processing":
+          statusToSend = "processing";
+          break;
+
+        case "document-done": // For online
+        case "ready-for-pickup": // For pickup
+        case "ready-for-delivery": // For delivery
+          statusToSend = "released";
+          timestampField = "releaseAt";
+          break;
+
+        case "mark-picked-up": // For pickup
+        case "mark-delivery": // For delivery (courier picks up)
+          statusToSend = "handover";
+          timestampField = "handoverAt";
+          break;
+
+        case "mark-received":
+          statusToSend = "received";
+          timestampField = "receiveAt";
+          break;
+
+        case "rejected":
+          statusToSend = "rejected";
+          break;
       }
 
+      formData.append("status", statusToSend);
+
+      // Append timestamp field name if applicable
+      if (timestampField) {
+        formData.append("timestampField", timestampField);
+      }
+
+      // For online service with file upload
       if (
-        selectedRequest?.digitallyAvailable &&
+        selectedRequest?.deliveryMethod === "online" &&
         uploadedFile &&
         selectedStatus === "document-done"
       ) {
-        formData.append("status", "completed");
         formData.append("file", uploadedFile);
-      } else {
-        formData.append("status", statusToSend);
       }
 
       await updateMutation.mutateAsync({
@@ -181,9 +215,9 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 <TableHead>Purpose</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead className="w-42">Mode of Transaction</TableHead>
+                <TableHead className="w-42">Service Type</TableHead>
                 <TableHead>Request Status</TableHead>
-                <TableHead className="text-center">Timestamp</TableHead>
+                <TableHead className="text-center">Timestamps</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -226,8 +260,8 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       {request.deliveryMethod}
                     </TableCell>
                     <TableCell className="pl-6">
-                      {request?.status === "completed" && (
-                        <Badge variant="default">Completed</Badge>
+                      {request?.status === "received" && (
+                        <Badge variant="default">Received</Badge>
                       )}
                       {request?.status === "pending" && (
                         <Badge variant="secondary">Pending</Badge>
@@ -235,19 +269,39 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                       {request?.status === "processing" && (
                         <Badge variant="outline">Processing</Badge>
                       )}
+                      {request?.status === "released" && (
+                        <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
+                          Released
+                        </Badge>
+                      )}
+                      {request?.status === "handover" && (
+                        <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
+                          {request.deliveryMethod === "pickup"
+                            ? "Picked Up"
+                            : "Out for Delivery"}
+                        </Badge>
+                      )}
                       {request?.status === "rejected" && (
                         <Badge variant="destructive">Rejected</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="capitalize text-center w-42 md:pr-8">
-                      <div className="flex flex-col text-sm">
+                    <TableCell className="text-center w-42 md:pr-8">
+                      <div className="flex flex-col justify-start items-start text-sm">
                         <span>
-                          Request : {formatDate(request?.createdAt)}
+                          Request:{" "}
+                          {formatDate(request?.requestAt || request?.createdAt)}
                         </span>
-                        {request.recieveDate && (
-                          <span>
-                            Receive : {formatDate(request?.recieveDate)}
-                          </span>
+                        {request.releaseAt && (
+                          <span>Release: {formatDate(request?.releaseAt)}</span>
+                        )}
+                        {request.handoverAt &&
+                          request.deliveryMethod !== "online" && (
+                            <span>
+                              Handover: {formatDate(request?.handoverAt)}
+                            </span>
+                          )}
+                        {request.receiveAt && (
+                          <span>Receive: {formatDate(request?.receiveAt)}</span>
                         )}
                       </div>
                     </TableCell>
@@ -323,7 +377,7 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                   icon={Hash}
                 />
                 <InfoRow
-                  label="Mode of Transaction"
+                  label="Service Type"
                   value={selectedRequest?.deliveryMethod}
                   icon={Truck}
                 />
@@ -346,14 +400,26 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     Progress Status
                   </span>
                   <div>
-                    {selectedRequest?.status === "completed" && (
-                      <Badge variant="default">Completed</Badge>
+                    {selectedRequest?.status === "received" && (
+                      <Badge variant="default">Received</Badge>
                     )}
                     {selectedRequest?.status === "pending" && (
                       <Badge variant="secondary">Pending</Badge>
                     )}
                     {selectedRequest?.status === "processing" && (
                       <Badge variant="outline">Processing</Badge>
+                    )}
+                    {selectedRequest?.status === "released" && (
+                      <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
+                        Released
+                      </Badge>
+                    )}
+                    {selectedRequest?.status === "handover" && (
+                      <Badge className="bg-purple-500 hover:bg-purple-600 text-white">
+                        {selectedRequest.deliveryMethod === "pickup"
+                          ? "Picked Up"
+                          : "Out for Delivery"}
+                      </Badge>
                     )}
                     {selectedRequest?.status === "rejected" && (
                       <Badge variant="destructive">Rejected</Badge>
@@ -362,18 +428,18 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                 </div>
               </div>
 
-              {/* File Upload for Digital delivery */}
-              {selectedRequest?.digitallyAvailable &&
+              {/* File Upload for Online service */}
+              {selectedRequest?.deliveryMethod === "online" &&
                 (selectedRequest?.status === "pending" ||
-                  selectedRequest?.status === "completed") && (
+                  selectedRequest?.status === "processing") && (
                   <div className="flex flex-col gap-y-2">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
                       <File className="w-3 h-3" />
                       Upload Document (PDF/Image)
                     </span>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Note: File upload is only available for documents that can
-                      be sent digitally.
+                      Note: File upload is available for online service
+                      delivery.
                     </p>
                     {!uploadedFile ? (
                       <label className="cursor-pointer">
@@ -413,79 +479,117 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
                     )}
                   </div>
                 )}
-              {/* Status Selection Dropdown */}
-              <div className="flex flex-col gap-y-2">
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Set Status
-                </span>
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger className="w-fit min-w-[200px]">
-                    <SelectValue placeholder="Choose action to process" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedRequest?.deliveryMethod === "pickup" && (
-                      <>
-                        {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="ready-for-pickup">
-                            Mark as Ready for Pickup
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">
-                            Mark as Processing
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">
-                            Reject Request
-                          </SelectItem>
-                        )}
-                      </>
-                    )}
-                    {selectedRequest?.deliveryMethod === "delivery" && (
-                      <>
-                        {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="ready-for-delivery">
-                            Mark as Ready for Delivery
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">
-                            Mark as Processing
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">
-                            Reject Request
-                          </SelectItem>
-                        )}
-                      </>
-                    )}
-                    {selectedRequest?.digitallyAvailable && (
-                      <>
-                        {selectedRequest?.status !== "completed" && (
-                          <SelectItem value="document-done">
-                            Document Done
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "processing" && (
-                          <SelectItem value="processing">
-                            Mark as Processing
-                          </SelectItem>
-                        )}
-                        {selectedRequest?.status !== "rejected" && (
-                          <SelectItem value="rejected">
-                            Reject Request
-                          </SelectItem>
-                        )}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+              {selectedRequest?.status !== "received" &&
+              selectedRequest?.status !== "rejected" ? (
+                <div className="flex flex-col gap-y-2">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Set Status
+                  </span>
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={setSelectedStatus}
+                  >
+                    <SelectTrigger className="w-fit min-w-[200px]">
+                      <SelectValue placeholder="Choose action to process" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* ONLINE service actions */}
+                      {selectedRequest?.deliveryMethod === "online" && (
+                        <>
+                          {selectedRequest?.status === "pending" && (
+                            <SelectItem value="mark-processing">
+                              Mark as Processing
+                            </SelectItem>
+                          )}
+                          {(selectedRequest?.status === "pending" ||
+                            selectedRequest?.status === "processing") && (
+                            <SelectItem value="document-done">
+                              Document Done (Release)
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status === "released" && (
+                            <SelectItem value="mark-received">
+                              Mark as Received
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status !== "rejected" &&
+                            selectedRequest?.status !== "received" && (
+                              <SelectItem value="rejected">
+                                Reject Request
+                              </SelectItem>
+                            )}
+                        </>
+                      )}
+
+                      {/* PICKUP service actions */}
+                      {selectedRequest?.deliveryMethod === "pickup" && (
+                        <>
+                          {selectedRequest?.status === "pending" && (
+                            <SelectItem value="mark-processing">
+                              Mark as Processing
+                            </SelectItem>
+                          )}
+                          {(selectedRequest?.status === "pending" ||
+                            selectedRequest?.status === "processing") && (
+                            <SelectItem value="ready-for-pickup">
+                              Mark as Ready for Pickup
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status === "released" && (
+                            <SelectItem value="mark-picked-up">
+                              Mark as Picked Up
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status === "handover" && (
+                            <SelectItem value="mark-received">
+                              Mark as Received
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status !== "rejected" &&
+                            selectedRequest?.status !== "received" && (
+                              <SelectItem value="rejected">
+                                Reject Request
+                              </SelectItem>
+                            )}
+                        </>
+                      )}
+
+                      {/* DELIVERY service actions */}
+                      {selectedRequest?.deliveryMethod === "delivery" && (
+                        <>
+                          {selectedRequest?.status === "pending" && (
+                            <SelectItem value="mark-processing">
+                              Mark as Processing
+                            </SelectItem>
+                          )}
+                          {(selectedRequest?.status === "pending" ||
+                            selectedRequest?.status === "processing") && (
+                            <SelectItem value="ready-for-delivery">
+                              Mark as Ready (Release)
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status === "released" && (
+                            <SelectItem value="mark-delivery">
+                              Mark as Out for Delivery
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status === "handover" && (
+                            <SelectItem value="mark-received">
+                              Mark as Received
+                            </SelectItem>
+                          )}
+                          {selectedRequest?.status !== "rejected" &&
+                            selectedRequest?.status !== "received" && (
+                              <SelectItem value="rejected">
+                                Reject Request
+                              </SelectItem>
+                            )}
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -494,10 +598,9 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
               onClick={handleUpdate}
               disabled={
                 !selectedStatus ||
-                (selectedRequest?.digitallyAvailable &&
+                (selectedRequest?.deliveryMethod === "online" &&
                   selectedStatus === "document-done" &&
-                  !uploadedFile &&
-                  selectedRequest?.deliveryMethod === "digitally") ||
+                  !uploadedFile) ||
                 updateMutation.isPending
               }
               className="w-full"

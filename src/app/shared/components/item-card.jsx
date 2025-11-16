@@ -148,15 +148,13 @@ const ItemCard = ({ item, className = "", refetch }) => {
         </div>
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Available:</span>
+            <span className="text-muted-foreground">Total:</span>
             <span
               className={`font-medium ${
                 item?.available === 0 ? "text-destructive" : "text-success"
               }`}
             >
-              {item?.available === 0
-                ? "Not Available"
-                : `${item?.available}/${item?.total}`}
+              {item?.total}
             </span>
           </div>
           {item?.overdueBookings > 0 && (
