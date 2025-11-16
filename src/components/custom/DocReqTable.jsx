@@ -430,7 +430,8 @@ export default function DocumentRequestsTable({ requests = [], refetch }) {
 
               {/* File Upload for Online service */}
               {selectedRequest?.deliveryMethod === "online" &&
-                selectedRequest?.status === "pending" && (
+                (selectedRequest?.status === "pending" ||
+                  selectedRequest?.status === "processing") && (
                   <div className="flex flex-col gap-y-2">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-x-1">
                       <File className="w-3 h-3" />
